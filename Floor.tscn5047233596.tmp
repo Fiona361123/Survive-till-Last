@@ -6,7 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://c2svas13cmttw" path="res://Isometric/stoneTile_N.png" id="3_yrkb7"]
 [ext_resource type="Texture2D" uid="uid://twnnoye0lny3" path="res://Isometric/stone_N.png" id="4_0gdli"]
 [ext_resource type="PackedScene" uid="uid://b0dr5ir16a8ga" path="res://Character/Player.tscn" id="6_yrkb7"]
-[ext_resource type="PackedScene" uid="uid://ln4sqbmynwsn" path="res://Enemy/enemy.tscn" id="7_0gdli"]
+[ext_resource type="PackedScene" uid="uid://ln4sqbmynwsn" path="res://Enemy/character_body_2d.tscn" id="7_0gdli"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_yrkb7"]
 texture = ExtResource("1_3tt66")
@@ -54,7 +54,7 @@ tile_map_data = PackedByteArray("AAD//wAABAAAAAAAAAD//wEABAAAAAAAAAD//wIABAAAAAA
 tile_set = SubResource("TileSet_keya6")
 
 [node name="CharacterBody2D" parent="." unique_id=1596675552 instance=ExtResource("6_yrkb7")]
-position = Vector2(59, 85)
+position = Vector2(1, 91)
 
 [node name="CharacterBody2D2" parent="." unique_id=1008134667 instance=ExtResource("7_0gdli")]
-position = Vector2(635, 38)
+position = Vector2(169, 183)
