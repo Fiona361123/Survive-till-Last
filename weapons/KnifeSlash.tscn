@@ -1,0 +1,41 @@
+[gd_scene format=3 uid="uid://dxcx31euutfcu"]
+
+[ext_resource type="Script" uid="uid://dgnb33rinyc5c" path="res://weapons/knife_slash.gd" id="1_60y3j"]
+[ext_resource type="Texture2D" uid="uid://b2bhbf38w6204" path="res://weapons/knife_sprites/01.png" id="2_dtmdt"]
+[ext_resource type="Texture2D" uid="uid://bgt21js1jr832" path="res://weapons/knife_sprites/02.png" id="3_sqsko"]
+[ext_resource type="Texture2D" uid="uid://bb7iyb6rq7irl" path="res://weapons/knife_sprites/03.png" id="4_07evf"]
+[ext_resource type="Texture2D" uid="uid://7iabw5gji77e" path="res://weapons/knife_sprites/04.png" id="5_bmcnv"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_60y3j"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_j6x6l"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_dtmdt")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_sqsko")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_07evf")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_bmcnv")
+}],
+"loop": true,
+"name": &"attack",
+"speed": 20.0
+}]
+
+[node name="KnifeSlash" type="Node2D" unique_id=591286148]
+script = ExtResource("1_60y3j")
+
+[node name="HitArea(Area2D)" type="Area2D" parent="." unique_id=1561061210]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitArea(Area2D)" unique_id=604330779]
+shape = SubResource("CircleShape2D_60y3j")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=317130561]
+sprite_frames = SubResource("SpriteFrames_j6x6l")
+animation = &"attack"

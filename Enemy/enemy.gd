@@ -63,9 +63,9 @@ func _ready():
 		health_bar.visible = false
 
 	# Find player
-	player = get_tree().get_first_node_in_group("Player")
+	player = get_tree().get_first_node_in_group("player")
 	if player == null:
-		var players = get_tree().get_nodes_in_group("Player")
+		var players = get_tree().get_nodes_in_group("player")
 		if players.size() > 0:
 			player = players[0]
 	

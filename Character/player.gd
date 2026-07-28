@@ -6,15 +6,13 @@ signal hp_changed(current_hp: int, max_hp: int)
 
 # --- MOVEMENT SETTINGS ---
 @export var speed: float = 200.0
-@export var chase_speed: float = 300.0  # Faster when chasing
-@export var detection_range: float = 400.0  # How far the enemy can see
-@export var chase_range: float = 500.0  # How far it will chase before giving up
 
 # --- JUMP VISUAL SETTINGS ---
 @export var jump_height: float = 100.0
 @export var jump_speed: float = 3.0
 var is_jumping: bool = false
 var jump_time: float = 0.0
+var is_attacking: bool = false
 
 # Store last movement direction so sprite faces the right direction when stopped
 var last_input_vector: Vector2 = Vector2.DOWN
@@ -27,96 +25,45 @@ var current_hp: int
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var health_bar: ProgressBar = get_node_or_null("%HealthBar")
 
-# --- NEW: Chase State ---
-var player: Node2D = null  # Reference to the player
-var is_chasing: bool = false
-var state: String = "idle"  # "idle", "patrol", "chase", "attack"
-
 func _ready() -> void:
-	add_to_group("Player")
+	add_to_group("player")
 	current_hp = max_hp
 	if health_bar:
 		health_bar.max_value = max_hp
 		health_bar.value = current_hp
-	
-	# Find the player (assuming it's in the scene tree)
-	# Option 1: Find by group
-	var players = get_tree().get_nodes_in_group("player")
-	if players.size() > 0:
-		player = players[0]
-	
-	# Option 2: Find by name (if you named your player "Player")
-	if player == null:
-		player = get_node_or_null("../Player")  # Adjust path as needed
 
 func _physics_process(delta: float) -> void:
 	if current_hp <= 0:
 		return
 
-	# 1. Check if player is in range
-	detect_player()
-	
-	# 2. Determine movement based on state
-	var input_vector := Vector2.ZERO
-	
-	if is_chasing and player != null:
-		# Chase the player
-		input_vector = (player.global_position - global_position).normalized()
-		velocity = input_vector * chase_speed
+	# 1. Keyboard movement
+	var input_vector := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
+	if input_vector != Vector2.ZERO:
+		velocity = input_vector.normalized() * speed
 		last_input_vector = input_vector
 	else:
-		# Normal movement (idle/patrol)
-		input_vector = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
-		if input_vector != Vector2.ZERO:
-			velocity = input_vector.normalized() * speed
-			last_input_vector = input_vector
-		else:
-			velocity = Vector2.ZERO
+		velocity = Vector2.ZERO
 
-	# 3. Trigger Jump
+	# 2. Trigger Jump
 	if Input.is_action_just_pressed("ui_accept") and not is_jumping:
 		is_jumping = true
 		jump_time = 0.0
 
-	# 4. Handle Jump Arc
+	# 3. Handle Jump Arc
 	handle_jump(delta)
 
-	# 5. Update Animations
-	update_8way_animation(input_vector if not is_chasing else last_input_vector)
+	# 4. Update Animations
+	update_8way_animation(input_vector)
 
-	# 6. Move
+	# 5. Move
 	move_and_slide()
-
-# --- NEW: Player Detection ---
-func detect_player() -> void:
-	if player == null:
-		return
-	
-	var distance = global_position.distance_to(player.global_position)
-	
-	# Check if player is in detection range
-	if distance <= detection_range:
-		# Check line of sight (optional - prevents seeing through walls)
-		var space_state = get_world_2d().direct_space_state
-		var query = PhysicsRayQueryParameters2D.create(global_position, player.global_position)
-		query.exclude = [self]  # Don't collide with self
-		var result = space_state.intersect_ray(query)
-		
-		# If nothing in the way or the first thing hit is the player
-		if result.is_empty() or result.collider == player:
-			is_chasing = true
-			state = "chase"
-			print("Player detected! Chasing...")
-			return
-	
-	# Check if player left chase range
-	if distance > chase_range:
-		is_chasing = false
-		state = "idle"
-		print("Lost the player...")
 
 # --- ANIMATION CONTROLLER ---
 func update_8way_animation(input_vec: Vector2) -> void:
+	# Don't let run/idle animations cancel the attack swing
+	if is_attacking:
+		return
+
 	var active_vec := input_vec if input_vec != Vector2.ZERO else last_input_vector
 
 	# =========================================================================
@@ -162,9 +109,9 @@ func update_8way_animation(input_vec: Vector2) -> void:
 	# =========================================================================
 	# 2. GROUNDED / RUNNING STATE
 	# =========================================================================
-	if input_vec == Vector2.ZERO and not is_chasing:
+	if input_vec == Vector2.ZERO:
 		sprite.stop()
-		return  # Don't play animations if idle and not chasing
+		return  # Don't play animations if idle
 
 	sprite.flip_h = false
 	var angle := rad_to_deg(active_vec.angle())
@@ -242,3 +189,12 @@ func die() -> void:
 	print("Player Has Died!")
 	player_died.emit()
 	get_tree().paused = true
+
+# --- ATTACK ANIMATION (called by Knife) ---
+func play_attack_animation() -> void:
+	if sprite.sprite_frames.has_animation("attack"):
+		is_attacking = true
+		sprite.play("attack")
+		sprite.flip_h = (last_input_vector.x < 0)
+		await sprite.animation_finished
+		is_attacking = false
