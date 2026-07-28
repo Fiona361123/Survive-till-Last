@@ -8,14 +8,14 @@ signal hp_changed(current_hp: int, max_hp: int)
 @export var speed: float = 200.0
 
 # --- JUMP VISUAL SETTINGS ---
-@export var jump_height: float = 100.0
+@export var jump_height: float = 120.0
 @export var jump_speed: float = 3.0
 var is_jumping: bool = false
 var jump_time: float = 0.0
 var is_attacking: bool = false
 
-# Store last movement direction so sprite faces the right direction when stopped
-var last_input_vector: Vector2 = Vector2.DOWN
+# Track last faced direction (defaults to Down / Front)
+var last_direction: Vector2 = Vector2.DOWN
 
 # --- HEALTH STATS ---
 @export var max_hp: int = 100
@@ -37,125 +37,149 @@ func _physics_process(delta: float) -> void:
 		return
 
 	# 1. Keyboard movement
+	# 1. Read Movement Input
 	var input_vector := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
 	if input_vector != Vector2.ZERO:
 		velocity = input_vector.normalized() * speed
-		last_input_vector = input_vector
+		# Store precise normalized direction
+		last_direction = input_vector.normalized()
 	else:
 		velocity = Vector2.ZERO
 
-	# 2. Trigger Jump
+	# 2. Handle Spacebar Jump
 	if Input.is_action_just_pressed("ui_accept") and not is_jumping:
 		is_jumping = true
 		jump_time = 0.0
 
-	# 3. Handle Jump Arc
 	handle_jump(delta)
 
-	# 4. Update Animations
-	update_8way_animation(input_vector)
+	# 3. Update Animations
+	if is_jumping:
+		play_jump_animation()
+	else:
+		update_animation(input_vector)
 
-	# 5. Move
+	# 4. Move
 	move_and_slide()
 
+# --- JUMP ANIMATION CONTROLLER ---
+func play_jump_animation() -> void:
+	sprite.flip_h = (last_direction.x < 0)
+
+	# If facing UP (or UP-LEFT / UP-RIGHT), play back jump animation if available
+	if last_direction.y < -0.35 and sprite.sprite_frames.has_animation("jump_up"):
+		sprite.play("jump_up")
+	# If facing DOWN, play front jump animation if available
+	elif last_direction.y > 0.35 and sprite.sprite_frames.has_animation("jump_down"):
+		sprite.play("jump_down")
+	# Fallback to default jump animation
+	elif sprite.sprite_frames.has_animation("jump"):
+		sprite.play("jump")
+
 # --- ANIMATION CONTROLLER ---
-func update_8way_animation(input_vec: Vector2) -> void:
-	# Don't let run/idle animations cancel the attack swing
-	if is_attacking:
-		return
+func update_animation(input_vec: Vector2) -> void:
+	# Use active input if moving; use last_direction when stopped!
+	var active := input_vec if input_vec != Vector2.ZERO else last_direction
+	
+	# PRECISE DIRECTION SNAP: Converts floats strictly into -1, 0, or 1
+	var dir_x: int = 0
+	var dir_y: int = 0
+	
+	if active.x > 0.35: dir_x = 1
+	elif active.x < -0.35: dir_x = -1
+	
+	if active.y > 0.35: dir_y = 1
+	elif active.y < -0.35: dir_y = -1
 
-	var active_vec := input_vec if input_vec != Vector2.ZERO else last_input_vector
+	sprite.flip_h = false
 
-	# =========================================================================
-	# 1. JUMP STATE (DIRECTION-AWARE)
-	# =========================================================================
-	if is_jumping:
-		sprite.flip_h = false
-
-		# A. JUMPING UP (Back View)
-		if active_vec.y < 0 and abs(active_vec.y) >= abs(active_vec.x):
-			if sprite.sprite_frames.has_animation("jump_up"):
-				sprite.play("jump_up")
-			elif sprite.sprite_frames.has_animation("run_up"):
-				sprite.play("run_up")
-			else:
-				sprite.play("default")
-
-		# B. JUMPING DOWN (Front View Facing You)
-		elif active_vec.y > 0 and abs(active_vec.y) >= abs(active_vec.x):
-			if sprite.sprite_frames.has_animation("jump_down"):
-				sprite.play("jump_down")
-			elif sprite.sprite_frames.has_animation("jump"):
-				sprite.play("jump")
-			elif sprite.sprite_frames.has_animation("run_down"):
-				sprite.play("run_down")
-			else:
-				sprite.play("default")
-
-		# C. JUMPING LEFT / RIGHT (Side View with horizontal flip)
+	# 1. Moving / Facing UP-RIGHT (Back-Right)
+	if dir_y < 0 and dir_x > 0:
+		if sprite.sprite_frames.has_animation("run_right_up"):
+			sprite.play("run_right_up")
+		elif sprite.sprite_frames.has_animation("run_up_right"):
+			sprite.play("run_up_right")
+		elif sprite.sprite_frames.has_animation("run_up"):
+			sprite.play("run_up")
 		else:
-			if sprite.sprite_frames.has_animation("jump"):
-				sprite.play("jump")
-				sprite.flip_h = (active_vec.x < 0)
-			elif sprite.sprite_frames.has_animation("jump_down"):
-				sprite.play("jump_down")
-				sprite.flip_h = (active_vec.x < 0)
-			else:
-				sprite.play("default")
-				sprite.flip_h = (active_vec.x < 0)
+			sprite.play("default")
 
-		return # Stops execution so running animations don't override the jump pose!
+	# 2. Moving / Facing UP-LEFT (Back-Left)
+	elif dir_y < 0 and dir_x < 0:
+		if sprite.sprite_frames.has_animation("run_left_up"):
+			sprite.play("run_left_up")
+		elif sprite.sprite_frames.has_animation("run_up_left"):
+			sprite.play("run_up_left")
+		elif sprite.sprite_frames.has_animation("run_right_up"):
+			sprite.play("run_right_up")
+			sprite.flip_h = true
+		elif sprite.sprite_frames.has_animation("run_up_right"):
+			sprite.play("run_up_right")
+			sprite.flip_h = true
+		elif sprite.sprite_frames.has_animation("run_up"):
+			sprite.play("run_up")
+		else:
+			sprite.play("default")
 
-	# =========================================================================
-	# 2. GROUNDED / RUNNING STATE
-	# =========================================================================
+	# 3. Moving / Facing DOWN-RIGHT (Front-Right)
+	elif dir_y > 0 and dir_x > 0:
+		if sprite.sprite_frames.has_animation("run_right_down"):
+			sprite.play("run_right_down")
+		elif sprite.sprite_frames.has_animation("run_down_right"):
+			sprite.play("run_down_right")
+		elif sprite.sprite_frames.has_animation("run_down"):
+			sprite.play("run_down")
+		else:
+			sprite.play("default")
+
+	# 4. Moving / Facing DOWN-LEFT (Front-Left)
+	elif dir_y > 0 and dir_x < 0:
+		if sprite.sprite_frames.has_animation("run_left_down"):
+			sprite.play("run_left_down")
+		elif sprite.sprite_frames.has_animation("run_down_left"):
+			sprite.play("run_down_left")
+		elif sprite.sprite_frames.has_animation("run_right_down"):
+			sprite.play("run_right_down")
+			sprite.flip_h = true
+		elif sprite.sprite_frames.has_animation("run_down_right"):
+			sprite.play("run_down_right")
+			sprite.flip_h = true
+		elif sprite.sprite_frames.has_animation("run_down"):
+			sprite.play("run_down")
+		else:
+			sprite.play("default")
+
+	# 5. Moving / Facing STRAIGHT UP
+	elif dir_y < 0 and dir_x == 0:
+		if sprite.sprite_frames.has_animation("run_up"):
+			sprite.play("run_up")
+		else:
+			sprite.play("default")
+
+	# 6. Moving / Facing STRAIGHT DOWN
+	elif dir_y > 0 and dir_x == 0:
+		if sprite.sprite_frames.has_animation("run_down"):
+			sprite.play("run_down")
+		else:
+			sprite.play("default")
+
+	# 7. Moving / Facing STRAIGHT LEFT / RIGHT
+	else:
+		if dir_x < 0 and sprite.sprite_frames.has_animation("run_left"):
+			sprite.play("run_left")
+		elif sprite.sprite_frames.has_animation("run_right"):
+			sprite.play("run_right")
+			sprite.flip_h = (dir_x < 0)
+		else:
+			sprite.play("default")
+			sprite.flip_h = (dir_x < 0)
+
+	# WHEN STOPPED: Pause frame animation AFTER applying the correct direction!
 	if input_vec == Vector2.ZERO:
 		sprite.stop()
 		return  # Don't play animations if idle
 
-	sprite.flip_h = false
-	var angle := rad_to_deg(active_vec.angle())
-
-	# 8-Directional Clips
-	if sprite.sprite_frames.has_animation("run_down_right"):
-		if angle >= -22.5 and angle < 22.5:
-			sprite.play("run_right")
-		elif angle >= 22.5 and angle < 67.5:
-			sprite.play("run_down_right")
-		elif angle >= 67.5 and angle < 112.5:
-			sprite.play("run_down")
-		elif angle >= 112.5 and angle < 157.5:
-			sprite.play("run_down_left")
-		elif angle >= 157.5 or angle < -157.5:
-			sprite.play("run_left")
-		elif angle >= -157.5 and angle < -112.5:
-			sprite.play("run_up_left")
-		elif angle >= -112.5 and angle < -67.5:
-			sprite.play("run_up")
-		elif angle >= -67.5 and angle < -22.5:
-			sprite.play("run_up_right")
-
-	# Fallback: 4-Directional Setup
-	else:
-		if active_vec.y < 0 and abs(active_vec.y) >= abs(active_vec.x):
-			if sprite.sprite_frames.has_animation("run_up"):
-				sprite.play("run_up")
-			else:
-				sprite.play("default")
-		elif active_vec.y > 0 and abs(active_vec.y) >= abs(active_vec.x):
-			if sprite.sprite_frames.has_animation("run_down"):
-				sprite.play("run_down")
-			else:
-				sprite.play("default")
-		else:
-			if sprite.sprite_frames.has_animation("run_right"):
-				sprite.play("run_right")
-				sprite.flip_h = (active_vec.x < 0)
-			else:
-				sprite.play("default")
-				sprite.flip_h = (active_vec.x < 0)
-
-# --- VISUAL JUMP HOP ARC ---
+# --- JUMP VISUAL HOP ---
 func handle_jump(delta: float) -> void:
 	if is_jumping:
 		jump_time += delta * jump_speed
@@ -195,6 +219,5 @@ func play_attack_animation() -> void:
 	if sprite.sprite_frames.has_animation("attack"):
 		is_attacking = true
 		sprite.play("attack")
-		sprite.flip_h = (last_input_vector.x < 0)
 		await sprite.animation_finished
 		is_attacking = false
