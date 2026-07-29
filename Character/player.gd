@@ -21,6 +21,9 @@ var last_direction: Vector2 = Vector2.DOWN
 @export var max_hp: int = 100
 var current_hp: int
 
+@export var knife_scene: PackedScene
+@export var gun_scene: PackedScene
+
 # --- NODE REFERENCES ---
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var health_bar: ProgressBar = get_node_or_null("%HealthBar")
@@ -243,3 +246,13 @@ func switch_weapon(weapon_name: String) -> void:
 	if scene:
 		var weapon = scene.instantiate()
 		add_child(weapon)
+
+func play_shoot_animation() -> void:
+	if sprite.sprite_frames.has_animation("shoot"):
+		is_attacking = true
+		sprite.play("shoot")
+		sprite.flip_h = (last_direction.x < 0)
+		var frames = sprite.sprite_frames.get_frame_count("shoot")
+		var fps = sprite.sprite_frames.get_animation_speed("shoot")
+		await get_tree().create_timer(frames / fps).timeout
+		is_attacking = false

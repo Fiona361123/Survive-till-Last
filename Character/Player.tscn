@@ -293,16 +293,11 @@ size = Vector2(107.5, 172.5)
 
 [node name="CharacterBody2D" type="CharacterBody2D" unique_id=1596675552]
 script = ExtResource("1_ly6k5")
-speed = null
-jump_height = null
-jump_speed = null
-max_hp = null
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1211139439]
 position = Vector2(21.795774, 32.589016)
 scale = Vector2(1.028672, 1.0332345)
 sprite_frames = SubResource("SpriteFrames_y83ax")
-animation = &"attack_by_gun"
 
 [node name="HealthBarAnchor" type="Node2D" parent="AnimatedSprite2D" unique_id=311529649]
 position = Vector2(-11.147342, -15.006535)
