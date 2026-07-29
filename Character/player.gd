@@ -78,6 +78,8 @@ func play_jump_animation() -> void:
 
 # --- ANIMATION CONTROLLER ---
 func update_animation(input_vec: Vector2) -> void:
+	if is_attacking:
+		return
 	# Use active input if moving; use last_direction when stopped!
 	var active := input_vec if input_vec != Vector2.ZERO else last_direction
 	
@@ -219,5 +221,25 @@ func play_attack_animation() -> void:
 	if sprite.sprite_frames.has_animation("attack"):
 		is_attacking = true
 		sprite.play("attack")
-		await sprite.animation_finished
+		sprite.flip_h = (last_direction.x < 0)
+		# wait for animation length, not the signal — can't get stuck
+		var frames = sprite.sprite_frames.get_frame_count("attack")
+		var fps = sprite.sprite_frames.get_animation_speed("attack")
+		await get_tree().create_timer(frames / fps).timeout
 		is_attacking = false
+
+func switch_weapon(weapon_name: String) -> void:
+	# remove current weapon(s)
+	for child in get_children():
+		if child.is_in_group("weapon"):
+			child.queue_free()
+	# add the new one
+	var scene: PackedScene
+	match weapon_name:
+		"gun":
+			scene = preload("res://weapons/gun/Gun.tscn")
+		"knife":
+			scene = preload("res://weapons/Knife.tscn")
+	if scene:
+		var weapon = scene.instantiate()
+		add_child(weapon)

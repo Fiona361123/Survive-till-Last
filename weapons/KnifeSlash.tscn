@@ -31,9 +31,9 @@ animations = [{
 [node name="KnifeSlash" type="Node2D" unique_id=591286148]
 script = ExtResource("1_60y3j")
 
-[node name="HitArea(Area2D)" type="Area2D" parent="." unique_id=1561061210]
+[node name="HitArea" type="Area2D" parent="." unique_id=1561061210]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="HitArea(Area2D)" unique_id=604330779]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitArea" unique_id=604330779]
 shape = SubResource("CircleShape2D_60y3j")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=317130561]

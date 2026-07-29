@@ -54,6 +54,7 @@ var damage_frame: int = 2
 var attack_started: bool = false
 
 func _ready():
+	add_to_group("enemy")
 	home_position = global_position
 
 	current_health = max_health
