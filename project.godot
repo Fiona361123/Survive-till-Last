@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Game Map Design"
-run/main_scene="uid://b0dr5ir16a8ga"
+run/main_scene="uid://btv576kxb2m37"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
