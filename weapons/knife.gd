@@ -1,9 +1,8 @@
-# Knife.gd
 extends Node2D
 
 @export var damage: int = 10
 @export var attack_cooldown: float = 0.8
-@export var attack_range: float = 120.0   # how near an enemy must be to trigger a swing
+@export var attack_range: float = 160.0
 @export var knife_slash_scene: PackedScene
 
 var cooldown_left: float = 0.0
@@ -12,6 +11,10 @@ func _ready() -> void:
 	add_to_group("weapon")
 
 func _physics_process(delta: float) -> void:
+	var player = get_parent()
+	if player and "current_hp" in player and player.current_hp <= 0:
+		return
+
 	cooldown_left -= delta
 	if cooldown_left > 0.0:
 		return
@@ -36,15 +39,17 @@ func do_attack(target: Node2D = null) -> void:
 	cooldown_left = attack_cooldown
 
 	var dir: Vector2
+	var player = get_parent()
 	if target != null:
-		# slash toward the enemy that triggered the attack
 		dir = (target.global_position - global_position).normalized()
 	else:
-		# fallback (e.g. future button press with no enemy near): use facing
-		dir = get_parent().last_direction.normalized()
+		dir = player.last_direction.normalized()
 
-	_spawn_projectile(dir)
-	get_parent().play_attack_animation()
+	if knife_slash_scene:
+		_spawn_projectile(dir)
+	
+	if player.has_method("play_attack_animation"):
+		player.play_attack_animation()
 
 func _spawn_projectile(dir: Vector2) -> void:
 	var slash = knife_slash_scene.instantiate()
