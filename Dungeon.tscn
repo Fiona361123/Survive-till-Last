@@ -38,7 +38,9 @@
 [ext_resource type="Texture2D" uid="uid://m4iouoxkacpc" path="res://Isometric/stoneWallAged_W.png" id="45_fo40t"]
 [ext_resource type="Texture2D" uid="uid://7dgqbm8s2mgy" path="res://Isometric/stoneWallCorner_N.png" id="46_7x5sb"]
 [ext_resource type="Texture2D" uid="uid://c4070amhxrr1e" path="res://Isometric/stoneWallColumnIn_E.png" id="47_7u8x3"]
+[ext_resource type="PackedScene" uid="uid://bm4w3pmxqxtpn" path="res://skeleton.tscn" id="47_m3gdi"]
 [ext_resource type="Texture2D" uid="uid://btfa2c80gbso3" path="res://Isometric/stoneWallColumnIn_N.png" id="48_0fb8d"]
+[ext_resource type="PackedScene" uid="uid://dtm8j0ch4d8so" path="res://RangedEnemy.tscn" id="48_y2adg"]
 [ext_resource type="Texture2D" uid="uid://budhugwpb5wd6" path="res://Isometric/stoneWallColumnIn_S.png" id="49_fe6ut"]
 [ext_resource type="Texture2D" uid="uid://34rfrkangkhv" path="res://Isometric/stoneWallColumnIn_W.png" id="50_eoyys"]
 [ext_resource type="Texture2D" uid="uid://lkww2debpgpm" path="res://Isometric/stoneWallCorner_S.png" id="51_lf33f"]
@@ -381,6 +383,8 @@ texture_region_size = Vector2i(256, 512)
 tile_shape = 1
 tile_layout = 5
 tile_size = Vector2i(256, 128)
+physics_layer_0/collision_layer = 1
+physics_layer_0/collision_mask = 15
 sources/0 = SubResource("TileSetAtlasSource_bv2kf")
 sources/1 = SubResource("TileSetAtlasSource_4n8p3")
 sources/2 = SubResource("TileSetAtlasSource_0oif2")
@@ -492,6 +496,21 @@ sources/9 = SubResource("TileSetAtlasSource_mn6qf")
 sources/10 = SubResource("TileSetAtlasSource_28olu")
 sources/11 = SubResource("TileSetAtlasSource_m3gdi")
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_m3gdi"]
+bg_color = Color(0.64705884, 0.039215688, 0, 0.47843137)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_detail = 15
+expand_margin_left = 2.0
+expand_margin_top = 2.0
+expand_margin_right = 2.0
+expand_margin_bottom = 2.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_y2adg"]
+bg_color = Color(0.64705884, 0.039215688, 0, 1)
+
 [node name="Dungeon" type="Node2D" unique_id=1349440035]
 
 [node name="Floor" type="TileMapLayer" parent="." unique_id=285580448]
@@ -509,7 +528,6 @@ tile_map_data = PackedByteArray("AAD+/wUACAAAAAAAAAD+/wAACAAAAAAAAAAJAAcACQAAAAA
 tile_set = SubResource("TileSet_qwhej")
 
 [node name="FirstLevelWallArea" type="Area2D" parent="Wall" unique_id=1234383273 node_paths=PackedStringArray("changeable_walls")]
-collision_layer = 0
 script = ExtResource("55_room_fade")
 changeable_walls = NodePath("../Level 1 Traps")
 enemy_scene = ExtResource("7_0gdli")
@@ -522,13 +540,24 @@ polygon = PackedVector2Array(-1151, 386, 639, 1280, 2561, 322, 768, -543)
 position = Vector2(1, -126)
 
 [node name="Player" parent="." unique_id=1596675552 groups=["player"] instance=ExtResource("6_yrkb7")]
-position = Vector2(-1606, -635)
+position = Vector2(-1607, -619)
+
+[node name="skeleton" parent="." unique_id=104747267 instance=ExtResource("47_m3gdi")]
+position = Vector2(3466, 190)
+detection_radius = 200.0
+damage = 15
+damage_frame = 8
+attack_speed_scale = 2.0
+
+[node name="RangedEnemy" parent="." unique_id=1549030439 instance=ExtResource("48_y2adg")]
+position = Vector2(2373, -578)
 
 [node name="Enemy" parent="." unique_id=1008134667 instance=ExtResource("7_0gdli")]
 position = Vector2(635, 38)
 
 [node name="Map Size" type="StaticBody2D" parent="." unique_id=640551829 node_paths=PackedStringArray("player")]
 position = Vector2(1, 91)
+collision_mask = 15
 script = ExtResource("8_gq7au")
 player = NodePath("../Player")
 
@@ -536,3 +565,17 @@ player = NodePath("../Player")
 position = Vector2(1076, -315)
 build_mode = 1
 polygon = PackedVector2Array(-2967.4888, 1613.5637, -1632.4888, 951.5638, -2325.4888, 602.5638, -906.4888, -95.43622, -1758.4888, -520.4362, -2653.4888, -72.43622, -3076.4888, -283.43622, -1759.4888, -946.4362, -480.48877, -316.43622, -344.48877, -393.43622, 429.51123, -3.4362183, 1903.5112, -735.4362, 1185.5112, -1096.4363, 290.51123, -648.4362, -1926.4888, -1756.4363, 427.51123, -2953.4363, 1776.5112, -2286.4363, -48.48877, -1375.4363, 425.51123, -1141.4363, 1184.5112, -1528.4363, 2779.5112, -740.4362, 1743.5112, -221.43622, 2467.5112, 127.56378, 2839.5112, -61.43622, 3915.5112, 483.56378, 2722.5112, 1079.5637, 1657.5112, 549.5638, 2039.5112, 352.56378, 1313.5112, -8.436218, 857.5112, 222.56378, 1499.5112, 540.5638, -477.48877, 1528.5637, -1116.4888, 1208.5637, -2478.4888, 1888.5637, -917.4888, 2657.5637, -4062.4888, 4224.564, -8296.488, 2110.5637, -5091.489, 541.5638)
+
+[node name="skeleton" parent="Map Size" unique_id=1641295695 instance=ExtResource("47_m3gdi")]
+position = Vector2(-56, 147)
+
+[node name="HealthBar2" type="ProgressBar" parent="Map Size/skeleton" unique_id=23749241]
+offset_left = -24.0
+offset_top = -70.0
+offset_right = 47.0
+offset_bottom = -63.0
+theme_override_colors/font_color = Color(0.95, 0.95, 0.95, 1)
+theme_override_styles/background = SubResource("StyleBoxFlat_m3gdi")
+theme_override_styles/fill = SubResource("StyleBoxFlat_y2adg")
+step = 1.0
+show_percentage = false

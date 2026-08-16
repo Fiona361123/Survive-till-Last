@@ -422,18 +422,16 @@ bg_color = Color(0.95686275, 0.4509804, 0.6, 0.6431373)
 [sub_resource type="ImageTexture" id="ImageTexture_7llnk"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ly6k5"]
-size = Vector2(107.5, 172.5)
+size = Vector2(48.75, 107.25)
 
 [node name="CharacterBody2D" type="CharacterBody2D" unique_id=1596675552]
+collision_layer = 2
 script = ExtResource("1_ly6k5")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1211139439]
 position = Vector2(21.795774, 32.589016)
 scale = Vector2(1.028672, 1.0332345)
 sprite_frames = SubResource("SpriteFrames_y83ax")
-animation = &"die"
-frame = 3
-frame_progress = 0.34656727
 
 [node name="HealthBarAnchor" type="Node2D" parent="AnimatedSprite2D" unique_id=311529649]
 position = Vector2(-11.147342, -15.006535)
@@ -465,7 +463,7 @@ scale = Vector2(0.9833332, 0.9385963)
 texture = ExtResource("8_gvj7u")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=503808022]
-position = Vector2(17.25, 23.75)
+position = Vector2(20.625, 34.375)
 shape = SubResource("RectangleShape2D_ly6k5")
 
 [node name="Knife" parent="." unique_id=450711054 instance=ExtResource("29_im8re")]
