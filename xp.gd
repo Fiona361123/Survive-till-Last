@@ -1,6 +1,9 @@
 extends Area2D
 
 @export var xp_value: int = 15
+@export var heal_bonus: int = 0      # Extra HP healed on pickup
+@export var is_level_up_coin: bool = false # If true, gives level up directly
+@export var picks_to_grant: int = 1  # Number of picks to grant (1 for slime, 3 for ranged enemy)
 @export var collect_range: float = 50.0
 @export var animation_name: String = "idle"
 @export var collection_delay: float = 2.5
@@ -70,10 +73,12 @@ func _collect():
 	
 	is_collected = true
 	
-	print("XP COLLECTED: ", xp_value)
-	
-	if player != null and player.has_method("add_xp"):
-		player.add_xp(xp_value)
+	if is_level_up_coin:
+		if player != null and player.has_method("open_chest"):
+			player.open_chest(picks_to_grant)
+	else:
+		if player != null and player.has_method("add_xp"):
+			player.add_xp(xp_value, heal_bonus)
 	
 	_create_collect_effect()
 	queue_free()

@@ -481,9 +481,29 @@ func die() -> void:
 	current_state = State.DEATH
 	if health_bar != null:
 		health_bar.visible = false
-	await get_tree().create_timer(0.8).timeout
+	
+	# Ranged Enemy drops a Level Up coin (5 cards, choose 3)
+	var XP_ORB_SCENE = load("res://enemyXP.tscn")
+	if XP_ORB_SCENE:
+		var orb = XP_ORB_SCENE.instantiate()
+		orb.is_level_up_coin = true
+		orb.picks_to_grant = 3
+		
+		# Clamp spawn position to camera bounds so it's reachable
+		var spawn_pos = global_position
+		var camera = get_viewport().get_camera_2d()
+		if camera != null:
+			var viewport_size = get_viewport().get_visible_rect().size
+			var camera_center = camera.global_position
+			var half_width = viewport_size.x / 2
+			var half_height = viewport_size.y / 2
+			spawn_pos.x = clamp(spawn_pos.x, camera_center.x - half_width + 50, camera_center.x + half_width - 50)
+			spawn_pos.y = clamp(spawn_pos.y, camera_center.y - half_height + 50, camera_center.y + half_height - 50)
+		
+		orb.global_position = spawn_pos
+		get_tree().current_scene.call_deferred("add_child", orb)
+	
 	queue_free()
-
 
 # HELPER FUNCTIONS
 func pick_new_wander_target():

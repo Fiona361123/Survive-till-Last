@@ -18,6 +18,7 @@ var current_health: int
 
 # XP DROP ON DEATH
 @export var xp_drop: int = 15
+@export var hp_bonus_drop: int = 30   # Skeleton also heals the player on pickup
 const XP_ORB_SCENE = preload("res://enemyXP.tscn")
 
 # ATTACK VARIABLES
@@ -566,6 +567,7 @@ func die() -> void:
 	
 	var orb = XP_ORB_SCENE.instantiate()
 	orb.xp_value = xp_drop
+	orb.heal_bonus = hp_bonus_drop   # Skeleton coin also restores HP
 	orb.global_position = spawn_pos
 	get_tree().current_scene.call_deferred("add_child", orb)
 	

@@ -260,7 +260,7 @@ func _attack_state(delta):
 
 
 # DEATH STATE
-func _death_state(delta):
+func _death_state(_delta: float) -> void:
 	velocity = Vector2.ZERO
 	
 	if animated_sprite.sprite_frames.has_animation("death"):
@@ -319,7 +319,7 @@ func die() -> void:
 		spawn_pos.y = clamp(spawn_pos.y, -1000, 1000)
 	
 	var orb = XP_ORB_SCENE.instantiate()
-	orb.xp_value = xp_drop
+	orb.is_level_up_coin = true
 	orb.global_position = spawn_pos
 	get_tree().current_scene.call_deferred("add_child", orb)
 

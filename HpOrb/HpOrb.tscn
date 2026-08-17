@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://hporb"]
+
+[ext_resource type="Script" path="res://HpOrb/hp_orb.gd" id="1_hporb"]
+
+[node name="HpOrb" type="Area2D"]
+script = ExtResource("1_hporb")
+heal_amount = 15

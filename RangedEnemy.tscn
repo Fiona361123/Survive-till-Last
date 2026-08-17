@@ -1605,7 +1605,7 @@ bg_color = Color(0.64705884, 0.039215688, 0, 1)
 [node name="RangedEnemy" type="CharacterBody2D" unique_id=1549030439]
 collision_layer = 4
 script = ExtResource("1_vpkv7")
-damage = 25
+damage = 10
 attack_cooldown = 3.0
 projectile_scene = ExtResource("2_rud8w")
 

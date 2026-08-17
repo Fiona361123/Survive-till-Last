@@ -208,7 +208,7 @@ bg_color = Color(0.64705884, 0.039215688, 0, 1)
 collision_layer = 4
 script = ExtResource("1_ij6vw")
 chase_speed = 180.09
-damage = 10
+damage = 8
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=237485646]
 position = Vector2(69.81794, 76.5)
