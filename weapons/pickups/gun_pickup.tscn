@@ -1,3 +1,15 @@
 [gd_scene format=3 uid="uid://s23yos4qiwry"]
 
-[node name="GunPickup" type="Node2D" unique_id=1823180530]
+[ext_resource type="Texture2D" uid="uid://dq6us65exc70n" path="res://weapons/gun/image_3bff7d.png" id="1_3qlc3"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_514at"]
+radius = 40.0
+
+[node name="GunPickup" type="Node2D" unique_id=35244651]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=901829908]
+shape = SubResource("CircleShape2D_514at")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=688594682]
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("1_3qlc3")

@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://b0dr5ir16a8ga" path="res://Character/Player.tscn" id="6_yrkb7"]
 [ext_resource type="PackedScene" uid="uid://ln4sqbmynwsn" path="res://Enemy/enemy.tscn" id="7_0gdli"]
 [ext_resource type="Script" uid="uid://d13cn23j4q5ys" path="res://map-boundary.gd" id="8_gq7au"]
+[ext_resource type="PackedScene" uid="uid://s23yos4qiwry" path="res://weapons/pickups/gun_Pickup.tscn" id="9_f2mh0"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_yrkb7"]
 texture = ExtResource("1_3tt66")
@@ -69,3 +70,5 @@ player = NodePath("../Player")
 position = Vector2(1117.4888, -266.56378)
 build_mode = 1
 polygon = PackedVector2Array(-2900.4888, 1651.5637, -1548.4888, 992.5638, -2325.4888, 602.5638, -906.4888, -95.43622, -1758.4888, -520.4362, -2653.4888, -72.43622, -3076.4888, -283.43622, -1759.4888, -946.4362, -480.48877, -316.43622, -344.48877, -393.43622, 429.51123, -3.4362183, 1903.5112, -735.4362, 1185.5112, -1096.4363, 290.51123, -648.4362, -1926.4888, -1756.4363, 427.51123, -2953.4363, 1776.5112, -2286.4363, -48.48877, -1375.4363, 425.51123, -1141.4363, 1184.5112, -1528.4363, 2779.5112, -740.4362, 1743.5112, -221.43622, 2467.5112, 127.56378, 2839.5112, -61.43622, 3915.5112, 483.56378, 2722.5112, 1079.5637, 1657.5112, 549.5638, 2039.5112, 352.56378, 1313.5112, -8.436218, 857.5112, 222.56378, 1499.5112, 540.5638, -477.48877, 1528.5637, -1116.4888, 1208.5637, -2478.4888, 1888.5637, -917.4888, 2657.5637, -4062.4888, 4224.564, -8296.488, 2110.5637, -5091.489, 541.5638)
+
+[node name="GunPickup" parent="." unique_id=1823180530 instance=ExtResource("9_f2mh0")]

@@ -1,6 +1,10 @@
 [gd_scene format=3 uid="uid://b7qvg8reecsi"]
 
 [ext_resource type="Script" uid="uid://ccfhusj11ylyw" path="res://weapons/gun/bullet.gd" id="1_nejg2"]
+[ext_resource type="Texture2D" uid="uid://de4he0wdq8nnx" path="res://icon.svg" id="2_35b77"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_enfu2"]
+radius = 4.0
 
 [node name="Bullet" type="Node2D" unique_id=1137349482]
 script = ExtResource("1_nejg2")
@@ -8,5 +12,7 @@ script = ExtResource("1_nejg2")
 [node name="HitArea" type="Area2D" parent="." unique_id=1919507090]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HitArea" unique_id=823630970]
+shape = SubResource("CircleShape2D_enfu2")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=2102250280]
+texture = ExtResource("2_35b77")
