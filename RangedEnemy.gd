@@ -18,8 +18,8 @@ extends CharacterBody2D
 @export var boundary_radius: float = 800.0
 
 # ATTACK VARIABLES
-@export var damage: int = 3
-@export var attack_cooldown: float = 1.2
+@export var damage: int = 15
+@export var attack_cooldown: float = 3.0
 @export var projectile_speed: float = 500.0
 
 # RETREAT VARIABLES
@@ -44,7 +44,7 @@ var current_health: int
 @onready var vision_area = $VisionArea
 @onready var health_bar = $HealthBar
 @onready var shoot_timer = $ShootTimer
-
+@onready var projectile_spawn = $ProjectileSpawn
 # PLAYER REFERENCE
 var player: Node2D = null
 
@@ -396,13 +396,17 @@ func _fire_at_player(cooldown_multiplier: float) -> void:
 
 	can_shoot = false
 
-	# Player closer = faster attack
+	# Player closer = enemy attacks faster
 	var distance_multiplier = 1.0
 
-	if distance_to_player < min_range:
+	if distance_to_player < 100:
+		distance_multiplier = 0.35
+	elif distance_to_player < 200:
 		distance_multiplier = 0.5
-	elif distance_to_player < ideal_range:
+	elif distance_to_player < 300:
 		distance_multiplier = 0.7
+	else:
+		distance_multiplier = 1.0
 
 	if shoot_timer != null:
 		shoot_timer.start(
@@ -433,39 +437,26 @@ func _shoot_projectile(direction: Vector2):
 		return
 
 	var projectile = projectile_scene.instantiate()
+
 	if projectile == null:
 		return
 
-	var distance_to_player = global_position.distance_to(player.global_position)
 	var normalized_direction = direction.normalized()
 
-	# Damage falloff - less damage at longer range
-	var damage_multiplier = 1.0
-	if distance_to_player > max_damage_range:
-		var falloff_range = min_damage_range - max_damage_range
-		var falloff_percent = (distance_to_player - max_damage_range) / falloff_range
-		falloff_percent = clamp(falloff_percent, 0.0, 1.0)
-		damage_multiplier = 1.0 - (falloff_percent * (1.0 - min_damage_multiplier))
-		damage_multiplier = clamp(damage_multiplier, min_damage_multiplier, 1.0)
+	# Add projectile first
+	get_tree().current_scene.add_child(projectile)
 
-	var final_damage = max(1, floor(damage * damage_multiplier))
-	var hit_frame = clamp(floor(distance_to_player / 50.0), 1, 5)
+	# Then set exact global position
+	projectile.global_position = global_position
 
-	var root = get_tree().current_scene
-	if root == null:
-		return
-
-	projectile.global_position = global_position + normalized_direction * 20
+	# Set projectile properties
 	projectile.direction = normalized_direction
 	projectile.speed = projectile_speed
-	projectile.damage = final_damage
-	projectile.hit_frame = hit_frame
+	projectile.damage = damage
+	projectile.hit_frame = 2
 
 	if projectile.has_method("set_hit_effect"):
 		projectile.set_hit_effect(hit_effect_scene)
-
-	root.add_child(projectile)
-
 
 # TAKE DAMAGE
 func take_damage(amount: int) -> void:
@@ -496,7 +487,28 @@ func die() -> void:
 	current_state = State.DEATH
 	if health_bar != null:
 		health_bar.visible = false
-	await get_tree().create_timer(0.8).timeout
+	
+	# Ranged Enemy drops a Level Up coin (5 cards, choose 3)
+	var XP_ORB_SCENE = load("res://enemyXP.tscn")
+	if XP_ORB_SCENE:
+		var orb = XP_ORB_SCENE.instantiate()
+		orb.is_level_up_coin = true
+		orb.picks_to_grant = 3
+		
+		# Clamp spawn position to camera bounds so it's reachable
+		var spawn_pos = global_position
+		var camera = get_viewport().get_camera_2d()
+		if camera != null:
+			var viewport_size = get_viewport().get_visible_rect().size
+			var camera_center = camera.global_position
+			var half_width = viewport_size.x / 2
+			var half_height = viewport_size.y / 2
+			spawn_pos.x = clamp(spawn_pos.x, camera_center.x - half_width + 50, camera_center.x + half_width - 50)
+			spawn_pos.y = clamp(spawn_pos.y, camera_center.y - half_height + 50, camera_center.y + half_height - 50)
+		
+		orb.global_position = spawn_pos
+		get_tree().current_scene.call_deferred("add_child", orb)
+	
 	queue_free()
 
 

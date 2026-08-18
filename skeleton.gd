@@ -18,11 +18,12 @@ var current_health: int
 
 # XP DROP
 @export var xp_drop: int = 15
+@export var hp_bonus_drop: int = 30  
 const XP_ORB_SCENE = preload("res://enemyXP.tscn")
 
-# ATTACK - Attack 2 deals more damage
-@export var damage: int = 2
-@export var attack2_damage: int = 5
+# ATTACK 
+@export var damage: int = 10
+@export var attack2_damage: int = 15
 @export var attack_cooldown: float = 0.8
 @export var damage_frame: int = 4
 
@@ -606,6 +607,7 @@ func die() -> void:
 	
 	var orb = XP_ORB_SCENE.instantiate()
 	orb.xp_value = xp_drop
+	orb.heal_bonus = hp_bonus_drop   # Skeleton coin also restores HP
 	orb.global_position = spawn_pos
 	get_tree().current_scene.call_deferred("add_child", orb)
 	

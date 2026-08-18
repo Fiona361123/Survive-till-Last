@@ -1,0 +1,71 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://collapsing_bridge_section.gd" id="1_bridge"]
+[ext_resource type="Texture2D" uid="uid://xnwib4c07rlo" path="res://Isometric/bridgeWide_E.png" id="2_bridge_e"]
+[ext_resource type="Texture2D" uid="uid://bekxpge2hift1" path="res://Isometric/bridgeWide_N.png" id="3_bridge_n"]
+[ext_resource type="Texture2D" uid="uid://ct3u7ipqlu2t8" path="res://Isometric/bridgeWide_S.png" id="4_bridge_s"]
+[ext_resource type="Texture2D" uid="uid://dxc85rmsnv7r8" path="res://Isometric/bridgeWide_W.png" id="5_bridge_w"]
+[ext_resource type="Script" path="res://fall_hazard.gd" id="3_fall_hazard"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_bridge_e"]
+texture = ExtResource("2_bridge_e")
+texture_region_size = Vector2i(256, 512)
+0:0/0 = 0
+0:0/0/texture_origin = Vector2i(0, 168)
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_bridge_n"]
+texture = ExtResource("3_bridge_n")
+texture_region_size = Vector2i(256, 512)
+0:0/0 = 0
+0:0/0/texture_origin = Vector2i(0, 167)
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_bridge_s"]
+texture = ExtResource("4_bridge_s")
+texture_region_size = Vector2i(256, 512)
+0:0/0 = 0
+0:0/0/texture_origin = Vector2i(0, 168)
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_bridge_w"]
+texture = ExtResource("5_bridge_w")
+texture_region_size = Vector2i(256, 512)
+0:0/0 = 0
+0:0/0/texture_origin = Vector2i(0, 191)
+
+[sub_resource type="TileSet" id="TileSet_bridge"]
+tile_size = Vector2i(256, 128)
+tile_shape = 1
+sources/0 = SubResource("TileSetAtlasSource_bridge_e")
+sources/1 = SubResource("TileSetAtlasSource_bridge_n")
+sources/2 = SubResource("TileSetAtlasSource_bridge_s")
+sources/3 = SubResource("TileSetAtlasSource_bridge_w")
+
+[node name="CollapsingBridgeSection" type="Area2D"]
+collision_layer = 0
+collision_mask = 6
+script = ExtResource("1_bridge")
+bridge_direction = 1
+
+[node name="BridgeTile" type="TileMapLayer" parent="."]
+z_index = -1
+tile_set = SubResource("TileSet_bridge")
+tile_map_data = PackedByteArray(0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0)
+
+[node name="TriggerShape" type="CollisionPolygon2D" parent="."]
+position = Vector2(128, 64)
+polygon = PackedVector2Array(0, -64, 120, 0, 0, 64, -120, 0)
+
+[node name="GapArea" type="Area2D" parent="."]
+position = Vector2(128, 64)
+collision_layer = 0
+collision_mask = 6
+monitoring = false
+script = ExtResource("3_fall_hazard")
+
+[node name="GapShape" type="CollisionPolygon2D" parent="GapArea"]
+polygon = PackedVector2Array(0, -64, 120, 0, 0, 64, -120, 0)
+
+[node name="WarningTimer" type="Timer" parent="."]
+one_shot = true
+
+[node name="RebuildTimer" type="Timer" parent="."]
+one_shot = true

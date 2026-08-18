@@ -53,7 +53,8 @@ func _on_body_entered(body: Node2D) -> void:
 		hit_enemies.append(body)
 
 func _on_area_entered(area: Area2D) -> void:
-	print("[Knife] area_entered: ", area.name, ", parent: ", area.get_parent().name if area.get_parent() else "none")
+	var _p = area.get_parent()
+	print("[Knife] area_entered: ", area.name, ", parent: ", _p.name if _p else "none")
 	if "AttackArea" not in area.name: return
 	
 	var parent = area.get_parent()

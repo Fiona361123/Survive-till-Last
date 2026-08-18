@@ -1,5 +1,7 @@
 extends Area2D
 
+signal enemies_finished_spawning
+
 # Assign "Level 1 traps" to this field in the Inspector.
 @export var changeable_walls: TileMapLayer
 @export var enemy_scene: PackedScene
@@ -199,8 +201,18 @@ func spawn_enemies_from_holes() -> void:
 			push_error("enemy.tscn must have a Node2D root.")
 			return
 
+		enemy.add_to_group("level1_enemy")
 		spawn_parent.add_child(enemy)
-		enemy.global_position = hole_position + inward * spawn_inward_distance + sideways
+
+		var spawn_position: Vector2 = (
+			hole_position
+			+ inward * spawn_inward_distance
+			+ sideways
+		)
+
+		enemy.global_position = spawn_position
 
 		if spawn_delay > 0.0 and index < enemy_count - 1:
 			await get_tree().create_timer(spawn_delay).timeout
+
+	enemies_finished_spawning.emit()

@@ -1149,9 +1149,9 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_owcua")
 }],
-"loop": true,
+"loop": false,
 "name": &"death",
-"speed": 9.0
+"speed": 10.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -1605,15 +1605,13 @@ bg_color = Color(0.64705884, 0.039215688, 0, 1)
 [node name="RangedEnemy" type="CharacterBody2D" unique_id=1549030439]
 collision_layer = 4
 script = ExtResource("1_vpkv7")
-damage = 20
-attack_cooldown = 3.0
 projectile_scene = ExtResource("2_rud8w")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1152286434]
-position = Vector2(6, 0.9999995)
+position = Vector2(2, 2.3841858e-07)
 scale = Vector2(2.8072917, 2.9192708)
 sprite_frames = SubResource("SpriteFrames_pn7cu")
-animation = &"idle"
+animation = &"hurt"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1716867359]
 shape = SubResource("CircleShape2D_666bi")
@@ -1640,3 +1638,6 @@ theme_override_styles/background = SubResource("StyleBoxFlat_rud8w")
 theme_override_styles/fill = SubResource("StyleBoxFlat_m0xub")
 step = 1.0
 show_percentage = false
+
+[node name="ProjectileSpawn" type="Marker2D" parent="." unique_id=1695389108]
+position = Vector2(-4, -23)
