@@ -3,7 +3,7 @@ extends Area2D
 @export var xp_value: int = 15
 @export var collect_range: float = 50.0
 @export var animation_name: String = "idle"
-@export var collection_delay: float = 2.5
+@export var collection_delay: float = 2
 
 @export var float_duration: float = 1.0
 @export var float_amplitude: float = 10.0
@@ -31,7 +31,7 @@ func _ready():
 	# PLAY ANIMATION
 	if animated_sprite != null:
 		if animated_sprite.sprite_frames.has_animation(animation_name):
-			animated_sprite.play(animation_name)
+			animated_sprite.play("idle_loop")
 		else:
 			var animations = animated_sprite.sprite_frames.get_animation_names()
 			if animations.size() > 0:

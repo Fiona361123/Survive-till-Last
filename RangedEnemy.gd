@@ -22,7 +22,7 @@ extends CharacterBody2D
 @export var attack_cooldown: float = 1.2
 @export var projectile_speed: float = 500.0
 
-# RETREAT / KITING VARIABLES
+# RETREAT VARIABLES
 @export var retreat_shoot_enabled: bool = true
 @export var retreat_cooldown_multiplier: float = 0.65
 @export var cornered_check_time: float = 0.5
@@ -185,7 +185,7 @@ func _setup_animations():
 
 func _update_timers(delta):
 	if shoot_timer != null and not can_shoot:
-		if shoot_timer.is_stopped():
+		if shoot_timer.time_left <= 0: 
 			can_shoot = true
 
 func _update_health_bar():
@@ -388,11 +388,26 @@ func _death_state(delta):
 func _fire_at_player(cooldown_multiplier: float) -> void:
 	if player == null:
 		return
+
 	var direction_to_target = (player.global_position - global_position).normalized()
+	var distance_to_player = global_position.distance_to(player.global_position)
+
 	_shoot_projectile(direction_to_target)
+
 	can_shoot = false
+
+	# Player closer = faster attack
+	var distance_multiplier = 1.0
+
+	if distance_to_player < min_range:
+		distance_multiplier = 0.5
+	elif distance_to_player < ideal_range:
+		distance_multiplier = 0.7
+
 	if shoot_timer != null:
-		shoot_timer.start(attack_cooldown * cooldown_multiplier)
+		shoot_timer.start(
+			attack_cooldown * cooldown_multiplier * distance_multiplier
+		)
 
 	if animated_sprite.sprite_frames.has_animation("attack"):
 		animated_sprite.speed_scale = attack_speed_scale
