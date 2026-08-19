@@ -225,22 +225,70 @@ var is_invincible: bool = false
 # --- LEVEL & XP SYSTEM ---
 var current_level: int = 1
 var current_xp: int = 0
-var xp_to_next_level: int = 15
+var xp_to_next_level: int = 30
 var level_up_ui_script = load("res://UI/level_up_ui.gd")
 
 var xp_attract_bonus: float = 0.0
 var _level_up_ui: Node = null
 
-func open_chest() -> void:
+# Called by the blue XP coin on pickup
+# heal_bonus > 0 means the coin also restores HP (skeleton drop)
+func add_xp(amount: int, heal_bonus: int = 0) -> void:
+	if current_hp <= 0:
+		return
+	
+	current_xp += amount
+	
+	# Heal if this drop includes bonus HP (skeleton coin)
+	if heal_bonus > 0:
+		heal(heal_bonus)
+	
+	# Show "+15 XP" in bright cyan
+	_spawn_floating_text("+" + str(amount) + " XP", Color(0.2, 1.0, 1.0), 18, Vector2(-24, -55))
+	
+	# Show "+30 HP" in bright green below if skeleton drop
+	if heal_bonus > 0:
+		_spawn_floating_text("+" + str(heal_bonus) + " HP", Color(0.1, 1.0, 0.3), 18, Vector2(-24, -38))
+	
+	# Check for level up
+	if current_xp >= xp_to_next_level:
+		current_xp -= xp_to_next_level
+		xp_to_next_level = int(xp_to_next_level * 1.4)
+		open_chest()
+
+# Called directly by Ranged Enemy death (gives upgrade without needing XP)
+# Also called internally by add_xp() when XP bar fills
+func open_chest(picks: int = 1) -> void:
 	if current_hp <= 0: return
 	
 	current_level += 1
+	
+	# No floating text here — ranged enemy uses the level_up_title.png image
+	# shown in _on_upgrade_chosen instead
 	if _level_up_ui == null:
 		_level_up_ui = level_up_ui_script.new()
 		get_tree().root.add_child(_level_up_ui)
 		_level_up_ui.upgrade_chosen.connect(_on_upgrade_chosen)
 		
-	_level_up_ui.show_level_up(current_level)
+	_level_up_ui.show_level_up(current_level, picks)
+
+# Spawns a floating text label that rises and fades
+# offset = starting position relative to player, duration = how long it stays
+func _spawn_floating_text(text: String, color: Color, font_size: int = 14,
+		offset: Vector2 = Vector2(-24, -60), duration: float = 1.2) -> void:
+	var lbl := Label.new()
+	lbl.text = text
+	lbl.add_theme_font_size_override("font_size", font_size)
+	lbl.add_theme_color_override("font_color", color)
+	# Dark outline so text is readable over any background
+	lbl.add_theme_constant_override("outline_size", 4)
+	lbl.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.9))
+	lbl.position = offset
+	add_child(lbl)
+	var t = create_tween().set_parallel(true)
+	t.tween_property(lbl, "position:y", offset.y - 55, duration).set_ease(Tween.EASE_OUT)
+	t.tween_property(lbl, "modulate:a", 0.0, duration).set_ease(Tween.EASE_IN).set_delay(duration * 0.4)
+	t.chain().tween_callback(lbl.queue_free)
 
 func _on_upgrade_chosen(key: String) -> void:
 	# Visual confirmation flash
@@ -269,6 +317,10 @@ func _on_upgrade_chosen(key: String) -> void:
 			health_bar.max_value = max_hp
 			health_bar.value = current_hp
 		_update_hp_label()
+	elif key == "hp_xp":
+		# Heal 30 HP (capped at max) + grant 15 XP toward next level
+		heal(30)
+		add_xp(15)
 	elif key == "speed":
 		speed += 20
 	elif key == "damage":
@@ -283,6 +335,20 @@ func _on_upgrade_chosen(key: String) -> void:
 		xp_attract_bonus += 40.0
 
 # --- HEALTH & DAMAGE SYSTEM ---
+func heal(amount: int) -> void:
+	if current_hp <= 0:
+		return
+	current_hp = min(current_hp + amount, max_hp)
+	hp_changed.emit(current_hp, max_hp)
+	if health_bar:
+		health_bar.value = current_hp
+	_update_hp_label()
+	
+	# Green healing flash on the sprite
+	sprite.modulate = Color(0.3, 1.0, 0.3, 1.0)
+	var t = create_tween()
+	t.tween_property(sprite, "modulate", Color.WHITE, 0.4)
+
 func take_damage(amount: int) -> void:
 	if current_hp <= 0 or is_invincible:
 		return

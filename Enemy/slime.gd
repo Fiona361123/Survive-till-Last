@@ -6,14 +6,14 @@ extends CharacterBody2D
 @export var wander_radius: float = 200.0
 @export var attack_range: float = 55.0
 @export var attack_cooldown: float = 0.8
-@export var damage: int = 1
+@export var damage: int = 8
 
 # HEALTH
 @export var max_health: int = 100
 var current_health: int
 
 # XP drop on death
-@export var xp_drop: int = 15
+@export var xp_drop: int = 10
 const XP_ORB_SCENE = preload("res://enemyXP.tscn")
 
 # SMOOTH MOVEMENT
@@ -27,6 +27,10 @@ const XP_ORB_SCENE = preload("res://enemyXP.tscn")
 # ANIMATION
 @export var walk_speed_scale: float = 1.0
 @export var attack_speed_scale: float = 2.5
+
+# SEPARATION - Prevents overlapping
+@export var separation_radius: float = 60.0
+@export var separation_force: float = 200.0
 
 @onready var animated_sprite = $AnimatedSprite2D
 @onready var vision_area = $VisionArea
@@ -56,6 +60,13 @@ var is_attacking: bool = false
 var attack_duration: float = 0.0
 var damage_frame: int = 2
 var attack_started: bool = false
+
+# RANDOM VARIATION
+var random_offset: Vector2 = Vector2.ZERO
+var zigzag_timer: float = 0.0
+var zigzag_direction: float = 1.0
+var time_alive: float = 0.0
+var speed_variation: float = 0.0
 
 
 func _ready():
@@ -87,12 +98,26 @@ func _ready():
 		vision_area.body_entered.connect(_on_vision_area_body_entered)
 		vision_area.body_exited.connect(_on_vision_area_body_exited)
 
+	# Randomize movement slightly so slimes don't all move identically
+	random_offset = Vector2(randf_range(-30, 30), randf_range(-30, 30))
+	zigzag_timer = randf_range(0, 3.0)
+	zigzag_direction = 1.0 if randf() > 0.5 else -1.0
+	speed_variation = randf_range(1.0 - 0.15, 1.0 + 0.15)  # ±15% speed variation
+
 	pick_new_wander_target()
 	animated_sprite.play("walk")
 	animated_sprite.speed_scale = walk_speed_scale
 
 
 func _physics_process(delta):
+	time_alive += delta
+	
+	# Update zigzag
+	zigzag_timer += delta
+	if zigzag_timer > 3.0:
+		zigzag_timer = 0
+		zigzag_direction = -zigzag_direction
+
 	# Detect player
 	if player != null:
 		var distance_to_player = global_position.distance_to(player.global_position)
@@ -117,6 +142,24 @@ func _physics_process(delta):
 			_death_state(delta)
 
 	move_and_slide()
+
+
+# SEPARATION - Prevents slimes from overlapping
+func _apply_separation(delta: float) -> Vector2:
+	var separation = Vector2.ZERO
+	var enemies = get_tree().get_nodes_in_group("enemy")
+	
+	for other in enemies:
+		if other == self:
+			continue
+		
+		var distance = global_position.distance_to(other.global_position)
+		if distance < separation_radius and distance > 0:
+			var away = (global_position - other.global_position).normalized()
+			var strength = 1.0 - (distance / separation_radius)
+			separation += away * strength * separation_force * delta
+	
+	return separation
 
 
 # WANDER
@@ -152,7 +195,7 @@ func _wander_state(delta):
 		health_bar.visible = false
 
 
-# CHASE : Immediately attacks when touching!
+# CHASE - Now with separation and zigzag
 func _chase_state(delta):
 	if player == null:
 		current_state = State.WANDER
@@ -161,7 +204,6 @@ func _chase_state(delta):
 	var distance_to_player = global_position.distance_to(player.global_position)
 
 	if distance_to_player <= attack_range and can_attack:
-		print("⚔️ ATTACKING!")
 		velocity = Vector2.ZERO  
 		is_attacking = false
 		has_dealt_damage = false
@@ -169,9 +211,26 @@ func _chase_state(delta):
 		current_state = State.ATTACK
 		return
 
-	# Chase player
+	# Direction to player
 	var direction_to_player = (player.global_position - global_position).normalized()
-	var target_velocity = direction_to_player * chase_speed
+	
+	# Zigzag variation - makes slimes take different paths
+	var perpendicular = Vector2(-direction_to_player.y, direction_to_player.x)
+	var zigzag_strength = 0.3  # Adjust this for more/less zigzag
+	var zigzag_offset = perpendicular * sin(zigzag_timer * 2.0) * zigzag_direction * zigzag_strength
+	
+	# Base target velocity with speed variation
+	var base_speed = chase_speed * speed_variation
+	var target_velocity = (direction_to_player + zigzag_offset).normalized() * base_speed
+	
+	# Add random offset (small)
+	target_velocity += random_offset * 0.05
+	
+	# Add separation from other slimes
+	var separation = _apply_separation(delta)
+	target_velocity += separation
+	
+	# Apply velocity with smoothing
 	velocity = velocity.move_toward(target_velocity, acceleration * delta)
 
 	if velocity.length() > 5.0:
@@ -187,7 +246,7 @@ func _chase_state(delta):
 		health_bar.value = current_health
 
 
-# ATTACK - FIXED: Deals damage immediately!
+# ATTACK
 func _attack_state(delta):
 	if player == null:
 		current_state = State.WANDER
@@ -197,10 +256,8 @@ func _attack_state(delta):
 
 	# If player ran away, go back to chase
 	if distance_to_player > attack_range * 1.5:
-		print("🏃 Player escaped!")
 		current_state = State.CHASE
 		return
-
 
 	velocity = Vector2.ZERO  
 	
@@ -215,7 +272,6 @@ func _attack_state(delta):
 
 	# Start attack if not already attacking
 	if not is_attacking:
-		print("🎬 Starting attack animation!")
 		is_attacking = true
 		attack_duration = 0.0
 		has_dealt_damage = false
@@ -260,7 +316,7 @@ func _attack_state(delta):
 
 
 # DEATH STATE
-func _death_state(delta):
+func _death_state(_delta: float) -> void:
 	velocity = Vector2.ZERO
 	
 	if animated_sprite.sprite_frames.has_animation("death"):
@@ -319,7 +375,7 @@ func die() -> void:
 		spawn_pos.y = clamp(spawn_pos.y, -1000, 1000)
 	
 	var orb = XP_ORB_SCENE.instantiate()
-	orb.xp_value = xp_drop
+	orb.is_level_up_coin = true
 	orb.global_position = spawn_pos
 	get_tree().current_scene.call_deferred("add_child", orb)
 
@@ -327,8 +383,8 @@ func die() -> void:
 func pick_new_wander_target():
 	var random_angle = randf_range(0, PI * 2)
 	var random_distance = randf_range(0, wander_radius)
-	var random_offset = Vector2(cos(random_angle), sin(random_angle)) * random_distance
-	wander_target = home_position + random_offset
+	var random_offset_pos = Vector2(cos(random_angle), sin(random_angle)) * random_distance
+	wander_target = home_position + random_offset_pos
 
 	if randf() < 0.2:
 		wander_timer = randf_range(0.3, 0.8)

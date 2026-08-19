@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #enemy.gd
 extends CharacterBody2D
 
@@ -330,3 +331,5 @@ func _on_vision_area_body_exited(body):
 	if body == player:
 		current_state = State.WANDER
 		pick_new_wander_target()
+=======
+>>>>>>> 30a289c652985c845f2980fd4d0dbf9690d2efa1

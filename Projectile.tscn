@@ -71,7 +71,7 @@ animations = [{
 }]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_e7peq"]
-radius = 8.5440035
+radius = 10.440307
 
 [node name="Projectile" type="Area2D" unique_id=286616105]
 collision_layer = 8
@@ -79,13 +79,10 @@ collision_mask = 3
 script = ExtResource("1_e7peq")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1263816423]
-position = Vector2(-8.669004, -5.66899)
-rotation = 0.001213789
 scale = Vector2(5.360828, 5.81958)
 sprite_frames = SubResource("SpriteFrames_sxi1j")
 animation = &"fly"
-frame_progress = 0.9938039
+frame_progress = 0.84439313
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1888050762]
-position = Vector2(14, -6)
 shape = SubResource("CircleShape2D_e7peq")
