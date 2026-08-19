@@ -1,36 +1,36 @@
 [gd_scene format=3 uid="uid://ln4sqbmynwsn"]
 
-[ext_resource type="Script" uid="uid://cg35twdo1smyo" path="res://Enemy/enemy.gd" id="1_ij6vw"]
-[ext_resource type="Texture2D" uid="uid://b4qrpn5rwmeet" path="res://Enemy/icon/Attack/attack1.png" id="2_4jbh6"]
-[ext_resource type="Texture2D" uid="uid://bh3t733e0pnoi" path="res://Enemy/icon/Attack/attack2.png" id="3_t8c1x"]
-[ext_resource type="Texture2D" uid="uid://bhcii64a24vqc" path="res://Enemy/icon/Attack/attack3.png" id="4_b5v45"]
-[ext_resource type="Texture2D" uid="uid://clv4esdaf8bnj" path="res://Enemy/icon/Attack/attack4.png" id="5_aqrmm"]
-[ext_resource type="Texture2D" uid="uid://c83ck81rh4gjp" path="res://Enemy/icon/Attack/attack5.png" id="6_vxjx5"]
-[ext_resource type="Texture2D" uid="uid://cp3xs704xgrkv" path="res://Enemy/icon/Attack/attack6.png" id="7_nd800"]
-[ext_resource type="Texture2D" uid="uid://b36sktwd53j6s" path="res://Enemy/icon/Attack/attack7.png" id="8_3t781"]
-[ext_resource type="Texture2D" uid="uid://kos7nr6jbt32" path="res://Enemy/icon/Attack/attack8.png" id="9_j228l"]
-[ext_resource type="Texture2D" uid="uid://dx0mw3fthvi32" path="res://Enemy/icon/Attack/attack9.png" id="10_d5ej8"]
-[ext_resource type="Texture2D" uid="uid://dw307o0fpwnn4" path="res://Enemy/icon/Attack/attack10.png" id="11_w2o8p"]
-[ext_resource type="Texture2D" uid="uid://chb6mp3pgbyeb" path="res://Enemy/icon/Attack/attack11.png" id="12_71hir"]
-[ext_resource type="Texture2D" uid="uid://71eph28wjyrb" path="res://Enemy/icon/Attack/attack12.png" id="13_k1k5k"]
-[ext_resource type="Texture2D" uid="uid://bphs7h4ee7vhj" path="res://Enemy/icon/Attack/attack14.png" id="14_vere5"]
-[ext_resource type="Texture2D" uid="uid://dicqu7565f7qp" path="res://Enemy/icon/Attack/attack15.png" id="15_ae0k0"]
-[ext_resource type="Texture2D" uid="uid://byhddjmcvidue" path="res://Enemy/icon/Die/die1.png" id="16_agwpm"]
-[ext_resource type="Texture2D" uid="uid://drygo5iqd3o3j" path="res://Enemy/icon/Die/die2.png" id="17_hwa2w"]
-[ext_resource type="Texture2D" uid="uid://btq8ti51sug6a" path="res://Enemy/icon/Die/die3.png" id="18_r2ets"]
-[ext_resource type="Texture2D" uid="uid://dkdmagt7ggrxp" path="res://Enemy/icon/Die/die4.png" id="19_mq0ac"]
-[ext_resource type="Texture2D" uid="uid://qmvm043ow214" path="res://Enemy/icon/Walk/walk1_273x233.png" id="20_4jbh6"]
-[ext_resource type="Texture2D" uid="uid://csh7sx1gugsr8" path="res://Enemy/icon/Die/die5.png" id="20_merw2"]
-[ext_resource type="Texture2D" uid="uid://br05tk2gb7sq" path="res://Enemy/icon/Walk/walk2_273x233.png" id="21_t8c1x"]
-[ext_resource type="Texture2D" uid="uid://jf47rfl3jb48" path="res://Enemy/icon/Spawn/spawn5.png" id="22_2j8qn"]
-[ext_resource type="Texture2D" uid="uid://lk4rfe5cp623" path="res://Enemy/icon/Walk/walk3_273x233.png" id="22_b5v45"]
-[ext_resource type="Texture2D" uid="uid://g8w45hydjfrj" path="res://Enemy/icon/Walk/walk4_273x233.png" id="23_aqrmm"]
-[ext_resource type="Texture2D" uid="uid://b6uiume8eh65a" path="res://Enemy/icon/Walk/walk5_273x233.png" id="24_vxjx5"]
-[ext_resource type="Texture2D" uid="uid://61iadhwnaev8" path="res://Enemy/icon/Walk/walk6_273x233.png" id="25_nd800"]
-[ext_resource type="Texture2D" uid="uid://bitn5v7kp5yvh" path="res://Enemy/icon/Walk/walk7_273x233.png" id="26_3t781"]
-[ext_resource type="Texture2D" uid="uid://b40kcaldm2qug" path="res://Enemy/icon/Walk/walk8_273x233.png" id="27_j228l"]
-[ext_resource type="Texture2D" uid="uid://bnm3x8lwr3j08" path="res://Enemy/icon/Walk/walk9_273x233.png" id="28_d5ej8"]
-[ext_resource type="Texture2D" uid="uid://drxygxu1ojmy3" path="res://Enemy/icon/Walk/walk10_273x233.png" id="29_w2o8p"]
+[ext_resource type="Script" uid="uid://bpmiwnmx86x77" path="res://Enemy/slime.gd" id="1_ij6vw"]
+[ext_resource type="Texture2D" uid="uid://b4qrpn5rwmeet" path="res://Enemy/slime/Attack/attack1.png" id="2_4jbh6"]
+[ext_resource type="Texture2D" uid="uid://bh3t733e0pnoi" path="res://Enemy/slime/Attack/attack2.png" id="3_t8c1x"]
+[ext_resource type="Texture2D" uid="uid://bhcii64a24vqc" path="res://Enemy/slime/Attack/attack3.png" id="4_b5v45"]
+[ext_resource type="Texture2D" uid="uid://clv4esdaf8bnj" path="res://Enemy/slime/Attack/attack4.png" id="5_aqrmm"]
+[ext_resource type="Texture2D" uid="uid://c83ck81rh4gjp" path="res://Enemy/slime/Attack/attack5.png" id="6_vxjx5"]
+[ext_resource type="Texture2D" uid="uid://cp3xs704xgrkv" path="res://Enemy/slime/Attack/attack6.png" id="7_nd800"]
+[ext_resource type="Texture2D" uid="uid://b36sktwd53j6s" path="res://Enemy/slime/Attack/attack7.png" id="8_3t781"]
+[ext_resource type="Texture2D" uid="uid://kos7nr6jbt32" path="res://Enemy/slime/Attack/attack8.png" id="9_j228l"]
+[ext_resource type="Texture2D" uid="uid://dx0mw3fthvi32" path="res://Enemy/slime/Attack/attack9.png" id="10_d5ej8"]
+[ext_resource type="Texture2D" uid="uid://dw307o0fpwnn4" path="res://Enemy/slime/Attack/attack10.png" id="11_w2o8p"]
+[ext_resource type="Texture2D" uid="uid://chb6mp3pgbyeb" path="res://Enemy/slime/Attack/attack11.png" id="12_71hir"]
+[ext_resource type="Texture2D" uid="uid://71eph28wjyrb" path="res://Enemy/slime/Attack/attack12.png" id="13_k1k5k"]
+[ext_resource type="Texture2D" uid="uid://bphs7h4ee7vhj" path="res://Enemy/slime/Attack/attack14.png" id="14_vere5"]
+[ext_resource type="Texture2D" uid="uid://dicqu7565f7qp" path="res://Enemy/slime/Attack/attack15.png" id="15_ae0k0"]
+[ext_resource type="Texture2D" uid="uid://byhddjmcvidue" path="res://Enemy/slime/Die/die1.png" id="16_agwpm"]
+[ext_resource type="Texture2D" uid="uid://drygo5iqd3o3j" path="res://Enemy/slime/Die/die2.png" id="17_hwa2w"]
+[ext_resource type="Texture2D" uid="uid://btq8ti51sug6a" path="res://Enemy/slime/Die/die3.png" id="18_r2ets"]
+[ext_resource type="Texture2D" uid="uid://dkdmagt7ggrxp" path="res://Enemy/slime/Die/die4.png" id="19_mq0ac"]
+[ext_resource type="Texture2D" uid="uid://qmvm043ow214" path="res://Enemy/slime/Walk/walk1_273x233.png" id="20_4jbh6"]
+[ext_resource type="Texture2D" uid="uid://csh7sx1gugsr8" path="res://Enemy/slime/Die/die5.png" id="20_merw2"]
+[ext_resource type="Texture2D" uid="uid://br05tk2gb7sq" path="res://Enemy/slime/Walk/walk2_273x233.png" id="21_t8c1x"]
+[ext_resource type="Texture2D" uid="uid://jf47rfl3jb48" path="res://Enemy/slime/Spawn/spawn5.png" id="22_2j8qn"]
+[ext_resource type="Texture2D" uid="uid://lk4rfe5cp623" path="res://Enemy/slime/Walk/walk3_273x233.png" id="22_b5v45"]
+[ext_resource type="Texture2D" uid="uid://g8w45hydjfrj" path="res://Enemy/slime/Walk/walk4_273x233.png" id="23_aqrmm"]
+[ext_resource type="Texture2D" uid="uid://b6uiume8eh65a" path="res://Enemy/slime/Walk/walk5_273x233.png" id="24_vxjx5"]
+[ext_resource type="Texture2D" uid="uid://61iadhwnaev8" path="res://Enemy/slime/Walk/walk6_273x233.png" id="25_nd800"]
+[ext_resource type="Texture2D" uid="uid://bitn5v7kp5yvh" path="res://Enemy/slime/Walk/walk7_273x233.png" id="26_3t781"]
+[ext_resource type="Texture2D" uid="uid://b40kcaldm2qug" path="res://Enemy/slime/Walk/walk8_273x233.png" id="27_j228l"]
+[ext_resource type="Texture2D" uid="uid://bnm3x8lwr3j08" path="res://Enemy/slime/Walk/walk9_273x233.png" id="28_d5ej8"]
+[ext_resource type="Texture2D" uid="uid://drxygxu1ojmy3" path="res://Enemy/slime/Walk/walk10_273x233.png" id="29_w2o8p"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_45ann"]
 atlas = ExtResource("2_4jbh6")
@@ -116,7 +116,7 @@ animations = [{
 "texture": ExtResource("20_merw2")
 }],
 "loop": false,
-"name": &"die",
+"name": &"death",
 "speed": 5.0
 }, {
 "frames": [{
@@ -183,28 +183,38 @@ animations = [{
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ij6vw"]
 size = Vector2(2035.75, 955.75)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_psesu"]
-bg_color = Color(0.6472021, 0.038925625, 0, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-corner_detail = 15
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wgogq"]
-bg_color = Color(1, 0.31492504, 0.39168474, 0.7764706)
+[sub_resource type="CircleShape2D" id="CircleShape2D_2j8qn"]
+radius = 19.646883
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_psesu"]
-radius = 30.0
+radius = 38.013157
 
-[node name="Enemy" type="CharacterBody2D" unique_id=1008134667]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2j8qn"]
+bg_color = Color(1, 0.7647059, 0.73333335, 0.972549)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_detail = 15
+expand_margin_left = 2.0
+expand_margin_top = 2.0
+expand_margin_right = 2.0
+expand_margin_bottom = 2.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_agwpm"]
+bg_color = Color(0.64705884, 0.039215688, 0, 1)
+
+[node name="Slime" type="CharacterBody2D" unique_id=1008134667]
+collision_layer = 4
 script = ExtResource("1_ij6vw")
+chase_speed = 180.09
+damage = 10
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=237485646]
 position = Vector2(69.81794, 76.5)
 scale = Vector2(0.41159022, 0.36480692)
 sprite_frames = SubResource("SpriteFrames_ghijl")
-animation = &"walk"
+animation = &"attack"
 
 [node name="VisionArea" type="Area2D" parent="." unique_id=1542410331]
 
@@ -213,21 +223,23 @@ position = Vector2(81, 69)
 shape = SubResource("RectangleShape2D_ij6vw")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1471031320]
-
-[node name="HealthBar" type="ProgressBar" parent="." unique_id=622095322]
-offset_left = 44.0
-offset_top = 12.0
-offset_right = 108.0
-offset_bottom = 19.0
-theme_override_colors/font_color = Color(0.95, 0.95, 0.95, 1)
-theme_override_styles/background = SubResource("StyleBoxFlat_psesu")
-theme_override_styles/fill = SubResource("StyleBoxFlat_wgogq")
-step = 1.0
-show_percentage = false
+position = Vector2(70, 76)
+shape = SubResource("CircleShape2D_2j8qn")
 
 [node name="AttackArea" type="Area2D" parent="." unique_id=896600749]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea" unique_id=190975729]
-position = Vector2(73, 80)
+position = Vector2(69, 82)
 shape = SubResource("CircleShape2D_psesu")
 debug_color = Color(0.9981497, 0, 0.16027066, 0.41960785)
+
+[node name="HealthBar" type="ProgressBar" parent="." unique_id=881835609]
+offset_left = 40.0
+offset_top = 24.0
+offset_right = 111.0
+offset_bottom = 31.0
+theme_override_colors/font_color = Color(0.95, 0.95, 0.95, 1)
+theme_override_styles/background = SubResource("StyleBoxFlat_2j8qn")
+theme_override_styles/fill = SubResource("StyleBoxFlat_agwpm")
+step = 1.0
+show_percentage = false

@@ -32,6 +32,8 @@ animations = [{
 script = ExtResource("1_60y3j")
 
 [node name="HitArea" type="Area2D" parent="." unique_id=1561061210]
+collision_layer = 4
+collision_mask = 4
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HitArea" unique_id=604330779]
 shape = SubResource("CircleShape2D_60y3j")

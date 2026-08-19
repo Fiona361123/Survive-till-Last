@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://bigieg4lggwej"]
+
+[ext_resource type="Script" uid="uid://igfqub6fohb7" path="res://weapons/halo/halo_orb.gd" id="1_3twgt"]
+[ext_resource type="Texture2D" uid="uid://cq15soccgc5fn" path="res://weapons/gun/blaze_rod.png" id="1_f6038"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_3twgt"]
+radius = 12.0
+
+[node name="HaloOrb" type="Area2D" unique_id=31528865]
+collision_layer = 5
+collision_mask = 5
+script = ExtResource("1_3twgt")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1269056313]
+shape = SubResource("CircleShape2D_3twgt")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1439509726]
+texture_filter = 1
+texture = ExtResource("1_f6038")

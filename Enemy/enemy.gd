@@ -1,16 +1,21 @@
+#enemy.gd
 extends CharacterBody2D
 
 # movement
 @export var speed: float = 60.0
 @export var chase_speed: float = 180.0
 @export var wander_radius: float = 200.0
-@export var attack_range: float = 30.0
+@export var attack_range: float = 150.0
 @export var attack_cooldown: float = 0.8
-@export var damage: int = 1
+@export var damage: int = 2
 
 # health
 @export var max_health: int = 100
 var current_health: int
+
+# XP drop on death
+@export var xp_drop: int = 15
+const XP_ORB_SCENE = preload("res://XPOrb/XPOrb.tscn")
 
 #smooth movement
 @export var acceleration: float = 600.0
@@ -56,12 +61,35 @@ var attack_started: bool = false
 func _ready():
 	add_to_group("enemy")
 	home_position = global_position
+	
+	# FORCE CENTER THE ENEMY (Godot Editor was wiping out my scene file changes!)
+	if has_node("AnimatedSprite2D"): $AnimatedSprite2D.position = Vector2.ZERO
+	if has_node("CollisionShape2D"): $CollisionShape2D.position = Vector2.ZERO
+	if has_node("VisionArea/CollisionShape2D"): $"VisionArea/CollisionShape2D".position = Vector2.ZERO
+	if has_node("AttackArea/CollisionShape2D"): $"AttackArea/CollisionShape2D".position = Vector2.ZERO
 
 	current_health = max_health
 	if health_bar:
 		health_bar.max_value = max_health
 		health_bar.value = current_health
 		health_bar.visible = false
+		health_bar.position = Vector2(-32, -68) # Center health bar above head
+		
+	# Force set the attack area radius so it matches
+	var attack_area = get_node_or_null("AttackArea")
+	if attack_area != null:
+		var shape_node = attack_area.get_node_or_null("CollisionShape2D")
+		if shape_node and shape_node.shape is CircleShape2D:
+			shape_node.shape = shape_node.shape.duplicate()
+			shape_node.shape.radius = attack_range
+			
+	# Give the physical body a shape if it's missing
+	if has_node("CollisionShape2D"):
+		var shape_node = $CollisionShape2D
+		if shape_node.shape == null:
+			var c = CircleShape2D.new()
+			c.radius = 30.0
+			shape_node.shape = c
 
 	# Find player
 	player = get_tree().get_first_node_in_group("player")
@@ -255,6 +283,14 @@ func take_damage(amount: int) -> void:
 func die() -> void:
 	if health_bar:
 		health_bar.visible = false
+		
+	# Only drop the XP orb if this is the last enemy alive
+	if get_tree().get_nodes_in_group("enemy").size() <= 1:
+		var orb = XP_ORB_SCENE.instantiate()
+		orb.xp_value = xp_drop
+		orb.global_position = global_position
+		get_tree().current_scene.call_deferred("add_child", orb)
+		
 	queue_free()
 
 func pick_new_wander_target():

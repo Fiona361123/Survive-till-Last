@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" uid="uid://6ekiel038nn0" path="res://weapons/gun/gun.gd" id="1_2hm6b"]
 [ext_resource type="PackedScene" uid="uid://b7qvg8reecsi" path="res://weapons/gun/Bullet.tscn" id="2_rb71s"]
-[ext_resource type="Texture2D" uid="uid://de4he0wdq8nnx" path="res://icon.svg" id="3_axhu5"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_rb71s"]
 radius = 4.0
@@ -13,6 +12,3 @@ bullet_scene = ExtResource("2_rb71s")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1703431313]
 shape = SubResource("CircleShape2D_rb71s")
-
-[node name="Sprite2D" type="Sprite2D" parent="." unique_id=634110575]
-texture = ExtResource("3_axhu5")

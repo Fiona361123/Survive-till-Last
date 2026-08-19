@@ -7,6 +7,7 @@ extends Node2D
 @export var bullet_scene: PackedScene
 
 var cooldown_left: float = 0.0
+@onready var player = get_tree().get_first_node_in_group("player")
 
 func _ready() -> void:
 	add_to_group("weapon")
@@ -38,14 +39,22 @@ func do_attack(target: Node2D = null) -> void:
 	if target != null:
 		dir = (target.global_position - global_position).normalized()
 	else:
-		dir = get_parent().last_direction.normalized()
+		dir = player.last_direction.normalized()
 
 	_spawn_bullet(dir)
-	get_parent().play_shoot_animation()
+	player.play_shoot_animation()
 
 func _spawn_bullet(dir: Vector2) -> void:
 	var bullet = bullet_scene.instantiate()
-	get_tree().current_scene.add_child(bullet)
-	bullet.global_position = global_position
 	bullet.damage = damage
 	bullet.direction = dir
+	get_tree().current_scene.add_child(bullet)
+	bullet.global_position = global_position
+
+
+var active: bool = true
+
+func set_active(value: bool) -> void:
+	active = value
+	visible = value            # hide the weapon visual if it has one
+	set_physics_process(value) # stop auto-attacking when inactive

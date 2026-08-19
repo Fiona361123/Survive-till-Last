@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://cxppvvxs267pq"]
+
+[ext_resource type="Script" uid="uid://cmwn0ky1beexw" path="res://weapons/lightning/chain_lightning.gd" id="1_lbdtf"]
+
+[node name="ChainLightning" type="Node2D" unique_id=2074091414]
+script = ExtResource("1_lbdtf")
+
+[node name="GlowLine" type="Line2D" parent="." unique_id=1686439526]
+width = 7.0
+default_color = Color(0.11764706, 0.3137255, 1, 1)
+
+[node name="Line2D" type="Line2D" parent="." unique_id=2014750286]
+width = 4.0
+default_color = Color(0.5882353, 0.78431374, 1, 1)
+
+[node name="Branches" type="Node2D" parent="." unique_id=773914968]

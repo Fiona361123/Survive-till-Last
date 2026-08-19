@@ -1,6 +1,0 @@
-[gd_scene format=3 uid="uid://3qf7ulm17uvx"]
-
-[ext_resource type="Script" uid="uid://b638vaoxuarxl" path="res://weapons/pickups/gunPickup.gd" id="1_kp4bd"]
-
-[node name="GunPickUp" type="Area2D" unique_id=661040393]
-script = ExtResource("1_kp4bd")

@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://cpbrapkv7pyhh"]
+
+[ext_resource type="Script" uid="uid://djuavqojnohlr" path="res://weapons/halo/guard_halo.gd" id="1_rn6e0"]
+[ext_resource type="PackedScene" uid="uid://bigieg4lggwej" path="res://weapons/halo/HaloOrb.tscn" id="2_3301q"]
+
+[node name="GuardHalo" type="Node2D" unique_id=441556151]
+script = ExtResource("1_rn6e0")
+orb_scene = ExtResource("2_3301q")
+orb_count = 6
+radius = 40.0
