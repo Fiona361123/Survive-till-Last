@@ -12,7 +12,6 @@ var angle: float = 0.0
 @onready var player = get_tree().get_first_node_in_group("player")
 
 func _ready() -> void:
-	add_to_group("weapon")
 	_spawn_orbs()
 
 func _spawn_orbs() -> void:

@@ -31,6 +31,12 @@ var current_hp: int
 var _game_over_ui_script = load("res://UI/game_over_ui.gd")
 var _game_over_ui: Node = null
 
+# --- HALO EQUIPMENT ---
+var has_halo: bool = false
+var damage_reduction: float = 0.0   # 0.3 = 30% less damage taken
+var halo_speed_penalty: float = 0.0 # how much speed is lost while wearing it
+@export var halo_scene: PackedScene # drag GuardHalo.tscn here in Inspector
+
 var hp_label: Label
 
 func _ready() -> void:
@@ -263,6 +269,9 @@ func open_chest(picks: int = 1) -> void:
 	
 	current_level += 1
 	
+	# Unlock the Guard Halo at level 3
+	if current_level == 3:
+		equip_halo()
 	# No floating text here — ranged enemy uses the level_up_title.png image
 	# shown in _on_upgrade_chosen instead
 	if _level_up_ui == null:
@@ -352,7 +361,11 @@ func heal(amount: int) -> void:
 func take_damage(amount: int) -> void:
 	if current_hp <= 0 or is_invincible:
 		return
-		
+
+	# Halo reduces incoming damage
+	if has_halo:
+		amount = int(amount * (1.0 - damage_reduction))
+
 	current_hp -= amount
 	current_hp = max(0, current_hp)
 	hp_changed.emit(current_hp, max_hp)
@@ -431,3 +444,17 @@ func play_shoot_animation() -> void:
 		await get_tree().create_timer(frames / fps).timeout
 		is_attacking = false
 		update_animation(Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down"))
+
+
+func equip_halo() -> void:
+	if has_halo:
+		return   # already have it, don't stack
+	has_halo = true
+	damage_reduction = 0.3        # take 30% less damage
+	halo_speed_penalty = 60.0     # lose 60 movement speed
+	speed -= halo_speed_penalty
+
+	# spawn the always-on halo as a child of the player
+	if halo_scene:
+		var halo = halo_scene.instantiate()
+		add_child(halo)
