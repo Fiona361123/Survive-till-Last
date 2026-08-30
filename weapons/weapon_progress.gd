@@ -13,6 +13,7 @@ const WEAPON_ORDER: Array[StringName] = [
 	&"guard_halo",
 	&"chain_lightning",
 	&"gravity_bomb",
+	&"temporal_echo",
 ]
 
 # One data table drives unlock checks, number-key hints, and Store cards.
@@ -74,14 +75,28 @@ const WEAPON_DATA := {
 		"passive": false,
 		"accent": "a14dff",
 	},
+	&"temporal_echo": {
+		"name": "TEMPORAL ECHO",
+		"short_name": "ECHO",
+		"description": "Creates a player-shaped ghost that replays movement, attracts enemies, and damages nearby targets.",
+		"icon_path": "",
+		"slot": 6,
+		"required_level": 99,
+		"required_xp": 0,
+		"xp_price": 750,
+		"purchase_only": true,
+		"passive": false,
+		"accent": "59e7ff",
+	},
 }
 
 var unlocked_weapon_ids: Array[StringName] = [&"knife"]
 var unseen_weapon_ids: Array[StringName] = []
 var highest_dungeon_level: int = 1
 var total_xp_earned: int = 0
-# Temporary test balance: lets the player buy Gravity Bomb immediately.
-var weapon_xp_balance: int = 1000
+# Temporary test balance: enough to buy Gravity Bomb (500) and Temporal Echo
+# (750) during the same gameplay test.
+var weapon_xp_balance: int = 1250
 
 
 func get_weapon_data(weapon_id: StringName) -> Dictionary:

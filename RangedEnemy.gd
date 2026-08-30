@@ -1,6 +1,8 @@
 #RangedEnemy.gd
 extends CharacterBody2D
 
+const COMBAT_TARGET_SELECTOR = preload("res://systems/combat_target_selector.gd")
+
 # MOVEMENT VARIABLES
 @export var walk_speed: float = 80.0
 @export var chase_speed: float = 120.0
@@ -48,6 +50,9 @@ var current_health: int
 @onready var projectile_spawn = $ProjectileSpawn
 # PLAYER REFERENCE
 var player: Node2D = null
+var real_player: Node2D = null
+var target_refresh_timer: float = 0.0
+const TARGET_REFRESH_INTERVAL: float = 0.1
 
 # WANDER VARIABLES
 var home_position: Vector2
@@ -102,6 +107,7 @@ func _ready():
 
 
 func _physics_process(delta):
+	_refresh_combat_target(delta)
 	time_alive += delta
 	_update_timers(delta)
 
@@ -171,6 +177,14 @@ func _find_player():
 	var players = get_tree().get_nodes_in_group("player")
 	if players.size() > 0:
 		player = players[0]
+		real_player = player
+
+func _refresh_combat_target(delta: float) -> void:
+	target_refresh_timer -= delta
+	if target_refresh_timer > 0.0 and is_instance_valid(player):
+		return
+	target_refresh_timer = TARGET_REFRESH_INTERVAL
+	player = COMBAT_TARGET_SELECTOR.choose_target(self, real_player)
 
 func _setup_vision_area():
 	if vision_area != null:

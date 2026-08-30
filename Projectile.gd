@@ -56,8 +56,11 @@ func _on_body_entered(body):
 	
 	has_hit = true
 	
-	# Hit player
-	if body.is_in_group("player") and body.has_method("take_damage"):
+	# Hit either the real player or a Temporal Echo decoy. Both expose the same
+	# take_damage interface, but the decoy absorbs the attack without forwarding
+	# it to the player's HP.
+	if (body.is_in_group("player") or body.is_in_group("temporal_decoy")) \
+			and body.has_method("take_damage"):
 		body.take_damage(damage)
 		_create_hit_effect(global_position)
 		queue_free()

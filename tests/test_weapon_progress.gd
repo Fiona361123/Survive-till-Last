@@ -36,12 +36,16 @@ func _test_starting_progression() -> void:
 		"Chain Lightning starts locked")
 	_expect(not weapon_progress.is_weapon_unlocked(&"gravity_bomb"),
 		"Gravity Bomb starts locked")
+	_expect(not weapon_progress.is_weapon_unlocked(&"temporal_echo"),
+		"Temporal Echo starts locked")
 	_expect(weapon_progress.get_requirement_text(&"gun") == "UNLOCKS IN LEVEL 2",
 		"Gun card explains its Level 2 requirement")
 	_expect(weapon_progress.get_requirement_text(&"chain_lightning") == "UNLOCKS IN LEVEL 4",
 		"Chain Lightning card explains its Level 4 requirement")
 	_expect(weapon_progress.get_requirement_text(&"gravity_bomb") == "BUY FOR 500 WEAPON XP",
 		"Gravity Bomb card explains its 500 Weapon XP price")
+	_expect(weapon_progress.get_requirement_text(&"temporal_echo") == "BUY FOR 750 WEAPON XP",
+		"Temporal Echo card explains its 750 Weapon XP price")
 
 
 func _test_player_store_and_number_keys() -> void:
@@ -62,6 +66,8 @@ func _test_player_store_and_number_keys() -> void:
 		"number key 4 maps to Chain Lightning")
 	_expect(manager.get_weapon_id_for_action(&"weapon_5") == &"gravity_bomb",
 		"number key 5 maps to Gravity Bomb")
+	_expect(manager.get_weapon_id_for_action(&"weapon_6") == &"temporal_echo",
+		"number key 6 maps to Temporal Echo")
 	_expect(manager.active_weapon_id == &"knife",
 		"Knife is active at the start")
 	_expect(not manager.switch_to_weapon_id(&"gun"),
@@ -79,6 +85,9 @@ func _test_player_store_and_number_keys() -> void:
 	var gravity_card := store.cards.get(&"gravity_bomb") as WeaponCard
 	_expect(gravity_card != null and gravity_card.buy_button.visible,
 		"locked Gravity Bomb card displays its purchase button")
+	var temporal_card := store.cards.get(&"temporal_echo") as WeaponCard
+	_expect(temporal_card != null and temporal_card.buy_button.visible,
+		"locked Temporal Echo card displays its purchase button")
 	store.close_store()
 
 	weapon_progress.register_level_clear(1)
@@ -147,6 +156,34 @@ func _test_player_store_and_number_keys() -> void:
 		"pressing number key 5 triggers one Gravity Bomb attack")
 	manual_target.queue_free()
 	await process_frame
+
+	weapon_progress.register_xp(750)
+	_expect(weapon_progress.purchase_weapon(&"temporal_echo"),
+		"750 Weapon XP purchases Temporal Echo")
+	_expect(weapon_progress.weapon_xp_balance == 0,
+		"Temporal Echo purchase deducts exactly 750 Weapon XP")
+	# The real weapon records continuously during gameplay. Give this fast
+	# integration test enough clock time to build the minimum replay history.
+	await create_timer(0.18).timeout
+	var temporal_index: int = manager.weapon_ids.find(&"temporal_echo")
+	var temporal_weapon = manager.weapons[temporal_index]
+	_expect(InputMap.has_action(&"weapon_6"),
+		"project Input Map contains the weapon_6 action")
+	_expect(weapon_progress.is_weapon_unlocked(&"temporal_echo") and temporal_index >= 0,
+		"purchased Temporal Echo exists in WeaponManager")
+	Input.action_press("weapon_6")
+	_expect(Input.is_action_pressed(&"weapon_6"),
+		"the weapon_6 input action accepts a key press")
+	# Synthetic input is injected after this test's timer callback, which can be
+	# later than the manager's normal frame callback. Process that input now.
+	manager._process(0.0)
+	await process_frame
+	await process_frame
+	Input.action_release("weapon_6")
+	_expect(manager.active_weapon_id == &"temporal_echo",
+		"number key 6 switches to purchased Temporal Echo")
+	_expect(float(temporal_weapon.cooldown_left) > 0.0,
+		"pressing number key 6 creates one Temporal Echo replay")
 	_expect(store.new_badge.visible,
 		"Store button shows NEW while unlocks are unseen")
 
@@ -156,7 +193,7 @@ func _test_player_store_and_number_keys() -> void:
 		"viewing the Store marks all new cards as seen")
 	_expect(not store.new_badge.visible,
 		"Store NEW badge disappears after new cards are viewed")
-	_expect(manager.active_weapon_id == &"gravity_bomb",
+	_expect(manager.active_weapon_id == &"temporal_echo",
 		"opening the Store does not switch weapons")
 	store.close_store()
 

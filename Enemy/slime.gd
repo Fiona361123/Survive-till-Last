@@ -1,5 +1,7 @@
 extends CharacterBody2D
 
+const COMBAT_TARGET_SELECTOR = preload("res://systems/combat_target_selector.gd")
+
 # MOVEMENT
 @export var speed: float = 60.0
 @export var chase_speed: float = 180.0
@@ -38,6 +40,9 @@ const XP_ORB_SCENE = preload("res://enemyXP.tscn")
 
 # PLAYER REFERENCE
 var player: Node2D = null
+var real_player: Node2D = null
+var target_refresh_timer: float = 0.0
+const TARGET_REFRESH_INTERVAL: float = 0.1
 
 # WANDER
 var home_position: Vector2
@@ -88,6 +93,7 @@ func _ready():
 	
 	if player == null:
 		print("ERROR: Player not found!")
+	real_player = player
 
 	if vision_area != null:
 		var shape_node = vision_area.get_node_or_null("CollisionShape2D")
@@ -110,6 +116,7 @@ func _ready():
 
 
 func _physics_process(delta):
+	_refresh_combat_target(delta)
 	time_alive += delta
 	
 	# Update zigzag
@@ -142,6 +149,14 @@ func _physics_process(delta):
 			_death_state(delta)
 
 	move_and_slide()
+
+
+func _refresh_combat_target(delta: float) -> void:
+	target_refresh_timer -= delta
+	if target_refresh_timer > 0.0 and is_instance_valid(player):
+		return
+	target_refresh_timer = TARGET_REFRESH_INTERVAL
+	player = COMBAT_TARGET_SELECTOR.choose_target(self, real_player)
 
 
 # SEPARATION - Prevents slimes from overlapping

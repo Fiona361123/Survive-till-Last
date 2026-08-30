@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://weapons/temporal/temporal_echo_weapon.gd" id="1_weapon"]
+[ext_resource type="PackedScene" path="res://weapons/temporal/TemporalEcho.tscn" id="2_echo"]
+
+[node name="TemporalEchoWeapon" type="Node2D"]
+script = ExtResource("1_weapon")
+echo_scene = ExtResource("2_echo")
+

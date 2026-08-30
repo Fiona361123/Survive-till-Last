@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://weapons/temporal/temporal_echo.gd" id="1_echo"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_echo"]
+size = Vector2(48.75, 107.25)
+
+[node name="TemporalEcho" type="CharacterBody2D"]
+collision_layer = 2
+collision_mask = 0
+script = ExtResource("1_echo")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(20.625, 34.375)
+shape = SubResource("RectangleShape2D_echo")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+z_index = 5
