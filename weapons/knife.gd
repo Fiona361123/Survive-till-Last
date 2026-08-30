@@ -1,6 +1,6 @@
 extends Node2D
 
-@export var damage: int = 10
+@export var damage: int = 20
 @export var attack_cooldown: float = 0.8
 @export var attack_range: float = 160.0
 @export var knife_slash_scene: PackedScene

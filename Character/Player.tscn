@@ -67,6 +67,9 @@
 [ext_resource type="PackedScene" uid="uid://b03bsxovcm7u6" path="res://weapons/gun/Gun.tscn" id="65_ra8ds"]
 [ext_resource type="PackedScene" uid="uid://cpbrapkv7pyhh" path="res://weapons/halo/GuardHalo.tscn" id="66_ra8ds"]
 [ext_resource type="PackedScene" uid="uid://cxppvvxs267pq" path="res://weapons/lightning/ChainLightning.tscn" id="67_8i42s"]
+[ext_resource type="PackedScene" path="res://UI/HaloEnergyUI.tscn" id="68_halo_ui"]
+[ext_resource type="PackedScene" path="res://UI/WeaponStoreUI.tscn" id="69_weapon_store"]
+[ext_resource type="PackedScene" path="res://weapons/gravity/GravityBombWeapon.tscn" id="70_gravity"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_y83ax"]
 animations = [{
@@ -437,6 +440,7 @@ size = Vector2(48.75, 107.25)
 [node name="CharacterBody2D" type="CharacterBody2D" unique_id=1596675552]
 collision_layer = 2
 script = ExtResource("1_ly6k5")
+halo_scene = ExtResource("66_ra8ds")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1211139439]
 position = Vector2(21.795774, 32.589016)
@@ -493,8 +497,9 @@ offset_top = -8.0
 grow_horizontal = 0
 grow_vertical = 0
 
-[node name="WeaponManager" parent="." unique_id=518159328 instance=ExtResource("64_ipan7")]
-weapon_scenes = Array[PackedScene]([ExtResource("29_im8re"), ExtResource("65_ra8ds"), ExtResource("67_8i42s")])
+[node name="HaloEnergyUI" parent="HUD" instance=ExtResource("68_halo_ui")]
 
-[node name="GuardHalo" parent="." unique_id=441556151 instance=ExtResource("66_ra8ds")]
-position = Vector2(418.06238, -473.04352)
+[node name="WeaponStoreUI" parent="HUD" instance=ExtResource("69_weapon_store")]
+
+[node name="WeaponManager" parent="." unique_id=518159328 instance=ExtResource("64_ipan7")]
+weapon_scenes = Array[PackedScene]([ExtResource("29_im8re"), ExtResource("65_ra8ds"), ExtResource("67_8i42s"), ExtResource("70_gravity")])

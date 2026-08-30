@@ -1,0 +1,153 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://UI/halo_energy_ui.gd" id="1_halo_ui"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_frame"]
+bg_color = Color(0.025, 0.04, 0.065, 0.96)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.15, 0.85, 1, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0, 0, 0, 0.65)
+shadow_size = 7
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_icon"]
+bg_color = Color(0.035, 0.09, 0.14, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.12, 0.36, 0.48, 1)
+corner_radius_top_left = 28
+corner_radius_top_right = 28
+corner_radius_bottom_right = 28
+corner_radius_bottom_left = 28
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bar_background"]
+bg_color = Color(0.008, 0.02, 0.035, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.16, 0.24, 0.31, 1)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bar_fill"]
+bg_color = Color(0.02, 0.65, 0.95, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.45, 0.95, 1, 1)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+
+[node name="HaloEnergyUI" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 0
+offset_left = 24.0
+offset_top = 24.0
+offset_right = 390.0
+offset_bottom = 112.0
+mouse_filter = 2
+script = ExtResource("1_halo_ui")
+
+[node name="Frame" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_frame")
+
+[node name="Margin" type="MarginContainer" parent="Frame"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="Row" type="HBoxContainer" parent="Frame/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="IconPanel" type="PanelContainer" parent="Frame/Margin/Row"]
+custom_minimum_size = Vector2(58, 58)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_icon")
+
+[node name="Icon" type="Label" parent="Frame/Margin/Row/IconPanel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.15, 0.85, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.15, 0.85, 1, 0.55)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 34
+text = "✦"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Info" type="VBoxContainer" parent="Frame/Margin/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 3
+
+[node name="Header" type="HBoxContainer" parent="Frame/Margin/Row/Info"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Frame/Margin/Row/Info/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.88, 0.94, 1)
+theme_override_font_sizes/font_size = 14
+text = "GUARD HALO"
+
+[node name="Spacer" type="Control" parent="Frame/Margin/Row/Info/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="StateLabel" type="Label" parent="Frame/Margin/Row/Info/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "ACTIVE"
+horizontal_alignment = 2
+
+[node name="EnergyBar" type="ProgressBar" parent="Frame/Margin/Row/Info"]
+custom_minimum_size = Vector2(0, 22)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_bar_background")
+theme_override_styles/fill = SubResource("StyleBoxFlat_bar_fill")
+value = 100.0
+show_percentage = false
+
+[node name="Footer" type="HBoxContainer" parent="Frame/Margin/Row/Info"]
+layout_mode = 2
+
+[node name="EnergyLabel" type="Label" parent="Frame/Margin/Row/Info/Footer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.84, 0.9, 1)
+theme_override_font_sizes/font_size = 11
+text = "100 / 100"
+
+[node name="Spacer" type="Control" parent="Frame/Margin/Row/Info/Footer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Caption" type="Label" parent="Frame/Margin/Row/Info/Footer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.5, 0.58, 1)
+theme_override_font_sizes/font_size = 10
+text = "SHIELD ENERGY"

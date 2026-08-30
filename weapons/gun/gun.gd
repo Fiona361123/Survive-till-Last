@@ -1,7 +1,7 @@
 # gun.gd
 extends Node2D
 
-@export var damage: int = 15
+@export var damage: int = 30
 @export var attack_cooldown: float = 0.6
 @export var attack_range: float = 300.0   # much longer than knife
 @export var bullet_scene: PackedScene

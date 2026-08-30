@@ -16,6 +16,7 @@ const LEVEL_2_TOTAL_ENEMIES: int = 15
 @onready var level_2_enemies: Node2D = $Level2Enemies
 @onready var level_2_second_wave: Node2D = $Level2Enemies/SecondWave
 @onready var level_2_spawn_points: Node2D = $Level2Enemies/SpawnPoints
+@onready var weapon_progress: Node = get_node("/root/WeaponProgress")
 
 var level_cleared: bool = false
 var spawning_finished: bool = false
@@ -23,6 +24,7 @@ var current_level: int = 1
 var debug_clear_requested: bool = false
 var level_2_second_wave_spawned: bool = false
 var level_2_cleared: bool = false
+var level_3_cleared: bool = false
 var level_1_total_enemies: int = 0
 
 
@@ -88,6 +90,9 @@ func debug_clear_current_level() -> int:
 			for enemy in enemies:
 				enemy.queue_free()
 			return enemies.size()
+		3:
+			_complete_level_three()
+			return 0
 		_:
 			return 0
 
@@ -101,17 +106,30 @@ func debug_clear_level_one_enemies() -> int:
 
 
 func _watch_level_one_enemies() -> void:
-	while not level_cleared:
-		if get_tree().get_nodes_in_group("level1_enemy").is_empty():
+	while is_inside_tree() and not level_cleared:
+		var scene_tree := get_tree()
+		if scene_tree == null:
+			return
+
+		if scene_tree.get_nodes_in_group("level1_enemy").is_empty():
 			_complete_level()
 			return
 
-		await get_tree().process_frame
+		await scene_tree.process_frame
 
 
 func _watch_level_two_enemies() -> void:
-	while not level_2_cleared:
-		await get_tree().process_frame
+	while is_inside_tree() and not level_2_cleared:
+		var scene_tree := get_tree()
+		if scene_tree == null:
+			return
+
+		await scene_tree.process_frame
+		# The Dungeon may have been removed while this coroutine was awaiting
+		# the next frame (for example, during a game-over scene reload).
+		if not is_inside_tree() or get_tree() == null:
+			return
+
 		if not _get_level_two_enemy_nodes().is_empty():
 			continue
 
@@ -124,7 +142,11 @@ func _watch_level_two_enemies() -> void:
 
 func _get_level_two_enemy_nodes() -> Array[Node]:
 	var level_enemies: Array[Node] = []
-	for enemy_node in get_tree().get_nodes_in_group("level2_enemy"):
+	var scene_tree := get_tree()
+	if scene_tree == null or not is_inside_tree() or not is_instance_valid(level_2_enemies):
+		return level_enemies
+
+	for enemy_node in scene_tree.get_nodes_in_group("level2_enemy"):
 		if level_2_enemies.is_ancestor_of(enemy_node):
 			level_enemies.append(enemy_node)
 	return level_enemies
@@ -150,6 +172,7 @@ func _complete_level_two() -> void:
 		return
 
 	level_2_cleared = true
+	weapon_progress.register_level_clear(2)
 	unlock_path_after_level(2)
 	await _show_level_clear_message(
 		"LEVEL 2 CLEAR!\n通关啦！Level 3 Tunnel Unlocked!"
@@ -161,9 +184,23 @@ func _complete_level() -> void:
 		return
 
 	level_cleared = true
+	weapon_progress.register_level_clear(1)
 	unlock_path_after_level(1)
 	await _show_level_clear_message(
 		"LEVEL 1 CLEAR!\n通关啦！Level 2 Tunnel Unlocked!"
+	)
+
+
+# Level 3 combat can call this public completion hook when its objective is done.
+func _complete_level_three() -> void:
+	if level_3_cleared:
+		return
+
+	level_3_cleared = true
+	weapon_progress.register_level_clear(3)
+	unlock_path_after_level(3)
+	await _show_level_clear_message(
+		"LEVEL 3 CLEAR!\nBoss Tunnel and Chain Lightning Unlocked!"
 	)
 
 

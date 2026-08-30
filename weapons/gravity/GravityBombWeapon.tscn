@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://weapons/gravity/gravity_bomb_weapon.gd" id="1_weapon"]
+[ext_resource type="PackedScene" path="res://weapons/gravity/GravityBombProjectile.tscn" id="2_bomb"]
+
+[node name="GravityBombWeapon" type="Node2D"]
+script = ExtResource("1_weapon")
+bomb_scene = ExtResource("2_bomb")

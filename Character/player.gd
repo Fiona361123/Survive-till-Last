@@ -27,21 +27,31 @@ var current_hp: int
 # --- NODE REFERENCES ---
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var health_bar: ProgressBar = get_node_or_null("AnimatedSprite2D/HealthBarAnchor/HealthBarAnchor")
+@onready var halo_energy_ui: HaloEnergyUI = get_node_or_null("HUD/HaloEnergyUI") as HaloEnergyUI
+@onready var weapon_manager: Node = get_node_or_null("WeaponManager")
+@onready var weapon_progress: Node = get_node("/root/WeaponProgress")
 
 var _game_over_ui_script = load("res://UI/game_over_ui.gd")
 var _game_over_ui: Node = null
 
 # --- HALO EQUIPMENT ---
 var has_halo: bool = false
-var damage_reduction: float = 0.0   # 0.3 = 30% less damage taken
 var halo_speed_penalty: float = 0.0 # how much speed is lost while wearing it
+var _halo_speed_penalty_applied: bool = false
 @export var halo_scene: PackedScene # drag GuardHalo.tscn here in Inspector
+var equipped_halo: GuardHalo = null
 
 var hp_label: Label
 
 func _ready() -> void:
 	add_to_group("player")
 	current_hp = max_hp
+	if not weapon_progress.weapon_unlocked.is_connected(_on_weapon_unlocked):
+		weapon_progress.weapon_unlocked.connect(_on_weapon_unlocked)
+	if weapon_manager and weapon_manager.has_signal("weapon_switch_blocked"):
+		weapon_manager.weapon_switch_blocked.connect(_on_weapon_switch_blocked)
+	if weapon_progress.is_weapon_unlocked(&"guard_halo"):
+		call_deferred("equip_halo")
 	if health_bar:
 		health_bar.max_value = max_hp
 		health_bar.value = current_hp
@@ -244,6 +254,7 @@ func add_xp(amount: int, heal_bonus: int = 0) -> void:
 		return
 	
 	current_xp += amount
+	weapon_progress.register_xp(amount)
 	
 	# Heal if this drop includes bonus HP (skeleton coin)
 	if heal_bonus > 0:
@@ -269,9 +280,6 @@ func open_chest(picks: int = 1) -> void:
 	
 	current_level += 1
 	
-	# Unlock the Guard Halo at level 3
-	if current_level == 3:
-		equip_halo()
 	# No floating text here — ranged enemy uses the level_up_title.png image
 	# shown in _on_upgrade_chosen instead
 	if _level_up_ui == null:
@@ -280,6 +288,21 @@ func open_chest(picks: int = 1) -> void:
 		_level_up_ui.upgrade_chosen.connect(_on_upgrade_chosen)
 		
 	_level_up_ui.show_level_up(current_level, picks)
+
+
+func _on_weapon_unlocked(weapon_id: StringName) -> void:
+	if weapon_id == &"guard_halo":
+		equip_halo()
+
+
+func _on_weapon_switch_blocked(_weapon_id: StringName, requirement: String) -> void:
+	_spawn_floating_text(
+		"WEAPON LOCKED\n" + requirement,
+		Color(0.75, 0.55, 1.0),
+		14,
+		Vector2(-72, -92),
+		1.4
+	)
 
 # Spawns a floating text label that rises and fades
 # offset = starting position relative to player, duration = how long it stays
@@ -359,24 +382,37 @@ func heal(amount: int) -> void:
 	t.tween_property(sprite, "modulate", Color.WHITE, 0.4)
 
 func take_damage(amount: int) -> void:
-	if current_hp <= 0 or is_invincible:
+	if amount <= 0 or current_hp <= 0 or is_invincible:
 		return
 
-	# Halo reduces incoming damage
-	if has_halo:
-		amount = int(amount * (1.0 - damage_reduction))
+	var final_damage := amount
+	if is_instance_valid(equipped_halo):
+		final_damage = maxi(0, equipped_halo.absorb_damage(amount))
 
-	current_hp -= amount
-	current_hp = max(0, current_hp)
-	hp_changed.emit(current_hp, max_hp)
+	var blocked_damage := maxi(0, amount - final_damage)
+	if blocked_damage > 0:
+		_spawn_floating_text(
+			"BLOCKED " + str(blocked_damage),
+			Color(0.2, 0.85, 1.0),
+			16,
+			Vector2(-34, -70)
+		)
+
+	if final_damage > 0:
+		current_hp = maxi(0, current_hp - final_damage)
+		hp_changed.emit(current_hp, max_hp)
+
+		if health_bar:
+			health_bar.value = current_hp
+		_update_hp_label()
 	
-	if health_bar:
-		health_bar.value = current_hp
-	_update_hp_label()
-	
-	# Become invincible for 1 second
+	# A blocked hit also starts invincibility so one continuous overlap cannot
+	# drain the entire shield in only a few frames.
 	is_invincible = true
-	sprite.modulate = Color(1, 0.3, 0.3, 0.8)
+	if final_damage > 0:
+		sprite.modulate = Color(1, 0.3, 0.3, 0.8)
+	else:
+		sprite.modulate = Color(0.2, 0.85, 1.0, 0.9)
 	
 	var t = get_tree().create_timer(1.0)
 	t.timeout.connect(func(): 
@@ -447,14 +483,46 @@ func play_shoot_animation() -> void:
 
 
 func equip_halo() -> void:
-	if has_halo:
-		return   # already have it, don't stack
-	has_halo = true
-	damage_reduction = 0.3        # take 30% less damage
-	halo_speed_penalty = 60.0     # lose 60 movement speed
-	speed -= halo_speed_penalty
+	if has_halo or is_instance_valid(equipped_halo):
+		return   # already equipped, don't stack or create a duplicate
+	if halo_scene == null:
+		push_warning("Guard Halo scene is not assigned to the player.")
+		return
 
-	# spawn the always-on halo as a child of the player
-	if halo_scene:
-		var halo = halo_scene.instantiate()
-		add_child(halo)
+	var halo_instance := halo_scene.instantiate() as GuardHalo
+	if halo_instance == null:
+		push_warning("The assigned Halo scene must use GuardHalo as its root script.")
+		return
+
+	equipped_halo = halo_instance
+	has_halo = true
+	halo_speed_penalty = 60.0     # lose 60 movement speed
+
+	# Spawn the always-on halo as a child centred on the player.
+	equipped_halo.name = "GuardHalo"
+	add_child(equipped_halo)
+	equipped_halo.position = Vector2.ZERO
+	equipped_halo.state_changed.connect(_on_halo_state_changed)
+	equipped_halo.tree_exited.connect(_on_equipped_halo_removed)
+	_on_halo_state_changed(equipped_halo.state)
+	if halo_energy_ui:
+		halo_energy_ui.bind_to_halo(equipped_halo)
+
+func _on_halo_state_changed(new_state: GuardHalo.HaloState) -> void:
+	_set_halo_speed_penalty(new_state == GuardHalo.HaloState.ACTIVE)
+
+func _set_halo_speed_penalty(should_apply: bool) -> void:
+	if should_apply == _halo_speed_penalty_applied:
+		return
+
+	if should_apply:
+		speed = maxf(0.0, speed - halo_speed_penalty)
+	else:
+		speed += halo_speed_penalty
+
+	_halo_speed_penalty_applied = should_apply
+
+func _on_equipped_halo_removed() -> void:
+	_set_halo_speed_penalty(false)
+	equipped_halo = null
+	has_halo = false
