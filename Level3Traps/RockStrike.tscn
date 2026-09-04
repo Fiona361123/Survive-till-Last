@@ -1,0 +1,37 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://Level3Traps/rock_strike.gd" id="1_rock"]
+[ext_resource type="Script" path="res://Level3Traps/trap_damage_area.gd" id="2_damage"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_rock_strike"]
+radius = 32.0
+
+[node name="RockStrike" type="Node2D"]
+script = ExtResource("1_rock")
+
+[node name="WarningCircle" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(32, 0, 27.713, 16, 16, 27.713, 0, 32, -16, 27.713, -27.713, 16, -32, 0, -27.713, -16, -16, -27.713, 0, -32, 16, -27.713, 27.713, -16)
+color = Color(1, 0.72, 0.12, 0.42)
+
+[node name="RockGraphics" type="Node2D" parent="."]
+
+[node name="RockPolygon" type="Polygon2D" parent="RockGraphics"]
+polygon = PackedVector2Array(-18, -10, 0, -25, 20, -8, 14, 13, -5, 24, -22, 10)
+color = Color(0.3, 0.27, 0.24, 1)
+
+[node name="RockHighlight" type="Polygon2D" parent="RockGraphics"]
+polygon = PackedVector2Array(-18, -10, 0, -25, 4, -10, -5, 4)
+color = Color(0.55, 0.5, 0.43, 1)
+
+[node name="ImpactGraphics" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-36, 7, -18, 2, -27, 19, -8, 12, 0, 31, 8, 12, 27, 19, 18, 2, 36, 7, 20, -3, 27, -17, 8, -7, 0, -29, -8, -7, -27, -17, -20, -3)
+color = Color(1, 0.82, 0.22, 0.9)
+
+[node name="TrapDamageArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 6
+monitoring = false
+script = ExtResource("2_damage")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="TrapDamageArea"]
+shape = SubResource("CircleShape2D_rock_strike")
