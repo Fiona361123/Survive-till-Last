@@ -1,0 +1,27 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://Level3Traps/fire_sweep.gd" id="1_fire"]
+[ext_resource type="Script" path="res://Level3Traps/trap_damage_area.gd" id="2_damage"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_fire_sweep"]
+size = Vector2(96, 28)
+
+[node name="FireSweep" type="Node2D"]
+script = ExtResource("1_fire")
+
+[node name="WarningStrip" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-48, -14, 48, -14, 48, 14, -48, 14)
+color = Color(1, 0.73, 0.12, 0.72)
+
+[node name="FireGraphics" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-48, 14, -40, -10, -32, 5, -24, -15, -16, 6, -8, -12, 0, 7, 8, -15, 16, 6, 24, -12, 32, 5, 40, -10, 48, 14)
+color = Color(1, 0.25, 0.04, 0.95)
+
+[node name="TrapDamageArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 6
+monitoring = false
+script = ExtResource("2_damage")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="TrapDamageArea"]
+shape = SubResource("RectangleShape2D_fire_sweep")
