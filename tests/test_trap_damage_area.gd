@@ -22,9 +22,7 @@ func _initialize() -> void:
 
 
 func _test_damage_once_per_activation_for_player_and_enemy() -> void:
-	var trap_script := load("res://Level3Traps/trap_damage_area.gd")
-	var trap := Area2D.new()
-	trap.set_script(trap_script)
+	var trap := TrapDamageArea.new()
 	root.add_child(trap)
 	var trap_shape := CollisionShape2D.new()
 	var trap_circle := CircleShape2D.new()
