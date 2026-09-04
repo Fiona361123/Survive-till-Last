@@ -27,6 +27,7 @@ func _test_warning_and_strike_damage() -> void:
 	if scene == null:
 		return
 	var strike := scene.instantiate() as RockStrike
+	_expect(is_equal_approx(strike.warning_duration, 0.9), "warning_duration defaults to 0.9 seconds")
 	strike.warning_duration = 0.08
 	strike.impact_duration = 0.08
 	strike.damage = 17

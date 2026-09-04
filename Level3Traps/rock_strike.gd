@@ -40,6 +40,10 @@ func strike_at(target: Vector2) -> void:
 	rock_graphics.visible = true
 	impact_graphics.visible = true
 	damage_area.begin_activation(damage)
+	# Monitoring updates its overlap list on the physics step after activation.
+	await get_tree().physics_frame
+	if serial != _strike_serial or state != State.IMPACT:
+		return
 	damage_area.damage_overlapping_bodies()
 	await get_tree().create_timer(maxf(impact_duration, 0.0)).timeout
 	if serial != _strike_serial or state != State.IMPACT:
