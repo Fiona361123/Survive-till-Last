@@ -2,7 +2,8 @@ class_name DungeonMinimap
 extends Control
 
 const PANEL_PADDING: float = 10.0
-const LEVEL_POLYGONS := {
+# Huang Wan Jun 2204536 - Share the fixed dungeon geometry without requiring constant expressions.
+static var LEVEL_POLYGONS: Dictionary = {
 	1: PackedVector2Array([Vector2(-6500, 300), Vector2(-3600, -1150), Vector2(-1800, -250), Vector2(-4550, 1500)]),
 	2: PackedVector2Array([Vector2(-1850, -950), Vector2(850, -450), Vector2(2050, 700), Vector2(-750, 950)]),
 	3: PackedVector2Array([Vector2(2200, -900), Vector2(4650, -350), Vector2(4750, 1450), Vector2(2450, 1050)]),
