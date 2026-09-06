@@ -14,7 +14,7 @@ func _initialize() -> void:
 
 	# Huang Wan Jun 2204536 - Keep the minimap below the top-right Weapon Store button.
 	_expect(minimap.anchor_left == 1.0 and minimap.anchor_top == 0.0, "minimap anchors below the top-right store")
-	_expect(minimap.offset_right == -24.0 and minimap.offset_top == 176.0, "minimap sits below the store with a 24 pixel right gap")
+	_expect(minimap.offset_right == -24.0 and minimap.offset_top == 152.0, "minimap sits closely below the store with a 24 pixel right gap")
 	_expect(minimap.size == Vector2(230.0, 160.0), "minimap has the designed compact size")
 	_expect(minimap.get_revealed_levels() == [1], "only Level 1 starts revealed")
 	minimap.reveal_level(2)
