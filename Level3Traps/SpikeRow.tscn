@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://Level3Traps/spike_row.gd" id="1_spike"]
 [ext_resource type="Script" path="res://Level3Traps/trap_damage_area.gd" id="2_damage"]
+[ext_resource type="PackedScene" path="res://Level3Traps/SpikeTileVisual.tscn" id="3_visual"]
 
 [node name="SpikeRow" type="Node2D"]
 script = ExtResource("1_spike")
@@ -9,6 +10,16 @@ script = ExtResource("1_spike")
 [node name="WarningTiles" type="Node2D" parent="."]
 
 [node name="SpikeTiles" type="Node2D" parent="."]
+
+[node name="EditorPreview" type="Node2D" parent="."]
+
+[node name="Tile0" parent="EditorPreview" instance=ExtResource("3_visual")]
+
+[node name="Tile1" parent="EditorPreview" instance=ExtResource("3_visual")]
+position = Vector2(128, -64)
+
+[node name="Tile2" parent="EditorPreview" instance=ExtResource("3_visual")]
+position = Vector2(256, -128)
 
 [node name="TrapDamageArea" type="Area2D" parent="."]
 collision_layer = 0

@@ -17,6 +17,7 @@ var _activation_serial: int = 0
 
 @onready var warning_tiles: Node2D = $WarningTiles
 @onready var spike_tiles: Node2D = $SpikeTiles
+@onready var editor_preview: Node2D = $EditorPreview
 @onready var damage_area: TrapDamageArea = $TrapDamageArea
 
 static var TILE_DIAMOND: PackedVector2Array = PackedVector2Array([
@@ -30,46 +31,11 @@ const SPIKE_SHADOW_COLOR := Color(0.38, 0.34, 0.29, 1.0)
 
 func _ready() -> void:
 	if Engine.is_editor_hint():
-		queue_redraw()
 		return
+	editor_preview.visible = false
 	_build_isometric_tiles()
 	_set_safe_visuals()
 	damage_area.body_entered.connect(_on_damage_body_entered)
-
-
-func _draw() -> void:
-	if not Engine.is_editor_hint():
-		return
-	for preview_polygon in get_editor_preview_polygons():
-		draw_colored_polygon(preview_polygon.points, preview_polygon.color)
-
-
-func get_editor_preview_polygons() -> Array:
-	var polygons: Array = []
-	var spike_positions := [
-		Vector2(-58, 11), Vector2(0, -22), Vector2(58, 11),
-		Vector2(-24, 29), Vector2(24, 29),
-	]
-	for tile_index in tile_count:
-		var tile_position := tile_step * tile_index
-		polygons.append({"points": _offset_polygon(TILE_DIAMOND, tile_position),
-			"color": SPIKE_BASE_COLOR})
-		for spike_position in spike_positions:
-			var position: Vector2 = tile_position + spike_position
-			polygons.append({"points": _offset_polygon(PackedVector2Array([
-				Vector2(-18, 8), Vector2(0, -43), Vector2(18, 8),
-			]), position), "color": SPIKE_COLOR})
-			polygons.append({"points": _offset_polygon(PackedVector2Array([
-				Vector2(0, -43), Vector2(18, 8), Vector2(4, 5),
-			]), position), "color": SPIKE_SHADOW_COLOR})
-	return polygons
-
-
-func _offset_polygon(points: PackedVector2Array, offset: Vector2) -> PackedVector2Array:
-	var shifted := PackedVector2Array()
-	for point in points:
-		shifted.append(point + offset)
-	return shifted
 
 
 func activate() -> void:

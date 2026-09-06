@@ -1,0 +1,57 @@
+[gd_scene format=3]
+
+[node name="SpikeTileVisual" type="Node2D"]
+
+[node name="Base" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-128, 0, 0, -64, 128, 0, 0, 64)
+color = Color(0.34, 0.24, 0.16, 0.88)
+
+[node name="SpikeLeft" type="Polygon2D" parent="."]
+position = Vector2(-58, 11)
+polygon = PackedVector2Array(-18, 8, 0, -43, 18, 8)
+color = Color(0.78, 0.72, 0.6, 1)
+
+[node name="SpikeLeftShadow" type="Polygon2D" parent="."]
+position = Vector2(-58, 11)
+polygon = PackedVector2Array(0, -43, 18, 8, 4, 5)
+color = Color(0.38, 0.34, 0.29, 1)
+
+[node name="SpikeBack" type="Polygon2D" parent="."]
+position = Vector2(0, -22)
+polygon = PackedVector2Array(-18, 8, 0, -43, 18, 8)
+color = Color(0.78, 0.72, 0.6, 1)
+
+[node name="SpikeBackShadow" type="Polygon2D" parent="."]
+position = Vector2(0, -22)
+polygon = PackedVector2Array(0, -43, 18, 8, 4, 5)
+color = Color(0.38, 0.34, 0.29, 1)
+
+[node name="SpikeRight" type="Polygon2D" parent="."]
+position = Vector2(58, 11)
+polygon = PackedVector2Array(-18, 8, 0, -43, 18, 8)
+color = Color(0.78, 0.72, 0.6, 1)
+
+[node name="SpikeRightShadow" type="Polygon2D" parent="."]
+position = Vector2(58, 11)
+polygon = PackedVector2Array(0, -43, 18, 8, 4, 5)
+color = Color(0.38, 0.34, 0.29, 1)
+
+[node name="SpikeFrontLeft" type="Polygon2D" parent="."]
+position = Vector2(-24, 29)
+polygon = PackedVector2Array(-18, 8, 0, -43, 18, 8)
+color = Color(0.78, 0.72, 0.6, 1)
+
+[node name="SpikeFrontLeftShadow" type="Polygon2D" parent="."]
+position = Vector2(-24, 29)
+polygon = PackedVector2Array(0, -43, 18, 8, 4, 5)
+color = Color(0.38, 0.34, 0.29, 1)
+
+[node name="SpikeFrontRight" type="Polygon2D" parent="."]
+position = Vector2(24, 29)
+polygon = PackedVector2Array(-18, 8, 0, -43, 18, 8)
+color = Color(0.78, 0.72, 0.6, 1)
+
+[node name="SpikeFrontRightShadow" type="Polygon2D" parent="."]
+position = Vector2(24, 29)
+polygon = PackedVector2Array(0, -43, 18, 8, 4, 5)
+color = Color(0.38, 0.34, 0.29, 1)

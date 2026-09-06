@@ -28,12 +28,12 @@ func _test_isometric_tile_presentation() -> void:
 		return
 	var row := scene.instantiate() as SpikeRow
 	row.tile_count = 3
-	_expect(row.has_method("get_editor_preview_polygons"),
-		"spike row exposes editor-preview geometry")
-	if row.has_method("get_editor_preview_polygons"):
-		var preview_polygons: Array = row.call("get_editor_preview_polygons")
-		_expect(preview_polygons.size() > row.tile_count,
-			"editor preview includes tile bases and visible spike faces")
+	var editor_preview := row.get_node_or_null("EditorPreview")
+	_expect(editor_preview != null and editor_preview.get_child_count() == 3,
+		"scene stores three authored spike tiles for reliable editor visibility")
+	if editor_preview != null:
+		_expect(editor_preview.find_children("*", "Polygon2D", true, false).size() >= 3,
+			"authored editor preview contains visible polygon artwork")
 	root.add_child(row)
 	await process_frame
 
