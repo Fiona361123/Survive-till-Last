@@ -19,7 +19,7 @@ var _activation_serial: int = 0
 @onready var spike_tiles: Node2D = $SpikeTiles
 @onready var damage_area: TrapDamageArea = $TrapDamageArea
 
-const TILE_DIAMOND := PackedVector2Array([
+static var TILE_DIAMOND: PackedVector2Array = PackedVector2Array([
 	Vector2(-128, 0), Vector2(0, -64), Vector2(128, 0), Vector2(0, 64),
 ])
 const WARNING_COLOR := Color(0.9, 0.26, 0.12, 0.48)
