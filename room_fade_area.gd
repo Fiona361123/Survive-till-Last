@@ -210,7 +210,12 @@ func spawn_enemies_from_holes() -> void:
 			+ sideways
 		)
 
-		enemy.global_position = spawn_position
+		SpawnPositionResolver.place_clear_of_walls(
+			enemy as CollisionObject2D,
+			spawn_position,
+			target.global_position if target != null else hole_position + inward * 128.0,
+			target != null
+		)
 
 		if spawn_delay > 0.0 and index < enemy_count - 1:
 			await get_tree().create_timer(spawn_delay).timeout

@@ -16,6 +16,7 @@ const LEVEL_2_TOTAL_ENEMIES: int = 15
 @onready var level_2_enemies: Node2D = $Level2Enemies
 @onready var level_2_second_wave: Node2D = $Level2Enemies/SecondWave
 @onready var level_2_spawn_points: Node2D = $Level2Enemies/SpawnPoints
+@onready var level_3_traps: Level3TrapController = $Level3Traps
 @onready var weapon_progress: Node = get_node("/root/WeaponProgress")
 
 var level_cleared: bool = false
@@ -45,6 +46,7 @@ func _ready() -> void:
 		push_error("FirstLevelWallArea needs enemies_finished_spawning.")
 
 	# Huang Wan Jun 2204536 - Watch only skeletons inside the Level 2 enemy container.
+	call_deferred("_ensure_initial_level_two_enemies_are_clear")
 	call_deferred("_watch_level_two_enemies")
 
 
@@ -164,7 +166,25 @@ func _spawn_level_two_second_wave() -> void:
 			continue
 		skeleton.add_to_group("level2_enemy")
 		level_2_second_wave.add_child(skeleton)
-		skeleton.global_position = (spawn_point as Node2D).global_position
+		SpawnPositionResolver.place_clear_of_walls(
+			skeleton,
+			(spawn_point as Node2D).global_position,
+			level_2_spawn_points.global_position
+		)
+
+
+func _ensure_initial_level_two_enemies_are_clear() -> void:
+	await get_tree().physics_frame
+	var initial_skeletons := $Level2Enemies/InitialSkeletons as Node2D
+	for enemy_node in initial_skeletons.get_children():
+		var enemy := enemy_node as CollisionObject2D
+		if enemy == null:
+			continue
+		SpawnPositionResolver.place_clear_of_walls(
+			enemy,
+			enemy.global_position,
+			level_2_spawn_points.global_position
+		)
 
 
 func _complete_level_two() -> void:
@@ -193,6 +213,7 @@ func _complete_level() -> void:
 
 # Level 3 combat can call this public completion hook when its objective is done.
 func _complete_level_three() -> void:
+	level_3_traps.stop_encounter()
 	if level_3_cleared:
 		return
 
@@ -258,3 +279,5 @@ func unlock_path_after_level(completed_level: int) -> void:
 
 func _on_level_entrance_entered(level_number: int) -> void:
 	current_level = level_number
+	if level_number == 3:
+		level_3_traps.start_encounter()

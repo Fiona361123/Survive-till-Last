@@ -34,6 +34,13 @@ const XP_ORB_SCENE = preload("res://enemyXP.tscn")
 @export var separation_radius: float = 60.0
 @export var separation_force: float = 200.0
 
+# WALL AVOIDANCE - Lets direct-chasing slimes travel around solid corners.
+@export var obstacle_probe_distance: float = 72.0
+@export var avoidance_hold_time: float = 0.45
+@export var stuck_sample_interval: float = 0.5
+@export var stuck_recovery_delay: float = 1.5
+@export var stuck_minimum_progress: float = 4.0
+
 @onready var animated_sprite = $AnimatedSprite2D
 @onready var vision_area = $VisionArea
 @onready var health_bar = $HealthBar
@@ -72,6 +79,11 @@ var zigzag_timer: float = 0.0
 var zigzag_direction: float = 1.0
 var time_alive: float = 0.0
 var speed_variation: float = 0.0
+var avoidance_side: int = 0
+var avoidance_timer: float = 0.0
+var stuck_sample_timer: float = 0.0
+var stuck_duration: float = 0.0
+var stuck_sample_target_distance: float = INF
 
 
 func _ready():
@@ -149,6 +161,7 @@ func _physics_process(delta):
 			_death_state(delta)
 
 	move_and_slide()
+	_update_stuck_recovery(delta)
 
 
 func _refresh_combat_target(delta: float) -> void:
@@ -227,7 +240,8 @@ func _chase_state(delta):
 		return
 
 	# Direction to player
-	var direction_to_player = (player.global_position - global_position).normalized()
+	var direct_direction = (player.global_position - global_position).normalized()
+	var direction_to_player = _get_obstacle_aware_direction(direct_direction, delta)
 	
 	# Zigzag variation - makes slimes take different paths
 	var perpendicular = Vector2(-direction_to_player.y, direction_to_player.x)
@@ -259,6 +273,90 @@ func _chase_state(delta):
 	if health_bar:
 		health_bar.visible = true
 		health_bar.value = current_health
+
+
+func _get_obstacle_aware_direction(direct_direction: Vector2, delta: float) -> Vector2:
+	if direct_direction.is_zero_approx():
+		return direct_direction
+
+	avoidance_timer = maxf(avoidance_timer - delta, 0.0)
+	var direct_motion := direct_direction * obstacle_probe_distance
+	var wall_ahead := test_move(global_transform, direct_motion)
+
+	if wall_ahead:
+		if avoidance_side == 0 or avoidance_timer <= 0.0:
+			avoidance_side = _choose_clearer_avoidance_side(direct_direction)
+		avoidance_timer = avoidance_hold_time
+	elif avoidance_timer <= 0.0:
+		avoidance_side = 0
+		return direct_direction
+
+	if avoidance_side == 0:
+		return direct_direction
+
+	var sideways := Vector2(-direct_direction.y, direct_direction.x) * avoidance_side
+	var avoidance_direction := (direct_direction * 0.22 + sideways).normalized()
+	if test_move(global_transform, avoidance_direction * obstacle_probe_distance):
+		var opposite_direction := (direct_direction * 0.22 - sideways).normalized()
+		if not test_move(global_transform, opposite_direction * obstacle_probe_distance):
+			avoidance_side = -avoidance_side
+			avoidance_direction = opposite_direction
+
+	return avoidance_direction
+
+
+func _choose_clearer_avoidance_side(direct_direction: Vector2) -> int:
+	var sideways := Vector2(-direct_direction.y, direct_direction.x)
+	var left_motion := (direct_direction * 0.22 + sideways).normalized() * obstacle_probe_distance
+	var right_motion := (direct_direction * 0.22 - sideways).normalized() * obstacle_probe_distance
+	var left_blocked := test_move(global_transform, left_motion)
+	var right_blocked := test_move(global_transform, right_motion)
+
+	if left_blocked != right_blocked:
+		return -1 if left_blocked else 1
+	return 1 if zigzag_direction >= 0.0 else -1
+
+
+func _update_stuck_recovery(delta: float) -> void:
+	if current_state != State.CHASE or not is_instance_valid(player):
+		_reset_stuck_tracking()
+		return
+
+	stuck_sample_timer += delta
+	if stuck_sample_timer < stuck_sample_interval:
+		return
+
+	var sample_duration := stuck_sample_timer
+	stuck_sample_timer = 0.0
+	var target_distance := global_position.distance_to(player.global_position)
+	var progress := stuck_sample_target_distance - target_distance
+	stuck_sample_target_distance = target_distance
+
+	if progress >= stuck_minimum_progress:
+		stuck_duration = 0.0
+		return
+
+	stuck_duration += sample_duration
+	if stuck_duration < stuck_recovery_delay:
+		return
+
+	SpawnPositionResolver.place_clear_of_walls(
+		self,
+		global_position,
+		player.global_position,
+		true
+	)
+	_reset_stuck_tracking()
+
+
+func _reset_stuck_tracking() -> void:
+	stuck_sample_timer = 0.0
+	stuck_duration = 0.0
+	stuck_sample_target_distance = (
+		global_position.distance_to(player.global_position)
+		if is_instance_valid(player)
+		else INF
+	)
 
 
 # ATTACK

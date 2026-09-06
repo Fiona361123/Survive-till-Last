@@ -1,27 +1,17 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://Level3Traps/spike_row.gd" id="1_spike"]
 [ext_resource type="Script" path="res://Level3Traps/trap_damage_area.gd" id="2_damage"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_spike_row"]
-size = Vector2(96, 24)
-
 [node name="SpikeRow" type="Node2D"]
 script = ExtResource("1_spike")
 
-[node name="WarningPolygon" type="Polygon2D" parent="."]
-polygon = PackedVector2Array(-48, -12, 48, -12, 48, 12, -48, 12)
-color = Color(1, 0.75, 0.1, 0.8)
+[node name="WarningTiles" type="Node2D" parent="."]
 
-[node name="SpikePolygon" type="Polygon2D" parent="."]
-polygon = PackedVector2Array(-48, 12, -40, -12, -32, 12, -24, -12, -16, 12, -8, -12, 0, 12, 8, -12, 16, 12, 24, -12, 32, 12, 40, -12, 48, 12)
-color = Color(0.8, 0.85, 0.9, 1)
+[node name="SpikeTiles" type="Node2D" parent="."]
 
 [node name="TrapDamageArea" type="Area2D" parent="."]
 collision_layer = 0
 collision_mask = 6
 monitoring = false
 script = ExtResource("2_damage")
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="TrapDamageArea"]
-shape = SubResource("RectangleShape2D_spike_row")

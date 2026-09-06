@@ -7,6 +7,8 @@ func _initialize() -> void:
 	await process_frame
 	await _test_level_exit_stays_in_dungeon_and_announces_level_two()
 	_test_dungeon_scene_has_level_clear_nodes()
+	await _test_level_three_trap_lifecycle()
+	await _test_enemy_spawn_positions_clear_solid_walls()
 	await _test_level_two_skeleton_wave()
 	await _test_debug_clear_removes_level_one_enemies()
 	await _test_debug_clear_removes_level_two_enemies()
@@ -194,6 +196,8 @@ func _test_dungeon_scene_has_level_clear_nodes() -> void:
 		"Boss entrance uses an editable collision polygon")
 	_expect(dungeon.get_node_or_null("Enemy") == null,
 		"Dungeon has no hidden untracked enemy")
+	_expect(dungeon.get_node_or_null("skeleton") == null,
+		"Dungeon has no legacy root skeleton that auto-spawns untracked enemies")
 	# Huang Wan Jun 2204536 - Corridor walls use a shallow diagonal footprint at the wall base.
 	var wall_layer := dungeon.get_node_or_null("Wall") as TileMapLayer
 	if wall_layer != null:
@@ -245,7 +249,133 @@ func _test_dungeon_scene_has_level_clear_nodes() -> void:
 		"Dungeon has a LevelClearUI/EnemyCounterLabel")
 	_expect((dungeon.get_node_or_null("LevelClearUI") as CanvasLayer).visible,
 		"Level clear UI canvas remains visible for the enemy counter")
+	var level_3_traps := dungeon.get_node_or_null("Level3Traps") as Node2D
+	_expect(level_3_traps != null, "Level 3 has a trap controller")
+	var spike_rows := dungeon.get_node_or_null("Level3Traps/SpikeRows")
+	_expect(spike_rows != null and spike_rows.get_child_count() == 3,
+		"Level 3 has exactly three spike rows")
+	if spike_rows != null:
+		var authored_tile_counts: Array[int] = []
+		for row in spike_rows.get_children():
+			var spike_row := row as SpikeRow
+			_expect(spike_row != null and spike_row.scale == Vector2.ONE
+				and is_zero_approx(spike_row.rotation),
+				"Level 3 spike clusters use unscaled isometric placement")
+			if spike_row != null:
+				authored_tile_counts.append(spike_row.tile_count)
+		_expect(authored_tile_counts == [3, 2, 3],
+			"Level 3 uses three short, intentionally varied spike clusters")
+	_expect(dungeon.get_node_or_null("Level3Traps/FireSweep") != null,
+		"Level 3 has one fire sweep")
+	var rock_targets := dungeon.get_node_or_null("Level3Traps/RockTargets")
+	_expect(rock_targets != null and rock_targets.get_child_count() >= 2,
+		"Level 3 has authored rock targets")
+	_expect(dungeon.get_node_or_null("Level3Traps/EntranceSafeArea") is Area2D,
+		"Level 3 entrance is protected from random strikes")
+	if level_3_traps != null:
+		_assert_trap_damage_masks(level_3_traps, "authored Level 3 trap")
+		var rock_strike_scene := level_3_traps.get("rock_strike_scene") as PackedScene
+		_expect(rock_strike_scene != null, "Level 3 controller has a RockStrike scene")
+		if rock_strike_scene != null:
+			var rock_strike := rock_strike_scene.instantiate()
+			_assert_trap_damage_masks(rock_strike, "Level 3 RockStrike")
+			rock_strike.free()
 	dungeon.queue_free()
+
+
+func _test_level_three_trap_lifecycle() -> void:
+	var dungeon_scene := load("res://Dungeon.tscn") as PackedScene
+	if dungeon_scene == null:
+		_expect(false, "Dungeon loads for the Level 3 trap lifecycle")
+		return
+
+	var dungeon := dungeon_scene.instantiate() as Node2D
+	root.add_child(dungeon)
+	await process_frame
+	var level_3_traps := dungeon.get_node_or_null("Level3Traps")
+	_expect(level_3_traps != null and level_3_traps.get("is_running") == false,
+		"Level 3 traps begin stopped")
+	dungeon.call("_on_level_entrance_entered", 3)
+	_expect(level_3_traps != null and level_3_traps.get("is_running") == true,
+		"entering Level 3 starts its traps")
+	dungeon.call("_complete_level_three")
+	_expect(level_3_traps != null and level_3_traps.get("is_running") == false,
+		"clearing Level 3 stops its traps before the clear-message wait")
+	dungeon.queue_free()
+	await process_frame
+
+
+func _assert_trap_damage_masks(trap_root: Node, label: String) -> void:
+	var damage_areas := trap_root.find_children("TrapDamageArea", "Area2D", true, false)
+	_expect(not damage_areas.is_empty(), "%s has a damage area" % label)
+	for damage_area in damage_areas:
+		_expect((damage_area as Area2D).collision_mask == 6,
+			"%s damage area detects player and enemy layers" % label)
+
+
+func _test_enemy_spawn_positions_clear_solid_walls() -> void:
+	var dungeon_scene := load("res://Dungeon.tscn") as PackedScene
+	if dungeon_scene == null:
+		_expect(false, "Dungeon loads for enemy spawn clearance checks")
+		return
+
+	var dungeon := dungeon_scene.instantiate() as Node2D
+	root.add_child(dungeon)
+	await physics_frame
+
+	var spawner := dungeon.get_node("Wall/FirstLevelWallArea")
+	spawner.set("spawn_delay", 0.0)
+	spawner.call("spawn_enemies_from_holes")
+	await physics_frame
+	var wall_target := spawner.get_node("WallTarget") as Marker2D
+	for enemy_node in get_nodes_in_group("level1_enemy"):
+		var enemy := enemy_node as CollisionObject2D
+		_expect(enemy != null and not _body_overlaps_solid_world(enemy),
+			"Level 1 spawned enemy clears solid wall collision")
+		_expect(enemy != null and not _solid_world_blocks_segment(
+			enemy, enemy.global_position, wall_target.global_position
+		), "Level 1 spawned enemy has an unobstructed route into the arena")
+
+	for enemy_node in dungeon.call("_get_level_two_enemy_nodes") as Array:
+		var enemy := enemy_node as CollisionObject2D
+		_expect(enemy != null and not _body_overlaps_solid_world(enemy),
+			"Level 2 placed enemy clears solid wall collision")
+
+	dungeon.call("_spawn_level_two_second_wave")
+	await physics_frame
+	var second_wave := dungeon.get_node("Level2Enemies/SecondWave") as Node2D
+	for enemy_node in second_wave.get_children():
+		var enemy := enemy_node as CollisionObject2D
+		_expect(enemy != null and not _body_overlaps_solid_world(enemy),
+			"Level 2 spawned enemy clears solid wall collision")
+
+	dungeon.queue_free()
+	await process_frame
+
+
+func _body_overlaps_solid_world(body: CollisionObject2D) -> bool:
+	var collision := body.get_node_or_null("CollisionShape2D") as CollisionShape2D
+	if collision == null or collision.shape == null:
+		return true
+	body.force_update_transform()
+	collision.force_update_transform()
+	var query := PhysicsShapeQueryParameters2D.new()
+	query.shape = collision.shape
+	query.transform = collision.global_transform
+	query.collision_mask = 1
+	query.collide_with_areas = false
+	query.collide_with_bodies = true
+	query.exclude = [body.get_rid()]
+	return not body.get_world_2d().direct_space_state.intersect_shape(query, 1).is_empty()
+
+
+func _solid_world_blocks_segment(
+	body: CollisionObject2D, from: Vector2, to: Vector2
+) -> bool:
+	var query := PhysicsRayQueryParameters2D.create(from, to, 1, [body.get_rid()])
+	query.collide_with_areas = false
+	query.collide_with_bodies = true
+	return not body.get_world_2d().direct_space_state.intersect_ray(query).is_empty()
 
 
 func _test_level_two_skeleton_wave() -> void:

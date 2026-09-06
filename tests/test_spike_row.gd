@@ -12,12 +12,41 @@ class DummyBody extends CharacterBody2D:
 
 func _initialize() -> void:
 	await process_frame
+	await _test_isometric_tile_presentation()
 	await _test_telegraphed_activation_and_single_damage()
 	if failures == 0:
 		print("Spike row tests passed.")
 	else:
 		push_error("%d spike row test(s) failed" % failures)
 	quit(0 if failures == 0 else 1)
+
+
+func _test_isometric_tile_presentation() -> void:
+	var scene := load("res://Level3Traps/SpikeRow.tscn") as PackedScene
+	_expect(scene != null, "SpikeRow scene loads for visual test")
+	if scene == null:
+		return
+	var row := scene.instantiate() as SpikeRow
+	row.tile_count = 3
+	root.add_child(row)
+	await process_frame
+
+	var warning_tiles := row.get_node("WarningTiles")
+	var spike_tiles := row.get_node("SpikeTiles")
+	var collision_shapes := row.get_node("TrapDamageArea").get_children().filter(
+		func(child: Node) -> bool: return child is CollisionPolygon2D
+	)
+	_expect(warning_tiles.get_child_count() == 3, "row draws one warning diamond per isometric tile")
+	_expect(spike_tiles.get_child_count() == 3, "row draws one spike cluster per isometric tile")
+	_expect(collision_shapes.size() == 3, "row has one matching hit area per isometric tile")
+	var first_warning := warning_tiles.get_child(0) as Polygon2D
+	_expect(first_warning != null and first_warning.polygon == PackedVector2Array([
+		Vector2(-128, 0), Vector2(0, -64), Vector2(128, 0), Vector2(0, 64)
+	]), "warning presentation follows the 256x128 isometric floor diamond")
+	_expect(row.scale == Vector2.ONE, "spike tiles do not depend on giant node scaling")
+
+	row.queue_free()
+	await process_frame
 
 
 func _test_telegraphed_activation_and_single_damage() -> void:
@@ -42,18 +71,18 @@ func _test_telegraphed_activation_and_single_damage() -> void:
 	await physics_frame
 
 	_expect(row.state == SpikeRow.State.SAFE, "row starts SAFE")
-	_expect(not row.get_node("WarningPolygon").visible, "warning is hidden while SAFE")
-	_expect(not row.get_node("SpikePolygon").visible, "spikes are hidden while SAFE")
+	_expect(not row.get_node("WarningTiles").visible, "warning is hidden while SAFE")
+	_expect(not row.get_node("SpikeTiles").visible, "spikes are hidden while SAFE")
 	row.activate()
 	_expect(row.state == SpikeRow.State.WARNING, "activate immediately enters WARNING")
-	_expect(row.get_node("WarningPolygon").visible, "warning is shown during WARNING")
-	_expect(not row.get_node("SpikePolygon").visible, "spikes remain hidden during WARNING")
+	_expect(row.get_node("WarningTiles").visible, "warning is shown during WARNING")
+	_expect(not row.get_node("SpikeTiles").visible, "spikes remain hidden during WARNING")
 	await create_timer(0.02).timeout
 	_expect(row.state == SpikeRow.State.WARNING, "warning lasts for warning_duration")
 	await create_timer(0.06).timeout
 	_expect(row.state == SpikeRow.State.ACTIVE, "row enters ACTIVE after warning")
-	_expect(not row.get_node("WarningPolygon").visible, "warning hides when ACTIVE begins")
-	_expect(row.get_node("SpikePolygon").visible, "spikes show when ACTIVE begins")
+	_expect(not row.get_node("WarningTiles").visible, "warning hides when ACTIVE begins")
+	_expect(row.get_node("SpikeTiles").visible, "spikes show when ACTIVE begins")
 	await row.activation_finished
 	_expect(row.state == SpikeRow.State.SAFE, "row returns SAFE after activation")
 	_expect(body.damage_received == 20, "body present throughout is damaged exactly once")
