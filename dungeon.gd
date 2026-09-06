@@ -3,6 +3,8 @@ extends Node2D
 const LEVEL_2_SKELETON_SCENE: PackedScene = preload("res://skeleton.tscn")
 const LEVEL_2_TOTAL_ENEMIES: int = 15
 const LEVEL_3_TOTAL_ENEMIES: int = 6
+const ENEMY_COUNTER_NORMAL_Y: float = 24.0
+const ENEMY_COUNTER_LEVEL_3_Y: float = 140.0
 
 @onready var exit_to_level_2: TileMapLayer = $ExitToLevel2
 @onready var exit_to_level_3: TileMapLayer = $ExitToLevel3
@@ -316,5 +318,8 @@ func unlock_path_after_level(completed_level: int) -> void:
 
 func _on_level_entrance_entered(level_number: int) -> void:
 	current_level = level_number
+	enemy_counter_label.position.y = (
+		ENEMY_COUNTER_LEVEL_3_Y if level_number == 3 else ENEMY_COUNTER_NORMAL_Y
+	)
 	if level_number == 3:
 		level_3_traps.start_encounter()
