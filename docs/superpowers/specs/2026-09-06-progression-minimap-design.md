@@ -99,6 +99,10 @@ Automated tests will verify:
 
 Focused minimap tests and the existing dungeon level-clear tests must pass before the feature is considered complete.
 
+## Code Attribution
+
+Every new or modified minimap code section must include a concise comment containing `Huang Wan Jun 2204536` and explaining the purpose of that section. Attribution comments apply to scripts and hand-authored test logic. They are not repeated on every line or inserted into generated scene data.
+
 ## Out of Scope
 
 - Continuous walk-based fog of war
