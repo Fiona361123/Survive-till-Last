@@ -63,6 +63,7 @@ func _initialize() -> void:
 
 	minimap.queue_free()
 	await process_frame
+	await _test_death_markers(packed)
 
 	# Huang Wan Jun 2204536 - Integrate minimap progress with the dungeon HUD and entrances.
 	var dungeon_scene := load("res://Dungeon.tscn") as PackedScene
@@ -70,6 +71,7 @@ func _initialize() -> void:
 	if dungeon_scene != null:
 		var dungeon := dungeon_scene.instantiate() as Node2D
 		root.add_child(dungeon)
+		_test_dungeon_geometry(dungeon)
 		await process_frame
 		var dungeon_minimap := dungeon.get_node_or_null(
 			"LevelClearUI/DungeonMinimap"
@@ -95,6 +97,68 @@ func _initialize() -> void:
 		dungeon.queue_free()
 		await process_frame
 	quit(0 if failures == 0 else 1)
+
+# Huang Wan Jun 2204536 - Catch misplaced footprints using real scene transforms before actors move.
+func _test_dungeon_geometry(dungeon: Node2D) -> void:
+	var minimap := dungeon.get_node("LevelClearUI/DungeonMinimap") as DungeonMinimap
+	_expect_section_contains(minimap, 1, dungeon.get_node("Player").global_position, "player start")
+	_expect_section_contains(minimap, 1, dungeon.get_node("Map Size/skeleton").global_position, "Level 1 skeleton")
+	for enemy in dungeon.get_node("Level2Enemies/InitialSkeletons").get_children():
+		_expect_section_contains(minimap, 2, enemy.global_position, enemy.name)
+	for spawn in dungeon.get_node("Level2Enemies/SpawnPoints").get_children():
+		_expect_section_contains(minimap, 2, spawn.global_position, spawn.name)
+	for enemy in dungeon.get_node("Level3Enemies").get_children():
+		_expect_section_contains(minimap, 3, enemy.global_position, enemy.name)
+	_expect_section_contains(minimap, 4, dungeon.get_node("RangedEnemy").global_position, "boss room enemy")
+	for entry in [[2, "Level2Entrance"], [3, "Level3Entrance"], [4, "BossEntrance"]]:
+		var collision := dungeon.get_node(String(entry[1]) + "/CollisionPolygon2D") as CollisionPolygon2D
+		var center := Vector2.ZERO
+		for vertex in collision.polygon:
+			center += vertex
+		center /= collision.polygon.size()
+		_expect_section_contains(minimap, entry[0], collision.to_global(center), entry[1])
+	_expect_section_contains(minimap, 4, Vector2(960, -1420), "boss entrance origin")
+	var boundary := dungeon.get_node("Wall/FirstLevelWallArea/EnemyBoundary/BoundaryPolygon") as CollisionPolygon2D
+	for vertex in boundary.polygon:
+		_expect_section_contains(minimap, 1, boundary.to_global(vertex).lerp(Vector2(702, 99), 0.01), "Level 1 boundary interior")
+	var map_boundary := dungeon.get_node("Map Size/CollisionPolygon2D") as CollisionPolygon2D
+	for vertex in map_boundary.polygon:
+		_expect(minimap.world_bounds.has_point(map_boundary.to_global(vertex)), "world bounds contain dungeon boundary")
+
+# Huang Wan Jun 2204536 - Assert that actors occupy their section both in world space and on the drawn map.
+func _expect_section_contains(minimap: DungeonMinimap, level: int, position: Vector2, label: String) -> void:
+	var polygon: PackedVector2Array = DungeonMinimap.LEVEL_POLYGONS[level]
+	_expect(Geometry2D.is_point_in_polygon(position, polygon), "%s lies in Level %d footprint" % [label, level])
+	var mapped_polygon := PackedVector2Array()
+	for vertex in polygon:
+		mapped_polygon.append(minimap.world_to_minimap(vertex))
+	_expect(Geometry2D.is_point_in_polygon(minimap.world_to_minimap(position), mapped_polygon),
+		"%s marker lies on Level %d floor" % [label, level])
+
+# Huang Wan Jun 2204536 - Exercise lethal damage on actual enemy scenes while their death animations remain alive.
+func _test_death_markers(minimap_scene: PackedScene) -> void:
+	var arena := Node2D.new()
+	root.add_child(arena)
+	current_scene = arena
+	var minimap := minimap_scene.instantiate() as DungeonMinimap
+	arena.add_child(minimap)
+	for scene_path in ["res://skeleton.tscn", "res://Enemy/slime.tscn", "res://RangedEnemy.tscn"]:
+		var enemy := (load(scene_path) as PackedScene).instantiate() as Node2D
+		enemy.process_mode = Node.PROCESS_MODE_DISABLED
+		enemy.add_to_group("level1_enemy")
+		arena.add_child(enemy)
+		minimap.refresh_markers()
+		_expect(minimap.get_enemy_markers().size() == 1, "%s living enemy is marked" % scene_path)
+		enemy.call("take_damage", enemy.get("current_health"))
+		_expect(enemy.is_inside_tree() and not enemy.is_queued_for_deletion(), "%s dead enemy remains in-tree for its animation" % scene_path)
+		minimap.refresh_markers()
+		_expect(minimap.get_enemy_markers().is_empty(), "%s zero-health enemy immediately disappears" % scene_path)
+		await create_timer(0.2).timeout
+		if is_instance_valid(enemy):
+			enemy.queue_free()
+		await process_frame
+	arena.queue_free()
+	await process_frame
 
 func _expect(condition: bool, message: String) -> void:
 	if condition:

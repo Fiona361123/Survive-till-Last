@@ -4,16 +4,26 @@ extends Control
 # Huang Wan Jun 2204536 - Define minimap framing and the allowed enemy group per level.
 const PANEL_PADDING: float = 10.0
 const ENEMY_GROUP_BY_LEVEL := {1: "level1_enemy", 2: "level2_enemy", 3: "level3_enemy", 4: "boss_enemy"}
-# Huang Wan Jun 2204536 - Share the fixed dungeon geometry without requiring constant expressions.
+# Huang Wan Jun 2204536 - Match each enemy script's DEATH enum so animated corpses never receive markers.
+const DEATH_STATE_BY_SCRIPT := {
+	"res://skeleton.gd": 6,
+	"res://Enemy/slime.gd": 3,
+	"res://RangedEnemy.gd": 7,
+}
+# Huang Wan Jun 2204536 - Share root-adjusted Dungeon.tscn footprints without requiring constant expressions.
 static var LEVEL_POLYGONS: Dictionary = {
-	1: PackedVector2Array([Vector2(-6500, 300), Vector2(-3600, -1150), Vector2(-1800, -250), Vector2(-4550, 1500)]),
-	2: PackedVector2Array([Vector2(-1850, -950), Vector2(850, -450), Vector2(2050, 700), Vector2(-750, 950)]),
-	3: PackedVector2Array([Vector2(2200, -900), Vector2(4650, -350), Vector2(4750, 1450), Vector2(2450, 1050)]),
-	4: PackedVector2Array([Vector2(700, 1250), Vector2(2600, 1550), Vector2(1550, 3300), Vector2(-200, 2600)]),
+	# Dungeon root (139, 71) plus Wall (-43, 6) and the Level 1 combat boundary.
+	1: PackedVector2Array([Vector2(863, -468), Vector2(-1056, 465), Vector2(734, 1359), Vector2(2653, 401)]),
+	# Dungeon-root adjusted Level 2 spawn arena and its transformed entrance around (-1397, 1591).
+	2: PackedVector2Array([Vector2(-5400, 700), Vector2(-3500, 600), Vector2(-1100, 1450), Vector2(-1200, 2500), Vector2(-1800, 3450), Vector2(-3500, 3500), Vector2(-5400, 2700)]),
+	# Dungeon-root adjusted Level 3 entrance around (3373, 71) and ranged-enemy arena.
+	3: PackedVector2Array([Vector2(3150, -300), Vector2(4450, -450), Vector2(5200, 100), Vector2(5050, 850), Vector2(3800, 1000), Vector2(3150, 250)]),
+	# Dungeon-root adjusted boss entrance around (960, -1420) and boss-room enemy.
+	4: PackedVector2Array([Vector2(650, -1550), Vector2(850, -2550), Vector2(1550, -2550), Vector2(1750, -2100), Vector2(1300, -1200), Vector2(800, -1200)]),
 }
 
 # Huang Wan Jun 2204536 - Store the dungeon extent and permanently discovered sections.
-@export var world_bounds: Rect2 = Rect2(-7100, -1700, 12000, 6200)
+@export var world_bounds: Rect2 = Rect2(-7100, -3300, 12500, 7500)
 var _revealed_levels: Array[int] = [1]
 
 # Huang Wan Jun 2204536 - Keep the active-level player and enemy marker snapshots.
@@ -59,9 +69,24 @@ func refresh_markers() -> void:
 	if not group_name.is_empty():
 		for candidate in scene_tree.get_nodes_in_group(group_name):
 			var enemy := candidate as Node2D
-			if is_instance_valid(enemy) and enemy.is_inside_tree() and not enemy.is_queued_for_deletion():
+			if _is_living_enemy(enemy):
 				_enemy_markers.append(world_to_minimap(enemy.global_position))
 	queue_redraw()
+
+# Huang Wan Jun 2204536 - Exclude queued, zero-health, and DEATH-state actors before their animations free them.
+func _is_living_enemy(enemy: Node2D) -> bool:
+	if not is_instance_valid(enemy) or not enemy.is_inside_tree() or enemy.is_queued_for_deletion():
+		return false
+	var health: Variant = enemy.get("current_health")
+	if health is int or health is float:
+		if health <= 0:
+			return false
+	var enemy_script := enemy.get_script() as Script
+	if enemy_script != null:
+		var death_state: Variant = DEATH_STATE_BY_SCRIPT.get(enemy_script.resource_path)
+		if death_state != null and enemy.get("current_state") == death_state:
+			return false
+	return true
 
 # Huang Wan Jun 2204536 - Return the latest player marker without exposing actor state.
 func get_player_marker() -> Variant:
@@ -101,7 +126,7 @@ func _draw() -> void:
 		var minimap_polygon := PackedVector2Array()
 		for world_vertex in world_polygon:
 			minimap_polygon.append(world_to_minimap(world_vertex))
-		draw_colored_polygon(minimap_polygon, Color(0.26, 0.38, 0.56, 0.86))
+		draw_colored_polygon(minimap_polygon, Color(0.58, 0.46, 0.30, 0.86))
 		draw_polyline(minimap_polygon + PackedVector2Array([minimap_polygon[0]]), Color(0.85, 0.68, 0.25, 1.0), 1.5, true)
 
 	# Huang Wan Jun 2204536 - Render active-level enemies and the player above the revealed map.
