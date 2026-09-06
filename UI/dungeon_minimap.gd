@@ -15,6 +15,8 @@ static var LEVEL_POLYGONS: Dictionary = {
 # Huang Wan Jun 2204536 - Store the dungeon extent and permanently discovered sections.
 @export var world_bounds: Rect2 = Rect2(-7100, -1700, 12000, 6200)
 var _revealed_levels: Array[int] = [1]
+
+# Huang Wan Jun 2204536 - Keep the active-level player and enemy marker snapshots.
 var _current_level: int = 1
 var _player_marker: Variant = null
 var _enemy_markers: PackedVector2Array = PackedVector2Array()
