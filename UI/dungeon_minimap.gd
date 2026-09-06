@@ -41,7 +41,8 @@ func world_to_minimap(world_position: Vector2) -> Vector2:
 	var fitted_origin := drawable.position + (drawable.size - fitted_size) * 0.5
 	var normalized := (world_position - world_bounds.position) / safe_world_size
 	var mapped := fitted_origin + normalized * fitted_size
-	return mapped.clamp(drawable.position, drawable.end)
+	var drawable_interior_end := drawable.end - Vector2.ONE * 0.001
+	return mapped.clamp(drawable.position, drawable_interior_end)
 
 # Huang Wan Jun 2204536 - Draw the panel and the dungeon regions discovered so far.
 func _draw() -> void:
