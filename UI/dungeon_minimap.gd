@@ -25,6 +25,7 @@ func reveal_level(level_number: int) -> void:
 func is_level_revealed(level_number: int) -> bool:
 	return _revealed_levels.has(level_number)
 
+# Huang Wan Jun 2204536 - Return a copy of the permanently revealed dungeon sections.
 func get_revealed_levels() -> Array[int]:
 	return _revealed_levels.duplicate()
 
