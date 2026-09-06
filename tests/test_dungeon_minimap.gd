@@ -17,6 +17,15 @@ func _initialize() -> void:
 	_expect(minimap.offset_right == -24.0 and minimap.offset_top == 96.0, "minimap sits directly below the store with a 24 pixel right gap")
 	_expect(minimap.size == Vector2(230.0, 160.0), "minimap has the designed compact size")
 	_expect(minimap.get_revealed_levels() == [1], "only Level 1 starts revealed")
+	# Huang Wan Jun 2204536 - The discovered section should fill the map instead of appearing tiny.
+	var mapped_level_one := PackedVector2Array()
+	for vertex in DungeonMinimap.LEVEL_POLYGONS[1]:
+		mapped_level_one.append(minimap.world_to_minimap(vertex))
+	var mapped_level_one_bounds := Rect2(mapped_level_one[0], Vector2.ZERO)
+	for mapped_vertex in mapped_level_one:
+		mapped_level_one_bounds = mapped_level_one_bounds.expand(mapped_vertex)
+	_expect(mapped_level_one_bounds.size.x >= minimap.get_drawable_rect().size.x * 0.75,
+		"revealed Level 1 fills most of the minimap width")
 	minimap.reveal_level(2)
 	minimap.reveal_level(2)
 	_expect(minimap.get_revealed_levels() == [1, 2], "reveals are permanent and idempotent")
@@ -129,6 +138,8 @@ func _test_dungeon_geometry(dungeon: Node2D) -> void:
 func _expect_section_contains(minimap: DungeonMinimap, level: int, position: Vector2, label: String) -> void:
 	var polygon: PackedVector2Array = DungeonMinimap.LEVEL_POLYGONS[level]
 	_expect(Geometry2D.is_point_in_polygon(position, polygon), "%s lies in Level %d footprint" % [label, level])
+	if not minimap.is_level_revealed(level):
+		return
 	var mapped_polygon := PackedVector2Array()
 	for vertex in polygon:
 		mapped_polygon.append(minimap.world_to_minimap(vertex))

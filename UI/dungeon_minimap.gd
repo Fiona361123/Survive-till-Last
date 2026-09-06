@@ -100,14 +100,32 @@ func get_enemy_markers() -> PackedVector2Array:
 func get_drawable_rect() -> Rect2:
 	return Rect2(Vector2.ONE * PANEL_PADDING, size - Vector2.ONE * PANEL_PADDING * 2.0)
 
+# Huang Wan Jun 2204536 - Frame only discovered sections so the visible map uses the available panel space.
+func _get_visible_world_bounds() -> Rect2:
+	var has_vertex := false
+	var visible_bounds := Rect2()
+	for level_number in _revealed_levels:
+		var polygon: PackedVector2Array = LEVEL_POLYGONS.get(level_number, PackedVector2Array())
+		for vertex in polygon:
+			if not has_vertex:
+				visible_bounds = Rect2(vertex, Vector2.ZERO)
+				has_vertex = true
+			else:
+				visible_bounds = visible_bounds.expand(vertex)
+	if not has_vertex:
+		return world_bounds
+	var margin := maxf(visible_bounds.size.x, visible_bounds.size.y) * 0.08
+	return visible_bounds.grow(margin)
+
 # Huang Wan Jun 2204536 - Map world coordinates with one centered, aspect-preserving transform.
 func world_to_minimap(world_position: Vector2) -> Vector2:
 	var drawable := get_drawable_rect()
-	var safe_world_size := Vector2(maxf(world_bounds.size.x, 1.0), maxf(world_bounds.size.y, 1.0))
+	var visible_world_bounds := _get_visible_world_bounds()
+	var safe_world_size := Vector2(maxf(visible_world_bounds.size.x, 1.0), maxf(visible_world_bounds.size.y, 1.0))
 	var scale_factor := minf(drawable.size.x / safe_world_size.x, drawable.size.y / safe_world_size.y)
 	var fitted_size := safe_world_size * scale_factor
 	var fitted_origin := drawable.position + (drawable.size - fitted_size) * 0.5
-	var normalized := (world_position - world_bounds.position) / safe_world_size
+	var normalized := (world_position - visible_world_bounds.position) / safe_world_size
 	var mapped := fitted_origin + normalized * fitted_size
 	var drawable_interior_end := drawable.end - Vector2.ONE * 0.001
 	return mapped.clamp(drawable.position, drawable_interior_end)
