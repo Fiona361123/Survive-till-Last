@@ -1,7 +1,9 @@
 class_name DungeonMinimap
 extends Control
 
+# Huang Wan Jun 2204536 - Define minimap framing and the allowed enemy group per level.
 const PANEL_PADDING: float = 10.0
+const ENEMY_GROUP_BY_LEVEL := {1: "level1_enemy", 2: "level2_enemy", 3: "level3_enemy", 4: "boss_enemy"}
 # Huang Wan Jun 2204536 - Share the fixed dungeon geometry without requiring constant expressions.
 static var LEVEL_POLYGONS: Dictionary = {
 	1: PackedVector2Array([Vector2(-6500, 300), Vector2(-3600, -1150), Vector2(-1800, -250), Vector2(-4550, 1500)]),
@@ -13,6 +15,9 @@ static var LEVEL_POLYGONS: Dictionary = {
 # Huang Wan Jun 2204536 - Store the dungeon extent and permanently discovered sections.
 @export var world_bounds: Rect2 = Rect2(-7100, -1700, 12000, 6200)
 var _revealed_levels: Array[int] = [1]
+var _current_level: int = 1
+var _player_marker: Variant = null
+var _enemy_markers: PackedVector2Array = PackedVector2Array()
 
 # Huang Wan Jun 2204536 - Permanently reveal one valid dungeon section.
 func reveal_level(level_number: int) -> void:
@@ -28,6 +33,41 @@ func is_level_revealed(level_number: int) -> bool:
 # Huang Wan Jun 2204536 - Return a copy of the permanently revealed dungeon sections.
 func get_revealed_levels() -> Array[int]:
 	return _revealed_levels.duplicate()
+
+# Huang Wan Jun 2204536 - Select the one enemy group allowed to appear on the map.
+func set_current_level(level_number: int) -> void:
+	_current_level = level_number
+	refresh_markers()
+
+# Huang Wan Jun 2204536 - Read the level used to filter enemy markers.
+func get_current_level() -> int:
+	return _current_level
+
+# Huang Wan Jun 2204536 - Snapshot valid player and active-level enemy positions safely.
+func refresh_markers() -> void:
+	_player_marker = null
+	_enemy_markers.clear()
+	var scene_tree := get_tree()
+	if scene_tree == null:
+		return
+	var player := scene_tree.get_first_node_in_group("player") as Node2D
+	if is_instance_valid(player) and player.is_inside_tree():
+		_player_marker = world_to_minimap(player.global_position)
+	var group_name := StringName(ENEMY_GROUP_BY_LEVEL.get(_current_level, ""))
+	if not group_name.is_empty():
+		for candidate in scene_tree.get_nodes_in_group(group_name):
+			var enemy := candidate as Node2D
+			if is_instance_valid(enemy) and enemy.is_inside_tree() and not enemy.is_queued_for_deletion():
+				_enemy_markers.append(world_to_minimap(enemy.global_position))
+	queue_redraw()
+
+# Huang Wan Jun 2204536 - Return the latest player marker without exposing actor state.
+func get_player_marker() -> Variant:
+	return _player_marker
+
+# Huang Wan Jun 2204536 - Return a copy of the active-level enemy marker snapshot.
+func get_enemy_markers() -> PackedVector2Array:
+	return _enemy_markers.duplicate()
 
 # Huang Wan Jun 2204536 - Keep map content inset from its decorative frame.
 func get_drawable_rect() -> Rect2:
@@ -45,6 +85,10 @@ func world_to_minimap(world_position: Vector2) -> Vector2:
 	var drawable_interior_end := drawable.end - Vector2.ONE * 0.001
 	return mapped.clamp(drawable.position, drawable_interior_end)
 
+# Huang Wan Jun 2204536 - Keep marker snapshots synchronized with moving dungeon actors.
+func _process(_delta: float) -> void:
+	refresh_markers()
+
 # Huang Wan Jun 2204536 - Draw the panel and the dungeon regions discovered so far.
 func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0.03, 0.04, 0.08, 0.82), true)
@@ -57,3 +101,11 @@ func _draw() -> void:
 			minimap_polygon.append(world_to_minimap(world_vertex))
 		draw_colored_polygon(minimap_polygon, Color(0.26, 0.38, 0.56, 0.86))
 		draw_polyline(minimap_polygon + PackedVector2Array([minimap_polygon[0]]), Color(0.85, 0.68, 0.25, 1.0), 1.5, true)
+
+	# Huang Wan Jun 2204536 - Render active-level enemies and the player above the revealed map.
+	for enemy_marker in _enemy_markers:
+		draw_circle(enemy_marker, 3.0, Color(0.9, 0.16, 0.16, 1.0))
+	if _player_marker is Vector2:
+		var player_marker: Vector2 = _player_marker
+		draw_circle(player_marker, 5.0, Color(0.2, 0.55, 1.0, 1.0))
+		draw_circle(player_marker, 6.0, Color(0.85, 0.92, 1.0, 1.0), false, 1.0, true)
