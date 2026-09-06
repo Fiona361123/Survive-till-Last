@@ -71,6 +71,7 @@
 [ext_resource type="PackedScene" path="res://Level3Traps/SpikeRow.tscn" id="69_spike_row"]
 [ext_resource type="PackedScene" path="res://Level3Traps/FireSweep.tscn" id="70_fire_sweep"]
 [ext_resource type="PackedScene" path="res://Level3Traps/RockStrike.tscn" id="71_rock_strike"]
+[ext_resource type="PackedScene" path="res://Level3Traps/SpikeTileVisual.tscn" id="72_spike_visual"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_yrkb7"]
 texture = ExtResource("1_3tt66")
@@ -887,6 +888,32 @@ tile_count = 2
 position = Vector2(4374, 315)
 tile_count = 3
 tile_step = Vector2(128, 64)
+
+[node name="SpikeEditorVisuals" type="Node2D" parent="Level3Traps"]
+
+[node name="Near0" parent="Level3Traps/SpikeEditorVisuals" instance=ExtResource("72_spike_visual")]
+position = Vector2(3478, 187)
+
+[node name="Near1" parent="Level3Traps/SpikeEditorVisuals" instance=ExtResource("72_spike_visual")]
+position = Vector2(3606, 251)
+
+[node name="Near2" parent="Level3Traps/SpikeEditorVisuals" instance=ExtResource("72_spike_visual")]
+position = Vector2(3734, 315)
+
+[node name="Middle0" parent="Level3Traps/SpikeEditorVisuals" instance=ExtResource("72_spike_visual")]
+position = Vector2(3990, 315)
+
+[node name="Middle1" parent="Level3Traps/SpikeEditorVisuals" instance=ExtResource("72_spike_visual")]
+position = Vector2(4118, 251)
+
+[node name="Far0" parent="Level3Traps/SpikeEditorVisuals" instance=ExtResource("72_spike_visual")]
+position = Vector2(4374, 315)
+
+[node name="Far1" parent="Level3Traps/SpikeEditorVisuals" instance=ExtResource("72_spike_visual")]
+position = Vector2(4502, 379)
+
+[node name="Far2" parent="Level3Traps/SpikeEditorVisuals" instance=ExtResource("72_spike_visual")]
+position = Vector2(4630, 443)
 
 [node name="FireSweep" parent="Level3Traps" unique_id=280631447 instance=ExtResource("70_fire_sweep")]
 position = Vector2(3000, 300)

@@ -254,6 +254,9 @@ func _test_dungeon_scene_has_level_clear_nodes() -> void:
 	var spike_rows := dungeon.get_node_or_null("Level3Traps/SpikeRows")
 	_expect(spike_rows != null and spike_rows.get_child_count() == 3,
 		"Level 3 has exactly three spike rows")
+	var spike_editor_visuals := dungeon.get_node_or_null("Level3Traps/SpikeEditorVisuals")
+	_expect(spike_editor_visuals != null and spike_editor_visuals.get_child_count() == 8,
+		"Dungeon stores eight direct spike-tile previews for the authored 3/2/3 layout")
 	if spike_rows != null:
 		var authored_tile_counts: Array[int] = []
 		for row in spike_rows.get_children():

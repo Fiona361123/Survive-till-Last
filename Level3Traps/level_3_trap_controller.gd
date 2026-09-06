@@ -23,6 +23,13 @@ var _warned_phases: Dictionary = {}
 const SPIKE_PATTERNS := [[0, 2], [1]]
 
 
+func _ready() -> void:
+	if not Engine.is_editor_hint():
+		var editor_visuals := get_node_or_null("SpikeEditorVisuals") as Node2D
+		if editor_visuals != null:
+			editor_visuals.visible = false
+
+
 func start_encounter() -> void:
 	if is_running:
 		return
