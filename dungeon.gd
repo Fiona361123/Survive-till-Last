@@ -2,6 +2,7 @@ extends Node2D
 
 const LEVEL_2_SKELETON_SCENE: PackedScene = preload("res://skeleton.tscn")
 const LEVEL_2_TOTAL_ENEMIES: int = 15
+const LEVEL_3_TOTAL_ENEMIES: int = 6
 
 @onready var exit_to_level_2: TileMapLayer = $ExitToLevel2
 @onready var exit_to_level_3: TileMapLayer = $ExitToLevel3
@@ -16,6 +17,7 @@ const LEVEL_2_TOTAL_ENEMIES: int = 15
 @onready var level_2_enemies: Node2D = $Level2Enemies
 @onready var level_2_second_wave: Node2D = $Level2Enemies/SecondWave
 @onready var level_2_spawn_points: Node2D = $Level2Enemies/SpawnPoints
+@onready var level_3_enemies: Node2D = $Level3Enemies
 @onready var level_3_traps: Level3TrapController = $Level3Traps
 @onready var weapon_progress: Node = get_node("/root/WeaponProgress")
 
@@ -48,6 +50,7 @@ func _ready() -> void:
 	# Huang Wan Jun 2204536 - Watch only skeletons inside the Level 2 enemy container.
 	call_deferred("_ensure_initial_level_two_enemies_are_clear")
 	call_deferred("_watch_level_two_enemies")
+	call_deferred("_watch_level_three_enemies")
 
 
 func _process(_delta: float) -> void:
@@ -93,8 +96,10 @@ func debug_clear_current_level() -> int:
 				enemy.queue_free()
 			return enemies.size()
 		3:
-			_complete_level_three()
-			return 0
+			var enemies := _get_level_three_enemy_nodes()
+			for enemy in enemies:
+				enemy.queue_free()
+			return enemies.size()
 		_:
 			return 0
 
@@ -152,6 +157,30 @@ func _get_level_two_enemy_nodes() -> Array[Node]:
 		if level_2_enemies.is_ancestor_of(enemy_node):
 			level_enemies.append(enemy_node)
 	return level_enemies
+
+
+func _get_level_three_enemy_nodes() -> Array[Node]:
+	var level_enemies: Array[Node] = []
+	var scene_tree := get_tree()
+	if scene_tree == null or not is_inside_tree() or not is_instance_valid(level_3_enemies):
+		return level_enemies
+	for enemy_node in scene_tree.get_nodes_in_group("level3_enemy"):
+		if level_3_enemies.is_ancestor_of(enemy_node):
+			level_enemies.append(enemy_node)
+	return level_enemies
+
+
+func _watch_level_three_enemies() -> void:
+	while is_inside_tree() and not level_3_cleared:
+		var scene_tree := get_tree()
+		if scene_tree == null:
+			return
+		await scene_tree.process_frame
+		if not is_inside_tree() or get_tree() == null:
+			return
+		if current_level == 3 and _get_level_three_enemy_nodes().is_empty():
+			_complete_level_three()
+			return
 
 
 func _spawn_level_two_second_wave() -> void:
@@ -257,6 +286,14 @@ func _update_enemy_counter() -> void:
 			enemy_counter_label.text = (
 				"LEVEL 2\nEnemies Killed: %d / %d\nEnemies Left: %d"
 				% [killed, LEVEL_2_TOTAL_ENEMIES, remaining]
+			)
+		3:
+			enemy_counter_label.show()
+			var remaining := _get_level_three_enemy_nodes().size()
+			var killed := clampi(LEVEL_3_TOTAL_ENEMIES - remaining, 0, LEVEL_3_TOTAL_ENEMIES)
+			enemy_counter_label.text = (
+				"LEVEL 3\nEnemies Killed: %d / %d\nEnemies Left: %d"
+				% [killed, LEVEL_3_TOTAL_ENEMIES, remaining]
 			)
 		_:
 			enemy_counter_label.hide()

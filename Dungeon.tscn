@@ -943,6 +943,27 @@ polygon = PackedVector2Array(2450, -380, 3150, -300, 3650, -50, 3650, 250, 3150,
 
 [node name="ActiveRockStrikes" type="Node2D" parent="Level3Traps" unique_id=362638635]
 
+[node name="Level3Enemies" type="Node2D" parent="."]
+y_sort_enabled = true
+
+[node name="RangedEnemy1" parent="Level3Enemies" groups=["level3_enemy"] instance=ExtResource("48_y2adg")]
+position = Vector2(3550, -80)
+
+[node name="RangedEnemy2" parent="Level3Enemies" groups=["level3_enemy"] instance=ExtResource("48_y2adg")]
+position = Vector2(3970, -150)
+
+[node name="RangedEnemy3" parent="Level3Enemies" groups=["level3_enemy"] instance=ExtResource("48_y2adg")]
+position = Vector2(4500, -40)
+
+[node name="RangedEnemy4" parent="Level3Enemies" groups=["level3_enemy"] instance=ExtResource("48_y2adg")]
+position = Vector2(4820, 180)
+
+[node name="RangedEnemy5" parent="Level3Enemies" groups=["level3_enemy"] instance=ExtResource("48_y2adg")]
+position = Vector2(4680, 650)
+
+[node name="RangedEnemy6" parent="Level3Enemies" groups=["level3_enemy"] instance=ExtResource("48_y2adg")]
+position = Vector2(3820, 690)
+
 [node name="Player" parent="." unique_id=1596675552 groups=["player"] instance=ExtResource("6_yrkb7")]
 y_sort_enabled = true
 position = Vector2(563, 28)
