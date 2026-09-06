@@ -223,6 +223,7 @@ func _complete_level_two() -> void:
 		return
 
 	level_2_cleared = true
+	enemy_counter_label.position.y = ENEMY_COUNTER_LEVEL_3_Y
 	weapon_progress.register_level_clear(2)
 	unlock_path_after_level(2)
 	await _show_level_clear_message(

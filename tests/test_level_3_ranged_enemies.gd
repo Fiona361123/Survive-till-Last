@@ -26,6 +26,11 @@ func _initialize() -> void:
 	var counter := dungeon.get_node("LevelClearUI/EnemyCounterLabel") as Label
 	_expect(is_equal_approx(counter.offset_top, 24.0),
 		"enemy counter starts at its normal top position")
+	dungeon.call("_on_level_entrance_entered", 2)
+	dungeon.call("_complete_level_two")
+	_expect(is_equal_approx(counter.offset_top, 140.0),
+		"clearing Level 2 immediately lowers its completed counter")
+	dungeon.set("level_2_cleared", false)
 	dungeon.call("_on_level_entrance_entered", 3)
 	_expect(is_equal_approx(counter.offset_top, 140.0),
 		"Level 3 moves the enemy counter below the Guard Halo panel")
