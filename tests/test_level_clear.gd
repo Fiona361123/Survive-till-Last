@@ -247,6 +247,9 @@ func _test_dungeon_scene_has_level_clear_nodes() -> void:
 		"Dungeon has a LevelClearUI/ClearLabel")
 	_expect(dungeon.get_node_or_null("LevelClearUI/EnemyCounterLabel") is Label,
 		"Dungeon has a LevelClearUI/EnemyCounterLabel")
+	# Huang Wan Jun 2204536 - The dungeon HUD must contain the progression minimap.
+	_expect(dungeon.get_node_or_null("LevelClearUI/DungeonMinimap") is DungeonMinimap,
+		"Dungeon has a bottom-right progression minimap")
 	_expect((dungeon.get_node_or_null("LevelClearUI") as CanvasLayer).visible,
 		"Level clear UI canvas remains visible for the enemy counter")
 	var level_3_traps := dungeon.get_node_or_null("Level3Traps") as Node2D

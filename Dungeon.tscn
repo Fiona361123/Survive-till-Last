@@ -72,6 +72,7 @@
 [ext_resource type="PackedScene" path="res://Level3Traps/FireSweep.tscn" id="70_fire_sweep"]
 [ext_resource type="PackedScene" path="res://Level3Traps/RockStrike.tscn" id="71_rock_strike"]
 [ext_resource type="PackedScene" path="res://Level3Traps/SpikeTileVisual.tscn" id="72_spike_visual"]
+[ext_resource type="PackedScene" path="res://UI/DungeonMinimap.tscn" id="73_dungeon_minimap"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_yrkb7"]
 texture = ExtResource("1_3tt66")
@@ -1033,6 +1034,8 @@ position = Vector2(-0.8944092, -1.7888184)
 polygon = PackedVector2Array(79.15674, -132.37524, 222.26514, -132.37537, -99.728516, 299.1859, -243.73126, 297.3971)
 
 [node name="LevelClearUI" type="CanvasLayer" parent="." unique_id=666749467]
+
+[node name="DungeonMinimap" parent="LevelClearUI" instance=ExtResource("73_dungeon_minimap")]
 
 [node name="ClearLabel" type="Label" parent="LevelClearUI" unique_id=1581648146]
 offset_left = 326.0

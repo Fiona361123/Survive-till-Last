@@ -15,6 +15,7 @@ const ENEMY_COUNTER_LEVEL_3_Y: float = 140.0
 @onready var level_clear_ui: CanvasLayer = $LevelClearUI
 @onready var clear_label: Label = $LevelClearUI/ClearLabel
 @onready var enemy_counter_label: Label = $LevelClearUI/EnemyCounterLabel
+@onready var dungeon_minimap: DungeonMinimap = $LevelClearUI/DungeonMinimap
 @onready var enemy_spawner = $Wall/FirstLevelWallArea
 @onready var level_2_enemies: Node2D = $Level2Enemies
 @onready var level_2_second_wave: Node2D = $Level2Enemies/SecondWave
@@ -40,6 +41,10 @@ func _ready() -> void:
 	level_clear_ui.show()
 	clear_label.hide()
 	enemy_counter_label.show()
+
+	# Huang Wan Jun 2204536 - Start the dungeon HUD on the active, discovered level.
+	dungeon_minimap.reveal_level(1)
+	dungeon_minimap.set_current_level(current_level)
 
 	if enemy_spawner.has_signal("enemies_finished_spawning"):
 		enemy_spawner.connect(
@@ -303,6 +308,9 @@ func _update_enemy_counter() -> void:
 
 
 func unlock_path_after_level(completed_level: int) -> void:
+	# Huang Wan Jun 2204536 - Reveal only the section unlocked by this completion.
+	if completed_level >= 1 and completed_level <= 3:
+		dungeon_minimap.reveal_level(completed_level + 1)
 	match completed_level:
 		1:
 			exit_to_level_2.clear()
@@ -319,6 +327,7 @@ func unlock_path_after_level(completed_level: int) -> void:
 
 func _on_level_entrance_entered(level_number: int) -> void:
 	current_level = level_number
+	dungeon_minimap.set_current_level(level_number)
 	enemy_counter_label.position.y = (
 		ENEMY_COUNTER_LEVEL_3_Y if level_number == 3 else ENEMY_COUNTER_NORMAL_Y
 	)

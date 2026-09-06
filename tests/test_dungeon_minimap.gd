@@ -63,6 +63,37 @@ func _initialize() -> void:
 
 	minimap.queue_free()
 	await process_frame
+
+	# Huang Wan Jun 2204536 - Integrate minimap progress with the dungeon HUD and entrances.
+	var dungeon_scene := load("res://Dungeon.tscn") as PackedScene
+	_expect(dungeon_scene != null, "Dungeon scene loads for minimap integration")
+	if dungeon_scene != null:
+		var dungeon := dungeon_scene.instantiate() as Node2D
+		root.add_child(dungeon)
+		await process_frame
+		var dungeon_minimap := dungeon.get_node_or_null(
+			"LevelClearUI/DungeonMinimap"
+		) as DungeonMinimap
+		_expect(dungeon_minimap != null, "Dungeon HUD contains the progression minimap")
+		if dungeon_minimap != null:
+			_expect(dungeon_minimap.get_current_level() == 1,
+				"Dungeon minimap starts on Level 1")
+			dungeon.call("_on_level_entrance_entered", 2)
+			_expect(dungeon_minimap.get_current_level() == 2,
+				"entering Level 2 updates the dungeon minimap")
+			_expect(dungeon_minimap.get_revealed_levels() == [1],
+				"Dungeon starts with only Level 1 revealed")
+			dungeon.call("unlock_path_after_level", 1)
+			_expect(dungeon_minimap.get_revealed_levels() == [1, 2],
+				"clearing Level 1 reveals Level 2")
+			dungeon.call("unlock_path_after_level", 2)
+			_expect(dungeon_minimap.get_revealed_levels() == [1, 2, 3],
+				"clearing Level 2 reveals Level 3")
+			dungeon.call("unlock_path_after_level", 3)
+			_expect(dungeon_minimap.get_revealed_levels() == [1, 2, 3, 4],
+				"clearing Level 3 reveals the boss section")
+		dungeon.queue_free()
+		await process_frame
 	quit(0 if failures == 0 else 1)
 
 func _expect(condition: bool, message: String) -> void:
