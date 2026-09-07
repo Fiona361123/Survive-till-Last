@@ -21,6 +21,12 @@ static var LEVEL_POLYGONS: Dictionary = {
 	# Dungeon-root adjusted boss entrance around (960, -1420) and boss-room enemy.
 	4: PackedVector2Array([Vector2(650, -1550), Vector2(850, -2550), Vector2(1550, -2550), Vector2(1750, -2100), Vector2(1300, -1200), Vector2(800, -1200)]),
 }
+# Huang Wan Jun 2204536 - Trace the authored dungeon roads so revealed rooms form one continuous route.
+static var CORRIDOR_POLYGONS: Dictionary = {
+	1: PackedVector2Array([Vector2(-1165, 405), Vector2(-945, 505), Vector2(-1090, 1510), Vector2(-1310, 1410)]),
+	2: PackedVector2Array([Vector2(-1160, 1300), Vector2(-1040, 1560), Vector2(3230, 130), Vector2(3070, -130)]),
+	3: PackedVector2Array([Vector2(3050, -120), Vector2(3250, 120), Vector2(1060, -1320), Vector2(840, -1500)]),
+}
 
 # Huang Wan Jun 2204536 - Store the dungeon extent and permanently discovered sections.
 @export var world_bounds: Rect2 = Rect2(-7100, -3300, 13000, 7500)
@@ -45,6 +51,16 @@ func is_level_revealed(level_number: int) -> bool:
 # Huang Wan Jun 2204536 - Return a copy of the permanently revealed dungeon sections.
 func get_revealed_levels() -> Array[int]:
 	return _revealed_levels.duplicate()
+
+
+# Huang Wan Jun 2204536 - Reveal each road only after its destination level unlocks.
+func get_revealed_corridors() -> Array[int]:
+	var corridors: Array[int] = []
+	for corridor_number in CORRIDOR_POLYGONS:
+		if _revealed_levels.has(corridor_number + 1):
+			corridors.append(corridor_number)
+	corridors.sort()
+	return corridors
 
 # Huang Wan Jun 2204536 - Select the one enemy group allowed to appear on the map.
 func set_current_level(level_number: int) -> void:
@@ -112,6 +128,10 @@ func _get_visible_world_bounds() -> Rect2:
 				has_vertex = true
 			else:
 				visible_bounds = visible_bounds.expand(vertex)
+	for corridor_number in get_revealed_corridors():
+		var corridor: PackedVector2Array = CORRIDOR_POLYGONS[corridor_number]
+		for vertex in corridor:
+			visible_bounds = visible_bounds.expand(vertex)
 	if not has_vertex:
 		return world_bounds
 	var margin := maxf(visible_bounds.size.x, visible_bounds.size.y) * 0.08
@@ -138,6 +158,14 @@ func _process(_delta: float) -> void:
 func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0.03, 0.04, 0.08, 0.82), true)
 	draw_rect(Rect2(Vector2(0.5, 0.5), size - Vector2.ONE), Color(0.85, 0.68, 0.25, 0.9), false, 1.0)
+
+	# Huang Wan Jun 2204536 - Draw unlocked roads underneath rooms to show the next-level route.
+	for corridor_number in get_revealed_corridors():
+		var corridor_polygon := PackedVector2Array()
+		for world_vertex in CORRIDOR_POLYGONS[corridor_number]:
+			corridor_polygon.append(world_to_minimap(world_vertex))
+		draw_colored_polygon(corridor_polygon, Color(0.46, 0.35, 0.22, 0.9))
+		draw_polyline(corridor_polygon + PackedVector2Array([corridor_polygon[0]]), Color(0.85, 0.68, 0.25, 0.95), 1.3, true)
 
 	for level_number in _revealed_levels:
 		var world_polygon: PackedVector2Array = LEVEL_POLYGONS[level_number]

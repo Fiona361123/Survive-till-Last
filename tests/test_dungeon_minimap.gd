@@ -17,6 +17,8 @@ func _initialize() -> void:
 	_expect(minimap.offset_right == -24.0 and minimap.offset_top == 96.0, "minimap sits directly below the store with a 24 pixel right gap")
 	_expect(minimap.size == Vector2(230.0, 160.0), "minimap has the designed compact size")
 	_expect(minimap.get_revealed_levels() == [1], "only Level 1 starts revealed")
+	# Huang Wan Jun 2204536 - Reveal the next-level road together with the newly unlocked room.
+	_expect(minimap.get_revealed_corridors().is_empty(), "Level 1 starts with no future road revealed")
 	# Huang Wan Jun 2204536 - The discovered section should fill the map instead of appearing tiny.
 	var mapped_level_one := PackedVector2Array()
 	for vertex in DungeonMinimap.LEVEL_POLYGONS[1]:
@@ -29,6 +31,11 @@ func _initialize() -> void:
 	minimap.reveal_level(2)
 	minimap.reveal_level(2)
 	_expect(minimap.get_revealed_levels() == [1, 2], "reveals are permanent and idempotent")
+	_expect(minimap.get_revealed_corridors() == [1], "unlocking Level 2 reveals the Level 1 to 2 road")
+	minimap.reveal_level(3)
+	_expect(minimap.get_revealed_corridors() == [1, 2], "unlocking Level 3 reveals the Level 2 to 3 road")
+	minimap.reveal_level(4)
+	_expect(minimap.get_revealed_corridors() == [1, 2, 3], "unlocking the boss room reveals the final road")
 	var top_left := minimap.world_to_minimap(minimap.world_bounds.position)
 	var bottom_right := minimap.world_to_minimap(minimap.world_bounds.end)
 	_expect(minimap.get_drawable_rect().has_point(top_left), "world minimum maps inside drawable area")
