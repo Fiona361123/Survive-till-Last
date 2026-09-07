@@ -23,9 +23,9 @@ static var LEVEL_POLYGONS: Dictionary = {
 }
 # Huang Wan Jun 2204536 - Trace the authored dungeon roads so revealed rooms form one continuous route.
 static var CORRIDOR_POLYGONS: Dictionary = {
-	1: PackedVector2Array([Vector2(-1165, 405), Vector2(-945, 505), Vector2(-1090, 1510), Vector2(-1310, 1410)]),
-	2: PackedVector2Array([Vector2(-1160, 1300), Vector2(-1040, 1560), Vector2(3230, 130), Vector2(3070, -130)]),
-	3: PackedVector2Array([Vector2(3050, -120), Vector2(3250, 120), Vector2(1060, -1320), Vector2(840, -1500)]),
+	1: PackedVector2Array([Vector2(-95, 784), Vector2(31, 1034), Vector2(-1334, 1716), Vector2(-1460, 1466)]),
+	2: PackedVector2Array([Vector2(1688, 121), Vector2(1704, -159), Vector2(3381, -69), Vector2(3365, 211)]),
+	3: PackedVector2Array([Vector2(3021, -792), Vector2(2931, -526), Vector2(868, -1219), Vector2(958, -1485)]),
 }
 
 # Huang Wan Jun 2204536 - Store the dungeon extent and permanently discovered sections.

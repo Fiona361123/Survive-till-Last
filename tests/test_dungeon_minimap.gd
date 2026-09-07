@@ -144,6 +144,13 @@ func _test_dungeon_geometry(dungeon: Node2D) -> void:
 			center += vertex
 		center /= collision.polygon.size()
 		_expect_section_contains(minimap, entry[0], collision.to_global(center), entry[1])
+	# Huang Wan Jun 2204536 - Anchor every revealed road to its real gate tiles and destination entrance.
+	for route in [[1, "ExitToLevel2", "Level2Entrance"], [2, "ExitToLevel3", "Level3Entrance"], [3, "ExitToBoss", "BossEntrance"]]:
+		_expect_corridor_contains_gate_and_entrance(
+			minimap, route[0], dungeon.get_node(route[1]) as TileMapLayer,
+			dungeon.get_node(route[2] + "/CollisionPolygon2D") as CollisionPolygon2D,
+			"%s to %s" % [route[1], route[2]]
+		)
 	_expect_section_contains(minimap, 4, Vector2(960, -1420), "boss entrance origin")
 	var boundary := dungeon.get_node("Wall/FirstLevelWallArea/EnemyBoundary/BoundaryPolygon") as CollisionPolygon2D
 	for vertex in boundary.polygon:
@@ -163,6 +170,24 @@ func _expect_section_contains(minimap: DungeonMinimap, level: int, position: Vec
 		mapped_polygon.append(minimap.world_to_minimap(vertex))
 	_expect(Geometry2D.is_point_in_polygon(minimap.world_to_minimap(position), mapped_polygon),
 		"%s marker lies on Level %d floor" % [label, level])
+
+
+# Huang Wan Jun 2204536 - Ensure a minimap route follows the physical gate and the target-level trigger.
+func _expect_corridor_contains_gate_and_entrance(
+	minimap: DungeonMinimap, corridor_number: int, gate: TileMapLayer,
+	entrance: CollisionPolygon2D, label: String
+) -> void:
+	var gate_center := Vector2.ZERO
+	for cell in gate.get_used_cells():
+		gate_center += gate.to_global(gate.map_to_local(cell))
+	gate_center /= gate.get_used_cells().size()
+	var entrance_center := Vector2.ZERO
+	for point in entrance.polygon:
+		entrance_center += entrance.to_global(point)
+	entrance_center /= entrance.polygon.size()
+	var road: PackedVector2Array = DungeonMinimap.CORRIDOR_POLYGONS[corridor_number]
+	_expect(Geometry2D.is_point_in_polygon(gate_center, road), "%s road contains its gate" % label)
+	_expect(Geometry2D.is_point_in_polygon(entrance_center, road), "%s road contains its entrance" % label)
 
 # Huang Wan Jun 2204536 - Exercise lethal damage on actual enemy scenes while their death animations remain alive.
 func _test_death_markers(minimap_scene: PackedScene) -> void:
