@@ -22,6 +22,7 @@ const ENEMY_COUNTER_LEVEL_3_Y: float = 140.0
 @onready var level_2_spawn_points: Node2D = $Level2Enemies/SpawnPoints
 @onready var level_3_enemies: Node2D = $Level3Enemies
 @onready var level_3_traps: Level3TrapController = $Level3Traps
+@onready var boss_encounter: BossEncounterController = $BossEncounter
 @onready var weapon_progress: Node = get_node("/root/WeaponProgress")
 
 var level_cleared: bool = false
@@ -303,6 +304,19 @@ func _update_enemy_counter() -> void:
 				"LEVEL 3\nEnemies Killed: %d / %d\nEnemies Left: %d"
 				% [killed, LEVEL_3_TOTAL_ENEMIES, remaining]
 			)
+		4:
+			# Huang Wan Jun 2204536 - Show preparation-wave progress without claiming the boss is defeated.
+			enemy_counter_label.show()
+			var remaining := boss_encounter.get_wave_remaining()
+			match boss_encounter.get_encounter_state():
+				BossEncounterController.State.WAVE_1:
+					enemy_counter_label.text = "BOSS TRIAL - WAVE 1\nEnemies Defeated: %d / 5\nEnemies Left: %d" % [5 - remaining, remaining]
+				BossEncounterController.State.WAVE_2:
+					enemy_counter_label.text = "BOSS TRIAL - WAVE 2\nEnemies Defeated: %d / 5\nEnemies Left: %d" % [5 - remaining, remaining]
+				BossEncounterController.State.BOSS_READY:
+					enemy_counter_label.text = "BOSS ARENA READY"
+				_:
+					enemy_counter_label.text = "BOSS TRIAL"
 		_:
 			enemy_counter_label.hide()
 
@@ -334,3 +348,6 @@ func _on_level_entrance_entered(level_number: int) -> void:
 	)
 	if level_number == 3:
 		level_3_traps.start_encounter()
+	elif level_number == 4:
+		# Huang Wan Jun 2204536 - Arm the boss-room trial once when its entrance becomes current.
+		boss_encounter.start_encounter()

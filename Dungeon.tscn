@@ -73,6 +73,7 @@
 [ext_resource type="PackedScene" path="res://Level3Traps/RockStrike.tscn" id="71_rock_strike"]
 [ext_resource type="PackedScene" path="res://Level3Traps/SpikeTileVisual.tscn" id="72_spike_visual"]
 [ext_resource type="PackedScene" path="res://UI/DungeonMinimap.tscn" id="73_dungeon_minimap"]
+[ext_resource type="PackedScene" path="res://BossEncounter/BossEncounter.tscn" id="74_boss_encounter"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_yrkb7"]
 texture = ExtResource("1_3tt66")
@@ -969,9 +970,6 @@ position = Vector2(3820, 690)
 y_sort_enabled = true
 position = Vector2(563, 28)
 
-[node name="RangedEnemy" parent="." unique_id=1549030439 instance=ExtResource("48_y2adg")]
-position = Vector2(1054, -2268)
-
 [node name="Map Size" type="StaticBody2D" parent="." unique_id=640551829 node_paths=PackedStringArray("player")]
 position = Vector2(1, 91)
 collision_mask = 15
@@ -1032,6 +1030,9 @@ target_level = 4
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="BossEntrance" unique_id=1946975395]
 position = Vector2(-0.8944092, -1.7888184)
 polygon = PackedVector2Array(79.15674, -132.37524, 222.26514, -132.37537, -99.728516, 299.1859, -243.73126, 297.3971)
+
+[node name="BossEncounter" parent="." instance=ExtResource("74_boss_encounter")]
+position = Vector2(1054, -2268)
 
 [node name="LevelClearUI" type="CanvasLayer" parent="." unique_id=666749467]
 

@@ -1,0 +1,83 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://BossEncounter/boss_encounter_controller.gd" id="1_controller"]
+[ext_resource type="PackedScene" path="res://Enemy/slime.tscn" id="2_slime"]
+[ext_resource type="PackedScene" path="res://skeleton.tscn" id="3_skeleton"]
+[ext_resource type="PackedScene" path="res://RangedEnemy.tscn" id="4_ranged"]
+[ext_resource type="PackedScene" path="res://Level3Traps/SpikeRow.tscn" id="5_spike"]
+[ext_resource type="PackedScene" path="res://Level3Traps/FireSweep.tscn" id="6_fire"]
+
+[sub_resource type="RectangleShape2D" id="EntranceTriggerShape"]
+size = Vector2(300, 180)
+
+[sub_resource type="RectangleShape2D" id="EntranceSafeShape"]
+size = Vector2(360, 260)
+
+[node name="BossEncounter" type="Node2D"]
+script = ExtResource("1_controller")
+slime_scene = ExtResource("2_slime")
+skeleton_scene = ExtResource("3_skeleton")
+ranged_enemy_scene = ExtResource("4_ranged")
+
+[node name="EntranceTrigger" type="Area2D" parent="."]
+position = Vector2(-233, 777)
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="EntranceTrigger"]
+shape = SubResource("EntranceTriggerShape")
+
+[node name="EntranceSafeArea" type="Area2D" parent="."]
+position = Vector2(-170, 625)
+collision_layer = 0
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="EntranceSafeArea"]
+shape = SubResource("EntranceSafeShape")
+
+[node name="Wave1SpawnPoints" type="Node2D" parent="."]
+
+[node name="Slime1" type="Marker2D" parent="Wave1SpawnPoints"]
+position = Vector2(-260, 330)
+[node name="Slime2" type="Marker2D" parent="Wave1SpawnPoints"]
+position = Vector2(0, 300)
+[node name="Slime3" type="Marker2D" parent="Wave1SpawnPoints"]
+position = Vector2(260, 330)
+[node name="Slime4" type="Marker2D" parent="Wave1SpawnPoints"]
+position = Vector2(-150, -40)
+[node name="Slime5" type="Marker2D" parent="Wave1SpawnPoints"]
+position = Vector2(150, -40)
+
+[node name="Wave2SkeletonSpawnPoints" type="Node2D" parent="."]
+[node name="Skeleton1" type="Marker2D" parent="Wave2SkeletonSpawnPoints"]
+position = Vector2(-220, 190)
+[node name="Skeleton2" type="Marker2D" parent="Wave2SkeletonSpawnPoints"]
+position = Vector2(0, 100)
+[node name="Skeleton3" type="Marker2D" parent="Wave2SkeletonSpawnPoints"]
+position = Vector2(220, 190)
+
+[node name="Wave2RangedSpawnPoints" type="Node2D" parent="."]
+[node name="Ranged1" type="Marker2D" parent="Wave2RangedSpawnPoints"]
+position = Vector2(-240, -250)
+[node name="Ranged2" type="Marker2D" parent="Wave2RangedSpawnPoints"]
+position = Vector2(240, -250)
+
+[node name="SpikeRows" type="Node2D" parent="."]
+[node name="SpikeRowA" parent="SpikeRows" instance=ExtResource("5_spike")]
+position = Vector2(-250, 250)
+[node name="SpikeRowB" parent="SpikeRows" instance=ExtResource("5_spike")]
+position = Vector2(-125, 15)
+
+[node name="FireSweep" parent="." instance=ExtResource("6_fire")]
+[node name="FireStartMarker" type="Marker2D" parent="."]
+position = Vector2(-330, 260)
+[node name="FireEndMarker" type="Marker2D" parent="."]
+position = Vector2(330, -70)
+
+[node name="ActiveMinions" type="Node2D" parent="."]
+[node name="ActiveProjectiles" type="Node2D" parent="."]
+[node name="BossSpawnPoint" type="Marker2D" parent="."]
+position = Vector2(0, -100)
+visible = false
+
+[connection signal="body_entered" from="EntranceTrigger" to="." method="_on_entrance_trigger_body_entered"]

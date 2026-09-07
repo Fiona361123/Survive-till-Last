@@ -67,6 +67,16 @@ func _initialize() -> void:
 	minimap.set_current_level(4)
 	minimap.refresh_markers()
 	_expect(minimap.get_enemy_markers().is_empty(), "missing boss group is tolerated")
+	# Huang Wan Jun 2204536 - Level 4 shows living boss-trial minions and hides inactive levels.
+	var boss_minion := Node2D.new()
+	boss_minion.global_position = Vector2(1054, -2268)
+	boss_minion.add_to_group("boss_enemy")
+	root.add_child(boss_minion)
+	minimap.refresh_markers()
+	_expect(minimap.get_enemy_markers().size() == 1, "Level 4 shows its boss-trial enemy")
+	_expect(minimap.get_enemy_markers()[0] == minimap.world_to_minimap(boss_minion.global_position),
+		"Level 4 marker uses the trial minion position")
+	boss_minion.queue_free()
 	level_1_enemy.queue_free()
 	await process_frame
 
@@ -118,7 +128,8 @@ func _test_dungeon_geometry(dungeon: Node2D) -> void:
 		_expect_section_contains(minimap, 2, spawn.global_position, spawn.name)
 	for enemy in dungeon.get_node("Level3Enemies").get_children():
 		_expect_section_contains(minimap, 3, enemy.global_position, enemy.name)
-	_expect_section_contains(minimap, 4, dungeon.get_node("RangedEnemy").global_position, "boss room enemy")
+	_expect_section_contains(minimap, 4,
+		dungeon.get_node("BossEncounter/BossSpawnPoint").global_position, "boss room focal point")
 	for entry in [[2, "Level2Entrance"], [3, "Level3Entrance"], [4, "BossEntrance"]]:
 		var collision := dungeon.get_node(String(entry[1]) + "/CollisionPolygon2D") as CollisionPolygon2D
 		var center := Vector2.ZERO
