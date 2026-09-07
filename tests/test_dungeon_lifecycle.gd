@@ -19,6 +19,9 @@ func _initialize() -> void:
 	var counter := dungeon.get_node("LevelClearUI/EnemyCounterLabel") as Label
 	assert(counter.visible and counter.text.contains("BOSS TRIAL - WAVE 1"),
 		"Level 4 HUD announces Wave 1")
+	# Huang Wan Jun 2204536 - Keep the boss-trial wording below Guard Halo like Level 3.
+	assert(is_equal_approx(counter.offset_top, 140.0),
+		"Level 4 lowers the enemy counter below Guard Halo")
 
 	# Reproduce a scene reload while the Level 2 watcher is awaiting a frame.
 	dungeon.queue_free()

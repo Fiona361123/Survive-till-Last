@@ -343,8 +343,9 @@ func _on_level_entrance_entered(level_number: int) -> void:
 	current_level = level_number
 	# Huang Wan Jun 2204536 - Keep the HUD minimap aligned with the entered dungeon level.
 	dungeon_minimap.set_current_level(level_number)
+	# Huang Wan Jun 2204536 - Keep Level 3 and the boss trial below the Guard Halo panel.
 	enemy_counter_label.position.y = (
-		ENEMY_COUNTER_LEVEL_3_Y if level_number == 3 else ENEMY_COUNTER_NORMAL_Y
+		ENEMY_COUNTER_LEVEL_3_Y if level_number in [3, 4] else ENEMY_COUNTER_NORMAL_Y
 	)
 	if level_number == 3:
 		level_3_traps.start_encounter()
