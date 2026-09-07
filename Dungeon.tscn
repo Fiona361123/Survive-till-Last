@@ -879,7 +879,6 @@ rock_strike_scene = ExtResource("71_rock_strike")
 
 [node name="SpikeRowNear" parent="Level3Traps/SpikeRows" unique_id=1639282020 instance=ExtResource("69_spike_row")]
 position = Vector2(3478, 187)
-tile_count = 3
 tile_step = Vector2(128, 64)
 
 [node name="SpikeRowMiddle" parent="Level3Traps/SpikeRows" unique_id=1335387581 instance=ExtResource("69_spike_row")]
@@ -888,43 +887,42 @@ tile_count = 2
 
 [node name="SpikeRowFar" parent="Level3Traps/SpikeRows" unique_id=2117618256 instance=ExtResource("69_spike_row")]
 position = Vector2(4374, 315)
-tile_count = 3
 tile_step = Vector2(128, 64)
 
-[node name="SpikeEditorVisuals" type="Node2D" parent="Level3Traps"]
+[node name="SpikeEditorVisuals" type="Node2D" parent="Level3Traps" unique_id=1721290651]
 
-[node name="Near0" parent="Level3Traps/SpikeEditorVisuals" instance=ExtResource("72_spike_visual")]
+[node name="Near0" parent="Level3Traps/SpikeEditorVisuals" unique_id=1117086872 instance=ExtResource("72_spike_visual")]
 position = Vector2(3478, 187)
 
-[node name="Near1" parent="Level3Traps/SpikeEditorVisuals" instance=ExtResource("72_spike_visual")]
+[node name="Near1" parent="Level3Traps/SpikeEditorVisuals" unique_id=1839181764 instance=ExtResource("72_spike_visual")]
 position = Vector2(3606, 251)
 
-[node name="Near2" parent="Level3Traps/SpikeEditorVisuals" instance=ExtResource("72_spike_visual")]
+[node name="Near2" parent="Level3Traps/SpikeEditorVisuals" unique_id=248090243 instance=ExtResource("72_spike_visual")]
 position = Vector2(3734, 315)
 
-[node name="Middle0" parent="Level3Traps/SpikeEditorVisuals" instance=ExtResource("72_spike_visual")]
+[node name="Middle0" parent="Level3Traps/SpikeEditorVisuals" unique_id=1291456579 instance=ExtResource("72_spike_visual")]
 position = Vector2(3990, 315)
 
-[node name="Middle1" parent="Level3Traps/SpikeEditorVisuals" instance=ExtResource("72_spike_visual")]
+[node name="Middle1" parent="Level3Traps/SpikeEditorVisuals" unique_id=1189992213 instance=ExtResource("72_spike_visual")]
 position = Vector2(4118, 251)
 
-[node name="Far0" parent="Level3Traps/SpikeEditorVisuals" instance=ExtResource("72_spike_visual")]
+[node name="Far0" parent="Level3Traps/SpikeEditorVisuals" unique_id=663198099 instance=ExtResource("72_spike_visual")]
 position = Vector2(4374, 315)
 
-[node name="Far1" parent="Level3Traps/SpikeEditorVisuals" instance=ExtResource("72_spike_visual")]
+[node name="Far1" parent="Level3Traps/SpikeEditorVisuals" unique_id=550581235 instance=ExtResource("72_spike_visual")]
 position = Vector2(4502, 379)
 
-[node name="Far2" parent="Level3Traps/SpikeEditorVisuals" instance=ExtResource("72_spike_visual")]
+[node name="Far2" parent="Level3Traps/SpikeEditorVisuals" unique_id=143447489 instance=ExtResource("72_spike_visual")]
 position = Vector2(4630, 443)
 
 [node name="FireSweep" parent="Level3Traps" unique_id=280631447 instance=ExtResource("70_fire_sweep")]
 position = Vector2(3000, 300)
 
 [node name="FireStartMarker" type="Marker2D" parent="Level3Traps" unique_id=423183301]
-position = Vector2(3000, 300)
+position = Vector2(2890, 337)
 
 [node name="FireEndMarker" type="Marker2D" parent="Level3Traps" unique_id=103278051]
-position = Vector2(4800, 300)
+position = Vector2(4175, -261)
 
 [node name="RockTargets" type="Node2D" parent="Level3Traps" unique_id=1661915992]
 
@@ -941,29 +939,29 @@ monitoring = false
 monitorable = false
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Level3Traps/EntranceSafeArea" unique_id=540827355]
-polygon = PackedVector2Array(2450, -380, 3150, -300, 3650, -50, 3650, 250, 3150, 450, 2450, 100)
+polygon = PackedVector2Array(3102, -606, 2725, -441, 3534, -24, 3192, 151, 2392, -262, 1862, 21, 1392, -227, 2629, -854)
 
 [node name="ActiveRockStrikes" type="Node2D" parent="Level3Traps" unique_id=362638635]
 
-[node name="Level3Enemies" type="Node2D" parent="."]
+[node name="Level3Enemies" type="Node2D" parent="." unique_id=1169472605]
 y_sort_enabled = true
 
-[node name="RangedEnemy1" parent="Level3Enemies" groups=["level3_enemy"] instance=ExtResource("48_y2adg")]
-position = Vector2(3550, -80)
+[node name="RangedEnemy1" parent="Level3Enemies" unique_id=1729099030 groups=["level3_enemy"] instance=ExtResource("48_y2adg")]
+position = Vector2(3859, 396)
 
-[node name="RangedEnemy2" parent="Level3Enemies" groups=["level3_enemy"] instance=ExtResource("48_y2adg")]
+[node name="RangedEnemy2" parent="Level3Enemies" unique_id=165472986 groups=["level3_enemy"] instance=ExtResource("48_y2adg")]
 position = Vector2(3970, -150)
 
-[node name="RangedEnemy3" parent="Level3Enemies" groups=["level3_enemy"] instance=ExtResource("48_y2adg")]
+[node name="RangedEnemy3" parent="Level3Enemies" unique_id=1575887742 groups=["level3_enemy"] instance=ExtResource("48_y2adg")]
 position = Vector2(4500, -40)
 
-[node name="RangedEnemy4" parent="Level3Enemies" groups=["level3_enemy"] instance=ExtResource("48_y2adg")]
+[node name="RangedEnemy4" parent="Level3Enemies" unique_id=704368451 groups=["level3_enemy"] instance=ExtResource("48_y2adg")]
 position = Vector2(4820, 180)
 
-[node name="RangedEnemy5" parent="Level3Enemies" groups=["level3_enemy"] instance=ExtResource("48_y2adg")]
-position = Vector2(4680, 650)
+[node name="RangedEnemy5" parent="Level3Enemies" unique_id=646851225 groups=["level3_enemy"] instance=ExtResource("48_y2adg")]
+position = Vector2(3389, 408)
 
-[node name="RangedEnemy6" parent="Level3Enemies" groups=["level3_enemy"] instance=ExtResource("48_y2adg")]
+[node name="RangedEnemy6" parent="Level3Enemies" unique_id=9531256 groups=["level3_enemy"] instance=ExtResource("48_y2adg")]
 position = Vector2(3820, 690)
 
 [node name="Player" parent="." unique_id=1596675552 groups=["player"] instance=ExtResource("6_yrkb7")]
@@ -977,9 +975,9 @@ script = ExtResource("8_gq7au")
 player = NodePath("../Player")
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Map Size" unique_id=1091422235]
-position = Vector2(1216, -359)
+position = Vector2(1220, -361)
 build_mode = 1
-polygon = PackedVector2Array(-2967.4888, 1613.5637, -1812, 1034, -2564, 654, -1096, -36, -1905, -432, -2797, 27, -3327, -224, -1814, -1033, -602, -434, -439, -528, 270, -112, 1643, -842, 1077, -1095, 167, -610, -2031, -1719, 427.51123, -2953.4363, 1776.5112, -2286.4363, -48.48877, -1375.4363, 425.51123, -1141.4363, 1184.5112, -1528.4363, 2779.5112, -740.4362, 1743.5112, -221.43622, 2467.5112, 127.56378, 2839.5112, -61.43622, 3915.5112, 483.56378, 2722.5112, 1079.5637, 1657.5112, 549.5638, 2039.5112, 352.56378, 1313.5112, -8.436218, 857.5112, 222.56378, 1499.5112, 540.5638, -615, 1630, -1275, 1295, -2478.4888, 1888.5637, -917.4888, 2657.5637, -4062.4888, 4224.564, -8296.488, 2110.5637, -5091.489, 541.5638)
+polygon = PackedVector2Array(-2967.4888, 1613.5637, -1812, 1034, -2564, 654, -1096, -36, -1905, -432, -2797, 27, -3327, -224, -1814, -1033, -602, -434, -439, -528, 270, -112, 1643, -842, 1077, -1095, 167, -610, -2031, -1719, 427.51123, -2953.4363, 1776.5112, -2286.4363, -76, -1357, 287, -1162, 1141, -1586, 2779.5112, -740.4362, 1743.5112, -221.43622, 2467.5112, 127.56378, 3012, -146, 4236, 493, 2574, 1321, 1296, 675, 1822, 397, 1166, 50, 857.5112, 222.56378, 1389, 537, -615, 1630, -1275, 1295, -2478.4888, 1888.5637, -917.4888, 2657.5637, -4062.4888, 4224.564, -8296.488, 2110.5637, -5091.489, 541.5638)
 
 [node name="skeleton" parent="Map Size" unique_id=1641295695 instance=ExtResource("47_m3gdi")]
 visible = false
@@ -1031,12 +1029,13 @@ target_level = 4
 position = Vector2(-0.8944092, -1.7888184)
 polygon = PackedVector2Array(79.15674, -132.37524, 222.26514, -132.37537, -99.728516, 299.1859, -243.73126, 297.3971)
 
-[node name="BossEncounter" parent="." instance=ExtResource("74_boss_encounter")]
+[node name="BossEncounter" parent="." unique_id=1418743629 instance=ExtResource("74_boss_encounter")]
 position = Vector2(1054, -2268)
 
 [node name="LevelClearUI" type="CanvasLayer" parent="." unique_id=666749467]
 
-[node name="DungeonMinimap" parent="LevelClearUI" instance=ExtResource("73_dungeon_minimap")]
+[node name="DungeonMinimap" parent="LevelClearUI" unique_id=1226656425 instance=ExtResource("73_dungeon_minimap")]
+grow_horizontal = 0
 
 [node name="ClearLabel" type="Label" parent="LevelClearUI" unique_id=1581648146]
 offset_left = 326.0

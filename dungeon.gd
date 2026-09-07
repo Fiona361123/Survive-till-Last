@@ -1,10 +1,12 @@
 extends Node2D
 
 const LEVEL_2_SKELETON_SCENE: PackedScene = preload("res://skeleton.tscn")
+const LEVEL_1_BOMB_SCENE: PackedScene = preload("res://Level1Bomb/Level1Bomb.tscn")
 const LEVEL_2_TOTAL_ENEMIES: int = 15
 const LEVEL_3_TOTAL_ENEMIES: int = 6
 const ENEMY_COUNTER_NORMAL_Y: float = 24.0
 const ENEMY_COUNTER_LEVEL_3_Y: float = 140.0
+static var LEVEL_1_BOMB_CELLS: Array[Vector2i] = [Vector2i(4, -1), Vector2i(7, -4)]
 
 @onready var exit_to_level_2: TileMapLayer = $ExitToLevel2
 @onready var exit_to_level_3: TileMapLayer = $ExitToLevel3
@@ -23,6 +25,7 @@ const ENEMY_COUNTER_LEVEL_3_Y: float = 140.0
 @onready var level_3_enemies: Node2D = $Level3Enemies
 @onready var level_3_traps: Level3TrapController = $Level3Traps
 @onready var boss_encounter: BossEncounterController = $BossEncounter
+@onready var level_1_obstacles: TileMapLayer = $Level1Obstacles
 @onready var weapon_progress: Node = get_node("/root/WeaponProgress")
 
 var level_cleared: bool = false
@@ -42,6 +45,9 @@ func _ready() -> void:
 	level_clear_ui.show()
 	clear_label.hide()
 	enemy_counter_label.show()
+	# Huang Wan Jun 2204536 - A death reload returns to Level 1, so keep its counter below the persistent Guard Halo panel.
+	enemy_counter_label.position.y = ENEMY_COUNTER_LEVEL_3_Y
+	_spawn_level_one_bombs()
 
 	# Huang Wan Jun 2204536 - Start the dungeon HUD on the active, discovered level.
 	dungeon_minimap.reveal_level(1)
@@ -59,6 +65,17 @@ func _ready() -> void:
 	call_deferred("_ensure_initial_level_two_enemies_are_clear")
 	call_deferred("_watch_level_two_enemies")
 	call_deferred("_watch_level_three_enemies")
+
+
+# Huang Wan Jun 2204536 - Replace two existing Level 1 rock tiles with attack-triggered barrel bombs at the same locations.
+func _spawn_level_one_bombs() -> void:
+	for cell in LEVEL_1_BOMB_CELLS:
+		if level_1_obstacles.get_cell_source_id(cell) == -1:
+			continue
+		var bomb := LEVEL_1_BOMB_SCENE.instantiate() as Node2D
+		bomb.global_position = level_1_obstacles.to_global(level_1_obstacles.map_to_local(cell))
+		add_child(bomb)
+		level_1_obstacles.erase_cell(cell)
 
 
 func _process(_delta: float) -> void:
@@ -343,9 +360,9 @@ func _on_level_entrance_entered(level_number: int) -> void:
 	current_level = level_number
 	# Huang Wan Jun 2204536 - Keep the HUD minimap aligned with the entered dungeon level.
 	dungeon_minimap.set_current_level(level_number)
-	# Huang Wan Jun 2204536 - Keep Level 3 and the boss trial below the Guard Halo panel.
+	# Huang Wan Jun 2204536 - Keep Level 1, Level 3, and the boss trial below the Guard Halo panel.
 	enemy_counter_label.position.y = (
-		ENEMY_COUNTER_LEVEL_3_Y if level_number in [3, 4] else ENEMY_COUNTER_NORMAL_Y
+		ENEMY_COUNTER_LEVEL_3_Y if level_number in [1, 3, 4] else ENEMY_COUNTER_NORMAL_Y
 	)
 	if level_number == 3:
 		level_3_traps.start_encounter()

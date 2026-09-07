@@ -14,6 +14,7 @@ func _initialize() -> void:
 	await process_frame
 	await _test_isometric_tile_presentation()
 	await _test_telegraphed_activation_and_single_damage()
+	await _test_active_spikes_freeze_enemies_until_retracted()
 	if failures == 0:
 		print("Spike row tests passed.")
 	else:
@@ -95,6 +96,41 @@ func _test_telegraphed_activation_and_single_damage() -> void:
 	_expect(not row.get_node("TrapDamageArea").monitoring, "damage area ends monitoring after activation")
 
 	body.queue_free()
+	row.queue_free()
+	await process_frame
+
+
+# Huang Wan Jun 2204536 - Active spikes hold an enemy in place, then release it when the hazard retracts.
+func _test_active_spikes_freeze_enemies_until_retracted() -> void:
+	var scene := load("res://Level3Traps/SpikeRow.tscn") as PackedScene
+	if scene == null:
+		return
+	var row := scene.instantiate() as SpikeRow
+	row.warning_duration = 0.01
+	row.active_duration = 0.12
+	root.add_child(row)
+	var enemy := DummyBody.new()
+	enemy.collision_layer = 4
+	enemy.collision_mask = 0
+	enemy.add_to_group("enemy")
+	var enemy_shape := CollisionShape2D.new()
+	var enemy_circle := CircleShape2D.new()
+	enemy_circle.radius = 8.0
+	enemy_shape.shape = enemy_circle
+	enemy.add_child(enemy_shape)
+	root.add_child(enemy)
+	await physics_frame
+	await physics_frame
+
+	row.activate()
+	await create_timer(0.03).timeout
+	_expect(enemy.process_mode == Node.PROCESS_MODE_DISABLED,
+		"active spikes freeze overlapping enemies")
+	await row.activation_finished
+	_expect(enemy.process_mode == Node.PROCESS_MODE_INHERIT,
+		"retracted spikes restore enemy movement")
+
+	enemy.queue_free()
 	row.queue_free()
 	await process_frame
 

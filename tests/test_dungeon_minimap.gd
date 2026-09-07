@@ -19,6 +19,13 @@ func _initialize() -> void:
 	_expect(minimap.get_revealed_levels() == [1], "only Level 1 starts revealed")
 	# Huang Wan Jun 2204536 - Reveal the next-level road together with the newly unlocked room.
 	_expect(minimap.get_revealed_corridors().is_empty(), "Level 1 starts with no future road revealed")
+	# Huang Wan Jun 2204536 - Prevent a shortcut from replacing the bends in the authored Level 2 and boss routes.
+	_expect_corridor_uses_floor_turns(minimap, 2, [
+		Vector2(1633, -30), Vector2(2401, -158), Vector2(2913, -30), Vector2(3297, 34),
+	], "Level 2 to Level 3")
+	_expect_corridor_uses_floor_turns(minimap, 3, [
+		Vector2(2913, -670), Vector2(3169, -926), Vector2(2145, -1438), Vector2(865, -1438),
+	], "Level 3 to boss")
 	# Huang Wan Jun 2204536 - The discovered section should fill the map instead of appearing tiny.
 	var mapped_level_one := PackedVector2Array()
 	for vertex in DungeonMinimap.LEVEL_POLYGONS[1]:
@@ -177,6 +184,8 @@ func _expect_corridor_contains_gate_and_entrance(
 	minimap: DungeonMinimap, corridor_number: int, gate: TileMapLayer,
 	entrance: CollisionPolygon2D, label: String
 ) -> void:
+	if not minimap.has_method("get_corridor_path"):
+		return
 	var gate_center := Vector2.ZERO
 	for cell in gate.get_used_cells():
 		gate_center += gate.to_global(gate.map_to_local(cell))
@@ -185,9 +194,28 @@ func _expect_corridor_contains_gate_and_entrance(
 	for point in entrance.polygon:
 		entrance_center += entrance.to_global(point)
 	entrance_center /= entrance.polygon.size()
-	var road: PackedVector2Array = DungeonMinimap.CORRIDOR_POLYGONS[corridor_number]
-	_expect(Geometry2D.is_point_in_polygon(gate_center, road), "%s road contains its gate" % label)
-	_expect(Geometry2D.is_point_in_polygon(entrance_center, road), "%s road contains its entrance" % label)
+	var road: PackedVector2Array = minimap.call("get_corridor_path", corridor_number)
+	_expect(_road_contains_point(road, gate_center), "%s road contains its gate" % label)
+	_expect(_road_contains_point(road, entrance_center), "%s road contains its entrance" % label)
+
+
+# Huang Wan Jun 2204536 - Verify the user-visible route includes each real floor-tile bend rather than one straight shortcut.
+func _expect_corridor_uses_floor_turns(minimap: DungeonMinimap, corridor_number: int,
+		floor_turns: Array[Vector2], label: String) -> void:
+	_expect(minimap.has_method("get_corridor_path"), "%s road exposes its floor-tile path" % label)
+	if not minimap.has_method("get_corridor_path"):
+		return
+	var road: PackedVector2Array = minimap.call("get_corridor_path", corridor_number)
+	for floor_turn in floor_turns:
+		_expect(_road_contains_point(road, floor_turn), "%s road follows floor turn %s" % [label, floor_turn])
+
+
+# Huang Wan Jun 2204536 - Compare scene-derived route points safely across tiny floating-point transform differences.
+func _road_contains_point(road: PackedVector2Array, point: Vector2) -> bool:
+	for road_point in road:
+		if road_point.is_equal_approx(point):
+			return true
+	return false
 
 # Huang Wan Jun 2204536 - Exercise lethal damage on actual enemy scenes while their death animations remain alive.
 func _test_death_markers(minimap_scene: PackedScene) -> void:

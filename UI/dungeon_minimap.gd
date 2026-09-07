@@ -21,11 +21,19 @@ static var LEVEL_POLYGONS: Dictionary = {
 	# Dungeon-root adjusted boss entrance around (960, -1420) and boss-room enemy.
 	4: PackedVector2Array([Vector2(650, -1550), Vector2(850, -2550), Vector2(1550, -2550), Vector2(1750, -2100), Vector2(1300, -1200), Vector2(800, -1200)]),
 }
-# Huang Wan Jun 2204536 - Trace the authored dungeon roads so revealed rooms form one continuous route.
-static var CORRIDOR_POLYGONS: Dictionary = {
-	1: PackedVector2Array([Vector2(-95, 784), Vector2(31, 1034), Vector2(-1334, 1716), Vector2(-1460, 1466)]),
-	2: PackedVector2Array([Vector2(1688, 121), Vector2(1704, -159), Vector2(3381, -69), Vector2(3365, 211)]),
-	3: PackedVector2Array([Vector2(3021, -792), Vector2(2931, -526), Vector2(868, -1219), Vector2(958, -1485)]),
+# Huang Wan Jun 2204536 - Follow the actual Floor tile bends instead of drawing shortcut quadrilaterals between gates.
+static var CORRIDOR_PATHS: Dictionary = {
+	1: PackedVector2Array([
+		Vector2(-32, 909), Vector2(-1396.75, 1591.25),
+	]),
+	2: PackedVector2Array([
+		Vector2(1696, -19), Vector2(1633, -30), Vector2(1889, 98), Vector2(2401, -158),
+		Vector2(2529, -222), Vector2(2913, -30), Vector2(3297, 34), Vector2(3372.75, 71),
+	]),
+	3: PackedVector2Array([
+		Vector2(2976, -659), Vector2(2913, -670), Vector2(3169, -926), Vector2(2145, -1438),
+		Vector2(865, -1438), Vector2(913.5, -1352.5),
+	]),
 }
 
 # Huang Wan Jun 2204536 - Store the dungeon extent and permanently discovered sections.
@@ -56,11 +64,15 @@ func get_revealed_levels() -> Array[int]:
 # Huang Wan Jun 2204536 - Reveal each road only after its destination level unlocks.
 func get_revealed_corridors() -> Array[int]:
 	var corridors: Array[int] = []
-	for corridor_number in CORRIDOR_POLYGONS:
+	for corridor_number in CORRIDOR_PATHS:
 		if _revealed_levels.has(corridor_number + 1):
 			corridors.append(corridor_number)
 	corridors.sort()
 	return corridors
+
+# Huang Wan Jun 2204536 - Provide a safe copy of one authored floor route for minimap checks and drawing.
+func get_corridor_path(corridor_number: int) -> PackedVector2Array:
+	return (CORRIDOR_PATHS.get(corridor_number, PackedVector2Array()) as PackedVector2Array).duplicate()
 
 # Huang Wan Jun 2204536 - Select the one enemy group allowed to appear on the map.
 func set_current_level(level_number: int) -> void:
@@ -129,8 +141,7 @@ func _get_visible_world_bounds() -> Rect2:
 			else:
 				visible_bounds = visible_bounds.expand(vertex)
 	for corridor_number in get_revealed_corridors():
-		var corridor: PackedVector2Array = CORRIDOR_POLYGONS[corridor_number]
-		for vertex in corridor:
+		for vertex in get_corridor_path(corridor_number):
 			visible_bounds = visible_bounds.expand(vertex)
 	if not has_vertex:
 		return world_bounds
@@ -161,11 +172,11 @@ func _draw() -> void:
 
 	# Huang Wan Jun 2204536 - Draw unlocked roads underneath rooms to show the next-level route.
 	for corridor_number in get_revealed_corridors():
-		var corridor_polygon := PackedVector2Array()
-		for world_vertex in CORRIDOR_POLYGONS[corridor_number]:
-			corridor_polygon.append(world_to_minimap(world_vertex))
-		draw_colored_polygon(corridor_polygon, Color(0.46, 0.35, 0.22, 0.9))
-		draw_polyline(corridor_polygon + PackedVector2Array([corridor_polygon[0]]), Color(0.85, 0.68, 0.25, 0.95), 1.3, true)
+		var corridor_path := PackedVector2Array()
+		for world_point in get_corridor_path(corridor_number):
+			corridor_path.append(world_to_minimap(world_point))
+		draw_polyline(corridor_path, Color(0.46, 0.35, 0.22, 0.9), 8.0, true)
+		draw_polyline(corridor_path, Color(0.85, 0.68, 0.25, 0.95), 1.3, true)
 
 	for level_number in _revealed_levels:
 		var world_polygon: PackedVector2Array = LEVEL_POLYGONS[level_number]

@@ -1,0 +1,55 @@
+<h2>Choose a boss-arena trap layout</h2>
+<p class="subtitle">Your room is a long isometric rectangle. These options keep the entrance safe and leave a central BossSpawnPoint for your friend's boss.</p>
+
+<style>
+  .arena { position:relative; height:210px; margin:12px; background:#d8bd86; border:7px solid #8c7049; transform:skewY(-7deg); overflow:hidden; }
+  .tag { position:absolute; padding:4px 7px; border-radius:5px; font-size:11px; color:white; transform:skewY(7deg); }
+  .safe { background:#35a86b; } .spike { background:#7d3c2c; } .fire { background:#db6a25; }
+  .rock { background:#7565a8; } .boss { background:#273c75; border:2px solid #f0c84b; }
+  .lane { position:absolute; height:20px; background:#7d3c2c; opacity:.9; }
+  .sweep { position:absolute; width:16px; top:8px; bottom:8px; background:#db6a25; box-shadow:0 0 12px #ffb13b; }
+  .circle { position:absolute; width:36px; height:36px; border-radius:50%; border:3px dashed #7565a8; }
+  .spawn { position:absolute; width:12px; height:12px; border-radius:50%; background:#c62828; border:2px solid white; }
+</style>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="arena">
+        <div class="tag safe" style="left:3%;bottom:7%">SAFE ENTRANCE</div>
+        <div class="lane" style="left:25%;right:8%;top:34%"></div>
+        <div class="lane" style="left:25%;right:8%;top:64%"></div>
+        <div class="sweep" style="left:53%"></div>
+        <div class="tag boss" style="left:67%;top:44%">BOSS</div>
+        <i class="spawn" style="left:30%;top:18%"></i><i class="spawn" style="left:42%;top:77%"></i><i class="spawn" style="left:82%;top:19%"></i>
+      </div>
+    </div>
+    <div class="card-body"><h3>A — Three-wave gauntlet (recommended)</h3><p>Alternating spike lanes, one sweeping fire wall, then rock warnings. Each wave introduces one hazard, so it stays readable.</p></div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="arena">
+        <div class="tag safe" style="left:3%;bottom:7%">SAFE ENTRANCE</div>
+        <div class="tag boss" style="left:47%;top:44%">BOSS</div>
+        <div class="lane" style="left:20%;width:18%;top:10%;height:80%"></div>
+        <div class="lane" style="right:14%;width:18%;top:10%;height:80%"></div>
+        <div class="circle" style="left:42%;top:15%"></div><div class="circle" style="left:55%;top:67%"></div>
+      </div>
+    </div>
+    <div class="card-body"><h3>B — Safe center duel</h3><p>Hazards stay near both sides while the center remains the main fighting lane. Easier and better for a first boss.</p></div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="arena">
+        <div class="tag safe" style="left:3%;bottom:7%">SAFE ENTRANCE</div>
+        <div class="tag boss" style="left:47%;top:44%">BOSS</div>
+        <div class="sweep" style="left:28%"></div><div class="sweep" style="left:72%"></div>
+        <div class="circle" style="left:22%;top:20%"></div><div class="circle" style="left:62%;top:18%"></div><div class="circle" style="left:35%;top:67%"></div><div class="circle" style="left:78%;top:64%"></div>
+        <i class="spawn" style="left:17%;top:50%"></i><i class="spawn" style="left:84%;top:50%"></i>
+      </div>
+    </div>
+    <div class="card-body"><h3>C — Chaotic survival arena</h3><p>Two fire sweeps, repeated rock targets, and side spawns. Most intense, but it could feel unfair with ranged enemies.</p></div>
+  </div>
+</div>

@@ -1,3 +1,4 @@
+# Huang Wan Jun 2204536 - Level 3 spike trap: damages actors and freezes enemies while spikes are active.
 @tool
 class_name SpikeRow
 extends Node2D
@@ -15,14 +16,21 @@ enum State { SAFE, WARNING, ACTIVE }
 var state: State = State.SAFE
 var _activation_serial: int = 0
 
+# Huang Wan Jun 2204536 - Store every enemy's original movement mode while spikes are active.
+var _frozen_enemies: Dictionary = {}
+
 @onready var warning_tiles: Node2D = $WarningTiles
 @onready var spike_tiles: Node2D = $SpikeTiles
 @onready var editor_preview: Node2D = $EditorPreview
 @onready var damage_area: TrapDamageArea = $TrapDamageArea
 
 static var TILE_DIAMOND: PackedVector2Array = PackedVector2Array([
-	Vector2(-128, 0), Vector2(0, -64), Vector2(128, 0), Vector2(0, 64),
+	Vector2(-128, 0),
+	Vector2(0, -64),
+	Vector2(128, 0),
+	Vector2(0, 64),
 ])
+
 const WARNING_COLOR := Color(0.9, 0.26, 0.12, 0.48)
 const SPIKE_BASE_COLOR := Color(0.34, 0.24, 0.16, 0.88)
 const SPIKE_COLOR := Color(0.78, 0.72, 0.6, 1.0)
@@ -32,6 +40,7 @@ const SPIKE_SHADOW_COLOR := Color(0.38, 0.34, 0.29, 1.0)
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
+
 	editor_preview.visible = false
 	_build_isometric_tiles()
 	_set_safe_visuals()
@@ -41,34 +50,56 @@ func _ready() -> void:
 func activate() -> void:
 	if state != State.SAFE:
 		return
+
 	_activation_serial += 1
 	var serial := _activation_serial
+
 	state = State.WARNING
 	warning_tiles.visible = true
 	spike_tiles.visible = false
+
 	_run_activation(serial)
 
 
 func force_safe() -> void:
 	_activation_serial += 1
 	damage_area.end_activation()
+
+	# Huang Wan Jun 2204536 - Release enemies if the trap is stopped early.
+	_release_frozen_enemies()
+
 	state = State.SAFE
 	_set_safe_visuals()
 
 
 func _run_activation(serial: int) -> void:
 	await get_tree().create_timer(maxf(warning_duration, 0.0)).timeout
+
 	if serial != _activation_serial or state != State.WARNING:
 		return
+
 	state = State.ACTIVE
 	warning_tiles.visible = false
 	spike_tiles.visible = true
+
 	damage_area.begin_activation(damage)
+
+	# Huang Wan Jun 2204536 - Monitoring must start before checking bodies on active spikes.
+	await get_tree().physics_frame
+
+	_freeze_overlapping_enemies()
 	damage_area.damage_overlapping_bodies()
+
 	await get_tree().create_timer(maxf(active_duration, 0.0)).timeout
+
 	if serial != _activation_serial or state != State.ACTIVE:
 		return
+
 	damage_area.end_activation()
+
+	# Huang Wan Jun 2204536 - Let enemies move again after spikes retract.
+	_release_frozen_enemies()
+
 	state = State.SAFE
 	_set_safe_visuals()
 	activation_finished.emit()
@@ -76,12 +107,46 @@ func _run_activation(serial: int) -> void:
 
 func _on_damage_body_entered(body: Node2D) -> void:
 	if state == State.ACTIVE:
+		# Huang Wan Jun 2204536 - Enemies entering raised spikes are frozen immediately.
+		_freeze_enemy(body)
 		damage_area.damage_overlapping_bodies()
 
+
+# Huang Wan Jun 2204536 - Freeze all enemy bodies currently touching raised spikes.
+func _freeze_overlapping_enemies() -> void:
+	for body in damage_area.get_overlapping_bodies():
+		_freeze_enemy(body)
+
+
+# Huang Wan Jun 2204536 - Stop one enemy without freezing the player.
+func _freeze_enemy(body: Node2D) -> void:
+	if not body.is_in_group("enemy"):
+		return
+
+	if _frozen_enemies.has(body):
+		return
+
+	_frozen_enemies[body] = body.process_mode
+	body.velocity = Vector2.ZERO
+	body.process_mode = Node.PROCESS_MODE_DISABLED
+
+# Huang Wan Jun 2204536 - Restore valid enemies after spikes retract without accessing freed enemies.
+func _release_frozen_enemies() -> void:
+	for candidate in _frozen_enemies.keys():
+		if not is_instance_valid(candidate):
+			continue
+
+		var enemy := candidate as Node2D
+
+		if enemy != null:
+			enemy.process_mode = _frozen_enemies[candidate]
+
+	_frozen_enemies.clear()
 
 func _set_safe_visuals() -> void:
 	if warning_tiles != null:
 		warning_tiles.visible = false
+
 	if spike_tiles != null:
 		spike_tiles.visible = false
 
@@ -90,12 +155,23 @@ func _build_isometric_tiles() -> void:
 	_clear_generated_children(warning_tiles)
 	_clear_generated_children(spike_tiles)
 	_clear_generated_children(damage_area)
+
 	for tile_index in tile_count:
 		var tile_position := tile_step * tile_index
-		warning_tiles.add_child(_make_polygon(
-			"WarningTile%d" % tile_index, TILE_DIAMOND, WARNING_COLOR, tile_position
-		))
-		spike_tiles.add_child(_make_spike_cluster(tile_index, tile_position))
+
+		warning_tiles.add_child(
+			_make_polygon(
+				"WarningTile%d" % tile_index,
+				TILE_DIAMOND,
+				WARNING_COLOR,
+				tile_position
+			)
+		)
+
+		spike_tiles.add_child(
+			_make_spike_cluster(tile_index, tile_position)
+		)
+
 		var collision := CollisionPolygon2D.new()
 		collision.name = "TileHitArea%d" % tile_index
 		collision.position = tile_position
@@ -107,37 +183,66 @@ func _make_spike_cluster(tile_index: int, tile_position: Vector2) -> Node2D:
 	var cluster := Node2D.new()
 	cluster.name = "SpikeTile%d" % tile_index
 	cluster.position = tile_position
-	cluster.add_child(_make_polygon("Base", TILE_DIAMOND, SPIKE_BASE_COLOR, Vector2.ZERO))
+
+	cluster.add_child(
+		_make_polygon(
+			"Base",
+			TILE_DIAMOND,
+			SPIKE_BASE_COLOR,
+			Vector2.ZERO
+		)
+	)
+
 	var spike_positions := [
-		Vector2(-58, 11), Vector2(0, -22), Vector2(58, 11),
-		Vector2(-24, 29), Vector2(24, 29),
+		Vector2(-58, 11),
+		Vector2(0, -22),
+		Vector2(58, 11),
+		Vector2(-24, 29),
+		Vector2(24, 29),
 	]
+
 	for spike_index in spike_positions.size():
 		var spike := _make_polygon(
 			"Spike%d" % spike_index,
-			PackedVector2Array([Vector2(-18, 8), Vector2(0, -43), Vector2(18, 8)]),
+			PackedVector2Array([
+				Vector2(-18, 8),
+				Vector2(0, -43),
+				Vector2(18, 8),
+			]),
 			SPIKE_COLOR,
 			spike_positions[spike_index]
 		)
+
 		cluster.add_child(spike)
+
 		var shadow := _make_polygon(
 			"SpikeShadow%d" % spike_index,
-			PackedVector2Array([Vector2(0, -43), Vector2(18, 8), Vector2(4, 5)]),
+			PackedVector2Array([
+				Vector2(0, -43),
+				Vector2(18, 8),
+				Vector2(4, 5),
+			]),
 			SPIKE_SHADOW_COLOR,
 			spike_positions[spike_index]
 		)
+
 		cluster.add_child(shadow)
+
 	return cluster
 
 
 func _make_polygon(
-	node_name: String, points: PackedVector2Array, color: Color, node_position: Vector2
+	node_name: String,
+	points: PackedVector2Array,
+	color: Color,
+	node_position: Vector2
 ) -> Polygon2D:
 	var polygon := Polygon2D.new()
 	polygon.name = node_name
 	polygon.polygon = points
 	polygon.color = color
 	polygon.position = node_position
+
 	return polygon
 
 

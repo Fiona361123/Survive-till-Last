@@ -24,8 +24,9 @@ func _initialize() -> void:
 				"every Level 3 ranged enemy belongs to level3_enemy")
 
 	var counter := dungeon.get_node("LevelClearUI/EnemyCounterLabel") as Label
-	_expect(is_equal_approx(counter.offset_top, 24.0),
-		"enemy counter starts at its normal top position")
+	# Huang Wan Jun 2204536 - Scene reloads must keep Level 1 clear of the persistent Guard Halo HUD.
+	_expect(is_equal_approx(counter.offset_top, 140.0),
+		"Level 1 starts below the Guard Halo panel")
 	dungeon.call("_on_level_entrance_entered", 2)
 	dungeon.call("_complete_level_two")
 	_expect(is_equal_approx(counter.offset_top, 140.0),

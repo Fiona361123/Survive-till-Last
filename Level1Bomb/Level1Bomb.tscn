@@ -1,0 +1,28 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://Level1Bomb/level1_bomb.gd" id="1_script"]
+[ext_resource type="Script" path="res://Level3Traps/trap_damage_area.gd" id="2_trap_damage"]
+[ext_resource type="Texture2D" path="res://Isometric/barrel_N.png" id="3_barrel"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_blast"]
+radius = 118.0
+
+[node name="Level1Bomb" type="Node2D" groups=["enemy", "level1_bomb"]]
+script = ExtResource("1_script")
+
+[node name="AttackArea" type="Area2D" parent="."]
+collision_layer = 4
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
+shape = SubResource("CircleShape2D_blast")
+
+[node name="BlastArea" type="Area2D" parent="."]
+script = ExtResource("2_trap_damage")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BlastArea"]
+shape = SubResource("CircleShape2D_blast")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.55, 0.55)
+texture = ExtResource("3_barrel")

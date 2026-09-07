@@ -1,0 +1,54 @@
+<h2>Boss arena — two preparation waves</h2>
+<p class="subtitle">The entrance stays safe. Hazards escalate once, then shut down before the future boss wave.</p>
+
+<style>
+  .flow {display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:12px;align-items:center}
+  .phase {background:#171b28;border:1px solid #3b4358;border-radius:12px;padding:16px;min-height:320px}
+  .arena {position:relative;height:180px;margin:14px 0;background:#d8bd86;border:7px solid #8c7049;transform:skewY(-7deg);overflow:hidden}
+  .tag {position:absolute;padding:4px 7px;border-radius:5px;font-size:11px;color:white;transform:skewY(7deg)}
+  .safe {background:#319867}.boss {background:#273c75;border:2px solid #f0c84b}.fire{background:#db6a25}
+  .lane {position:absolute;height:18px;background:#7d3c2c;opacity:.9}
+  .sweep {position:absolute;width:15px;top:8px;bottom:8px;background:#db6a25;box-shadow:0 0 12px #ffb13b}
+  .spawn {position:absolute;width:13px;height:13px;border-radius:50%;border:2px solid white}
+  .slime{background:#4cae55}.skeleton{background:#ddd}.ranged{background:#d44a4a}
+  .arrow{font-size:32px;color:#d5ae49}.count{font-size:13px;color:#b8c0d4}
+</style>
+
+<div class="flow">
+  <div class="phase">
+    <h3>Wave 1 — Slime swarm</h3><p class="count">5 slimes • alternating spike rows</p>
+    <div class="arena">
+      <div class="tag safe" style="left:3%;bottom:7%">SAFE</div>
+      <div class="lane" style="left:28%;right:8%;top:33%"></div>
+      <div class="lane" style="left:28%;right:8%;top:66%"></div>
+      <i class="spawn slime" style="left:34%;top:17%"></i><i class="spawn slime" style="left:48%;top:74%"></i><i class="spawn slime" style="left:62%;top:18%"></i><i class="spawn slime" style="left:75%;top:72%"></i><i class="spawn slime" style="left:87%;top:20%"></i>
+    </div>
+    <p>Rows warn, rise, retract, then swap. The first wave teaches the safe gaps.</p>
+  </div>
+  <div class="arrow">→</div>
+  <div class="phase">
+    <h3>Wave 2 — Mixed guard</h3><p class="count">3 skeletons + 2 ranged • one fire sweep</p>
+    <div class="arena">
+      <div class="tag safe" style="left:3%;bottom:7%">SAFE</div>
+      <div class="sweep" style="left:54%"></div>
+      <i class="spawn skeleton" style="left:32%;top:22%"></i><i class="spawn skeleton" style="left:46%;top:70%"></i><i class="spawn skeleton" style="left:66%;top:46%"></i>
+      <i class="spawn ranged" style="left:82%;top:17%"></i><i class="spawn ranged" style="left:84%;top:76%"></i>
+    </div>
+    <p>Skeletons push nearby while ranged enemies fire from the far side. The fire wall crosses slowly with a warning.</p>
+  </div>
+  <div class="arrow">→</div>
+  <div class="phase">
+    <h3>Wave 3 — Future boss</h3><p class="count">BossSpawnPoint • traps disabled</p>
+    <div class="arena">
+      <div class="tag safe" style="left:3%;bottom:7%">ENTRY</div>
+      <div class="tag boss" style="left:62%;top:43%">BOSS SPAWN</div>
+    </div>
+    <p>The room pauses, clears projectiles, and reveals the center marker. Your friend's boss scene can be connected later.</p>
+  </div>
+</div>
+
+<div class="options">
+  <div class="option" data-choice="approve-two-wave-flow" onclick="toggleSelect(this)">
+    <div class="letter">✓</div><div class="content"><h3>Use this two-wave flow</h3><p>5 slimes, then 3 skeletons + 2 ranged enemies, then the future boss.</p></div>
+  </div>
+</div>
