@@ -1,6 +1,8 @@
 # bullet.gd
 extends Node2D
 
+const COMBAT_TARGET_SELECTOR = preload("res://systems/combat_target_selector.gd")
+
 var damage: int = 100
 var direction: Vector2 = Vector2.RIGHT
 var speed: float = 400.0
@@ -30,7 +32,7 @@ var hit_enemies: Array = []
 
 func _on_body_entered(body: Node2D) -> void:
 	if body in hit_enemies: return
-	if body.is_in_group("enemy") and body.has_method("take_damage"):
+	if COMBAT_TARGET_SELECTOR.is_living_enemy(body):
 		body.take_damage(damage)
 		hit_enemies.append(body)
 
@@ -39,6 +41,6 @@ func _on_area_entered(area: Area2D) -> void:
 	
 	var parent = area.get_parent()
 	if parent in hit_enemies: return
-	if parent != null and parent.is_in_group("enemy") and parent.has_method("take_damage"):
+	if parent != null and COMBAT_TARGET_SELECTOR.is_living_enemy(parent):
 		parent.take_damage(damage)
 		hit_enemies.append(parent)

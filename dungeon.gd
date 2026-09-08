@@ -36,6 +36,8 @@ var level_2_second_wave_spawned: bool = false
 var level_2_cleared: bool = false
 var level_3_cleared: bool = false
 var level_1_total_enemies: int = 0
+var run_completed: bool = false
+var win_screen_shown: bool = false
 
 
 func _ready() -> void:
@@ -67,14 +69,13 @@ func _ready() -> void:
 	var gold_hud = Label.new()
 	gold_hud.name = "GoldHUDLabel"
 	if font: gold_hud.add_theme_font_override("font", font)
-	gold_hud.add_theme_font_size_override("font_size", 24)
+	gold_hud.add_theme_font_size_override("font_size", 20)
 	gold_hud.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
-	gold_hud.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	gold_hud.offset_left = -250
+	gold_hud.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	gold_hud.offset_left = 130
 	gold_hud.offset_top = 20
-	gold_hud.offset_right = -20
+	gold_hud.offset_right = 330
 	gold_hud.offset_bottom = 60
-	gold_hud.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	level_clear_ui.add_child(gold_hud)
 	
 	_spawn_level_one_bombs()
@@ -141,7 +142,15 @@ func _ready() -> void:
 	if is_instance_valid(boss_encounter):
 		boss_encounter.boss_ready.connect(_on_boss_ready)
 
-func _on_boss_ready(spawn_point: Marker2D) -> void:
+func _on_boss_ready(_spawn_point: Marker2D) -> void:
+	_show_win_screen()
+
+func _show_win_screen() -> void:
+	if win_screen_shown:
+		return
+	win_screen_shown = true
+	run_completed = true
+	SaveSystem.clear_dungeon_state()
 	var win_ui_script = load("res://UI/game_win_ui.gd")
 	if win_ui_script:
 		var win_ui = win_ui_script.new()
@@ -150,7 +159,7 @@ func _on_boss_ready(spawn_point: Marker2D) -> void:
 
 var pending_enemies_killed_level1: int = 0
 
-func _restore_saved_level_state(saved_level: int, player: Node2D, flags: Dictionary = {}, enemies_killed: int = 0):
+func _restore_saved_level_state(saved_level: int, player: Node2D, _flags: Dictionary = {}, enemies_killed: int = 0):
 	current_level = saved_level
 	dungeon_minimap.set_current_level(saved_level)
 	
@@ -238,6 +247,9 @@ func _process(_delta: float) -> void:
 	var gold_label = level_clear_ui.get_node_or_null("GoldHUDLabel")
 	if gold_label:
 		gold_label.text = "🪙 Gold: " + str(SaveSystem.gold_coins)
+	if not win_screen_shown and is_instance_valid(boss_encounter):
+		if boss_encounter.is_boss_ready():
+			_show_win_screen()
 
 
 func _on_enemies_finished_spawning() -> void:
@@ -288,6 +300,10 @@ func debug_clear_current_level() -> int:
 			for enemy in enemies:
 				enemy.queue_free()
 			return enemies.size()
+		4:
+			if is_instance_valid(boss_encounter):
+				return boss_encounter.debug_complete_trial()
+			return 0
 		_:
 			return 0
 

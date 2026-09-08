@@ -7,6 +7,7 @@ extends Area2D
 @export var move_speed: float = 180.0
 
 var player: Node2D = null
+var origin_level: int = 0
 var _pulse_time: float = 0.0
 var _attracted: bool = false
 var _orb: Node2D       # visual container that bobs
@@ -14,6 +15,9 @@ var _label: Label
 
 func _ready() -> void:
 	add_to_group("hp_orb")
+	var dungeon := get_tree().current_scene
+	if dungeon != null and "current_level" in dungeon:
+		origin_level = int(dungeon.current_level)
 	monitoring = true
 	monitorable = false
 	collision_layer = 0
@@ -70,6 +74,9 @@ func _ready() -> void:
 	add_child(col)
 
 func _physics_process(delta: float) -> void:
+	if _is_from_inactive_level():
+		queue_free()
+		return
 	_pulse_time += delta
 
 	# Bob the visual up and down
@@ -97,3 +104,8 @@ func _on_body_entered(body: Node) -> void:
 	if body.is_in_group("player") and body.has_method("heal"):
 		body.heal(heal_amount)
 		queue_free()
+
+func _is_from_inactive_level() -> bool:
+	var dungeon := get_tree().current_scene
+	return origin_level > 0 and dungeon != null and "current_level" in dungeon \
+		and origin_level != int(dungeon.current_level)

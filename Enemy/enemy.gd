@@ -1,6 +1,8 @@
 #enemy.gd
 extends CharacterBody2D
 
+const COMBAT_TARGET_SELECTOR = preload("res://systems/combat_target_selector.gd")
+
 # movement
 @export var speed: float = 60.0
 @export var chase_speed: float = 180.0
@@ -115,6 +117,9 @@ func _ready():
 	animated_sprite.speed_scale = walk_speed_scale
 
 func _physics_process(delta):
+	if not COMBAT_TARGET_SELECTOR.is_living_enemy(self):
+		velocity = Vector2.ZERO
+		return
 	# Handle attack cooldown
 	if not can_attack:
 		attack_timer -= delta

@@ -111,6 +111,9 @@ func _ready():
 
 
 func _physics_process(delta):
+	if current_state != State.DEATH and not COMBAT_TARGET_SELECTOR.is_living_enemy(self):
+		velocity = Vector2.ZERO
+		return
 	_refresh_combat_target(delta)
 	time_alive += delta
 	_update_timers(delta)
@@ -294,7 +297,7 @@ func _chase_state(delta):
 
 
 # STATE: ATTACK - plays animation once, deals damage at specific frame
-func _attack_state(delta):
+func _attack_state(_delta):
 	if player == null:
 		current_state = State.WANDER
 		return
@@ -363,7 +366,7 @@ func _alert_state(delta):
 
 
 # STATE: DEATH - plays death animation
-func _death_state(delta):
+func _death_state(_delta):
 	velocity = Vector2.ZERO
 	if animated_sprite.animation != "death":
 		animated_sprite.play("death")
@@ -623,15 +626,17 @@ func die() -> void:
 		spawn_pos.y = clamp(spawn_pos.y, -1000, 1000)
 	
 	var remaining = get_tree().get_nodes_in_group("level2_enemy").size()
-	if remaining <= 1:
-		var orb = XP_ORB_SCENE.instantiate()
-		orb.is_level_up_coin = true
-		orb.global_position = spawn_pos
-		get_tree().current_scene.call_deferred("add_child", orb)
-	
-	var bcoin = BLUE_COIN_SCENE.instantiate()
-	bcoin.global_position = spawn_pos + Vector2(20, 0)
-	get_tree().current_scene.call_deferred("add_child", bcoin)
+	if is_in_group("level2_enemy"):
+		var bcoin = BLUE_COIN_SCENE.instantiate()
+		bcoin.global_position = spawn_pos + Vector2(20, 0)
+		get_tree().current_scene.call_deferred("add_child", bcoin)
+
+		if remaining <= 1:
+			var orb = XP_ORB_SCENE.instantiate()
+			orb.is_level_up_coin = true
+			orb.picks_to_grant = 1
+			orb.global_position = spawn_pos
+			get_tree().current_scene.call_deferred("add_child", orb)
 	
 	if animated_sprite.sprite_frames.has_animation("death"):
 		animated_sprite.play("death")

@@ -130,6 +130,9 @@ func _ready():
 
 
 func _physics_process(delta):
+	if current_state != State.DEATH and not COMBAT_TARGET_SELECTOR.is_living_enemy(self):
+		velocity = Vector2.ZERO
+		return
 	_refresh_combat_target(delta)
 	time_alive += delta
 	

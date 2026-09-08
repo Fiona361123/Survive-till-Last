@@ -1,6 +1,8 @@
 extends Node2D
 class_name GravityBombProjectile
 
+const COMBAT_TARGET_SELECTOR = preload("res://systems/combat_target_selector.gd")
+
 signal state_changed(new_state: BombState)
 
 enum BombState {
@@ -116,7 +118,7 @@ func _get_enemies_in_radius() -> Array[Node2D]:
 
 	for node in scene_tree.get_nodes_in_group("enemy"):
 		var enemy := node as Node2D
-		if enemy == null or not is_instance_valid(enemy):
+		if enemy == null or not COMBAT_TARGET_SELECTOR.is_living_enemy(enemy):
 			continue
 		if enemy.global_position.distance_to(global_position) <= pull_radius:
 			nearby.append(enemy)

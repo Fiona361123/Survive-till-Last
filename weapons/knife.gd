@@ -1,5 +1,7 @@
 extends Node2D
 
+const COMBAT_TARGET_SELECTOR = preload("res://systems/combat_target_selector.gd")
+
 @export var damage: int = 20
 @export var attack_cooldown: float = 0.8
 @export var attack_range: float = 160.0
@@ -27,6 +29,8 @@ func _find_nearest_enemy_in_range() -> Node2D:
 	var nearest: Node2D = null
 	var nearest_dist := attack_range
 	for enemy in get_tree().get_nodes_in_group("enemy"):
+		if not COMBAT_TARGET_SELECTOR.is_living_enemy(enemy):
+			continue
 		var dist = global_position.distance_to(enemy.global_position)
 		if dist <= nearest_dist:
 			nearest_dist = dist

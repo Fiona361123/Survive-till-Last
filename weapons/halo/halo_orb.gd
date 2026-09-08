@@ -2,6 +2,8 @@
 extends Area2D
 class_name HaloOrb
 
+const COMBAT_TARGET_SELECTOR = preload("res://systems/combat_target_selector.gd")
+
 var damage: int = 5
 var hit_cooldown: float = 0.5
 var damage_enabled: bool = true
@@ -42,9 +44,7 @@ func _process(delta: float) -> void:
 func _try_damage(body: Node2D) -> void:
 	if not damage_enabled:
 		return
-	if not body.is_in_group("enemy"):
-		return
-	if not body.has_method("take_damage"):
+	if not COMBAT_TARGET_SELECTOR.is_living_enemy(body):
 		return
 	if _recent_hits.has(body):
 		return

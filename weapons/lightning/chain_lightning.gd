@@ -1,6 +1,8 @@
 # chain_lightning.gd
 extends Node2D
 
+const COMBAT_TARGET_SELECTOR = preload("res://systems/combat_target_selector.gd")
+
 @export var damage: int = 8
 @export var attack_cooldown: float = 1.2
 @export var attack_range: float = 250.0   # range to find the FIRST target
@@ -57,7 +59,7 @@ func _find_nearest_enemy(from: Vector2, max_dist: float, exclude: Array) -> Node
 	for enemy in get_tree().get_nodes_in_group("enemy"):
 		if enemy in exclude:
 			continue
-		if not enemy.has_method("take_damage"):
+		if not COMBAT_TARGET_SELECTOR.is_living_enemy(enemy):
 			continue
 		var dist = from.distance_to(enemy.global_position)
 		if dist <= nearest_dist:

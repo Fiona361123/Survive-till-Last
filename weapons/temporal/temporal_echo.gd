@@ -1,6 +1,8 @@
 extends CharacterBody2D
 class_name TemporalEcho
 
+const COMBAT_TARGET_SELECTOR = preload("res://systems/combat_target_selector.gd")
+
 signal replay_finished
 
 @export var replay_speed: float = 1.0
@@ -133,7 +135,7 @@ func _damage_nearby_enemies() -> void:
 		return
 	for node in scene_tree.get_nodes_in_group("enemy"):
 		var enemy := node as Node2D
-		if enemy == null or not is_instance_valid(enemy):
+		if enemy == null or not COMBAT_TARGET_SELECTOR.is_living_enemy(enemy):
 			continue
 		if enemy.global_position.distance_to(global_position) > maxf(damage_radius, 0.0):
 			continue

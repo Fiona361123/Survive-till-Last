@@ -21,7 +21,7 @@ func _notification(what):
 		var dungeon = get_tree().current_scene
 		if dungeon != null and dungeon.name.begins_with("Dungeon"):
 			var player = get_tree().get_first_node_in_group("player")
-			if player != null and player.current_hp > 0:
+			if player != null and player.current_hp > 0 and not bool(dungeon.get("run_completed")):
 				var killed = dungeon.get_current_enemies_killed() if dungeon.has_method("get_current_enemies_killed") else 0
 				var flags = {
 					"level_cleared":   dungeon.get("level_cleared"),
@@ -156,4 +156,12 @@ func save_dungeon_state(dungeon_level: int, hp: int, max_hp: int, xp: int, playe
 
 func clear_dungeon_state():
 	saved_dungeon_state = {}
+	save_game()
+
+func start_new_game() -> void:
+	saved_dungeon_state = {}
+	load_from_save = false
+	upgrade_max_hp_level = 0
+	upgrade_damage_level = 0
+	upgrade_speed_level = 0
 	save_game()

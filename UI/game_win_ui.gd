@@ -33,10 +33,18 @@ func show_game_win() -> void:
 func _on_replay_pressed() -> void:
 	# Must unpause BEFORE any tree operations
 	get_tree().paused = false
+	var weapon_progress = get_node_or_null("/root/WeaponProgress")
+	if weapon_progress != null and weapon_progress.has_method("reset_progress"):
+		weapon_progress.reset_progress()
+	if SaveSystem.has_method("start_new_game"):
+		SaveSystem.start_new_game()
+	else:
+		SaveSystem.clear_dungeon_state()
 	queue_free()
 	get_tree().call_deferred("reload_current_scene")
 
 func _on_exit_pressed() -> void:
 	get_tree().paused = false
+	SaveSystem.clear_dungeon_state()
 	queue_free()
 	get_tree().change_scene_to_file("res://UI/MainMenu.tscn")

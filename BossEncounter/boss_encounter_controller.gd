@@ -67,6 +67,28 @@ func is_boss_ready() -> bool:
 	return _state == State.BOSS_READY
 
 
+func debug_complete_trial() -> int:
+	if _state == State.BOSS_READY:
+		return 0
+
+	var removed_count := _living_minions().size()
+	_run_serial += 1
+	_force_all_traps_safe()
+	var minion_container := get_node_or_null(active_minions_path)
+	if minion_container != null:
+		for minion in minion_container.get_children():
+			minion.queue_free()
+	_state = State.BOSS_READY
+	var marker := get_boss_spawn_point()
+	if marker != null:
+		marker.visible = true
+	encounter_changed.emit()
+	if not _boss_ready_emitted:
+		_boss_ready_emitted = true
+		boss_ready.emit(marker)
+	return removed_count
+
+
 func get_boss_spawn_point() -> Marker2D:
 	return get_node_or_null(boss_spawn_point_path) as Marker2D
 
@@ -132,10 +154,10 @@ func _spawn_species(scene: PackedScene, markers: Array[Marker2D], prefix: String
 		for old_group in [&"level1_enemy", &"level2_enemy", &"level3_enemy"]:
 			if minion.is_in_group(old_group):
 				minion.remove_from_group(old_group)
-		var position := SpawnPositionResolver.place_clear_of_walls(
+		var spawn_position := SpawnPositionResolver.place_clear_of_walls(
 			minion, markers[index].global_position, get_boss_spawn_point().global_position
 		)
-		if _point_in_entrance_safe_area(position):
+		if _point_in_entrance_safe_area(spawn_position):
 			_free_prepared(prepared + [minion])
 			return _abort_current_wave("BossEncounter found no safe position for %s%d." % [prefix, index + 1])
 		prepared.append(minion)

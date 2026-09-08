@@ -32,7 +32,7 @@ func show_level_up(new_level: int, picks: int = 1) -> void:
 	_picks_remaining = picks
 	
 	if _picks_remaining > 1:
-		container.custom_minimum_size = Vector2(1180, 500) # Wide enough for 5 cards in a row
+		container.custom_minimum_size = Vector2(1180, 500)
 		if title_label: title_label.text = "** CHEST FOUND **"
 		if sub_label: sub_label.text = "Choose %d rewards wisely, survivor." % _picks_remaining
 	else:
@@ -65,7 +65,7 @@ func _populate_cards() -> void:
 		for key in ["speed", "hp_xp", "atk_speed"]:
 			_card_container.add_child(_make_card(key, UPGRADES[key]))
 	else:
-		# Chest: show all 5 cards
+		# Chest rewards offer all five cards and allow multiple picks.
 		for key in UPGRADES.keys():
 			_card_container.add_child(_make_card(key, UPGRADES[key]))
 

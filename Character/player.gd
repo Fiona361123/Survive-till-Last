@@ -60,7 +60,6 @@ func _ready() -> void:
 		call_deferred("equip_halo")
 	current_hp = max_hp
 	if health_bar:
-		# Health bar always goes 0-100 max
 		health_bar.max_value = 100
 		health_bar.show_percentage = false
 		
@@ -94,37 +93,39 @@ func _ready() -> void:
 
 func _update_hp_bar() -> void:
 	if health_bar:
-		var bar_value = current_hp % 100
-		if current_hp > 0 and bar_value == 0:
-			bar_value = 100
-		health_bar.value = bar_value
+		health_bar.max_value = 100
+		health_bar.value = clampi(current_hp, 0, 100)
 		
 		if hp_label:
-			hp_label.text = str(current_hp) + " / " + str(max_hp)
+			hp_label.text = str(current_hp) + " / 100"
 			
 		_draw_hearts()
 
 var heart_icons = []
 func _draw_hearts():
-	# Clear old hearts
-	for h in heart_icons:
-		if is_instance_valid(h):
-			h.queue_free()
-	heart_icons.clear()
-	
 	if not health_bar:
 		return
 		
-	# 100 HP = 1 Heart
 	var total_hearts = ceili(float(current_hp) / 100.0)
-	
-	for i in range(total_hearts):
-		var heart = ColorRect.new()
-		heart.color = Color.RED
-		heart.custom_minimum_size = Vector2(16, 16)
-		# Position them to the left of the health bar
-		heart.position = Vector2(-20 - (i * 20), 0)
-		health_bar.add_child(heart)
+	var extra_hearts = maxi(total_hearts - 1, 0)
+	while heart_icons.size() > extra_hearts:
+		var removed_heart = heart_icons.pop_back()
+		if is_instance_valid(removed_heart):
+			var fall_tween := create_tween()
+			fall_tween.set_parallel(true)
+			fall_tween.tween_property(removed_heart, "position:y", removed_heart.position.y + 40.0, 0.25)
+			fall_tween.tween_property(removed_heart, "modulate:a", 0.0, 0.25)
+			fall_tween.chain().tween_callback(removed_heart.queue_free)
+
+	var base_heart := health_bar.get_node_or_null("Screenshot20260721134036") as Sprite2D
+	var heart_parent := health_bar.get_parent() as Node2D
+	while heart_icons.size() < extra_hearts:
+		var i := heart_icons.size()
+		var heart := Sprite2D.new()
+		heart.texture = load("res://Character/Screenshot 2026-07-21 134036.png")
+		heart.scale = base_heart.scale if base_heart != null else Vector2.ONE
+		heart_parent.add_child(heart)
+		heart.global_position = base_heart.global_position + Vector2(-34.0 * (i + 1), 0.0)
 		heart_icons.append(heart)
 
 func _physics_process(delta: float) -> void:
@@ -336,7 +337,7 @@ func add_xp(amount: int, heal_bonus: int = 0) -> void:
 # Called directly by Ranged Enemy death (gives upgrade without needing XP)
 # Also called internally by add_xp() when XP bar fills
 # silent=true suppresses audio (used for debug/cheat shortcuts)
-func open_chest(picks: int = 1, silent: bool = false) -> void:
+func open_chest(picks: int = 1, _silent: bool = false) -> void:
 	if current_hp <= 0: return
 	
 	current_level += 1

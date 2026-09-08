@@ -1,6 +1,8 @@
 # gun.gd
 extends Node2D
 
+const COMBAT_TARGET_SELECTOR = preload("res://systems/combat_target_selector.gd")
+
 @export var damage: int = 30
 @export var attack_cooldown: float = 0.6
 @export var attack_range: float = 300.0   # much longer than knife
@@ -24,6 +26,8 @@ func _find_nearest_enemy_in_range() -> Node2D:
 	var nearest: Node2D = null
 	var nearest_dist := attack_range
 	for enemy in get_tree().get_nodes_in_group("enemy"):
+		if not COMBAT_TARGET_SELECTOR.is_living_enemy(enemy):
+			continue
 		var dist = global_position.distance_to(enemy.global_position)
 		if dist <= nearest_dist:
 			nearest_dist = dist

@@ -107,6 +107,9 @@ func _ready():
 
 
 func _physics_process(delta):
+	if current_state != State.DEATH and not COMBAT_TARGET_SELECTOR.is_living_enemy(self):
+		velocity = Vector2.ZERO
+		return
 	_refresh_combat_target(delta)
 	time_alive += delta
 	_update_timers(delta)
@@ -198,7 +201,7 @@ func _setup_animations():
 		animated_sprite.play("walk")
 	animated_sprite.speed_scale = walk_speed_scale
 
-func _update_timers(delta):
+func _update_timers(_delta):
 	if shoot_timer != null and not can_shoot:
 		if shoot_timer.time_left <= 0: 
 			can_shoot = true
@@ -285,7 +288,7 @@ func _chase_state(delta):
 
 
 # SHOOT - stops and fires projectiles
-func _shoot_state(delta):
+func _shoot_state(_delta):
 	if player == null:
 		current_state = State.WANDER
 		return
@@ -392,7 +395,7 @@ func _alert_state(delta):
 
 
 # DEATH - plays death animation
-func _death_state(delta):
+func _death_state(_delta):
 	velocity = Vector2.ZERO
 	if animated_sprite.animation != "death":
 		animated_sprite.play("death")

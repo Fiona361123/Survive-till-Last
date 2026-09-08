@@ -214,7 +214,14 @@ func _on_start_pressed():
 	if SaveSystem.saved_dungeon_state.has("is_saved") and SaveSystem.saved_dungeon_state["is_saved"]:
 		_show_resume_prompt()
 	else:
-		SaveSystem.load_from_save = false
+		var wp = get_node_or_null("/root/WeaponProgress")
+		if wp and wp.has_method("reset_progress"):
+			wp.reset_progress()
+		if SaveSystem.has_method("start_new_game"):
+			SaveSystem.start_new_game()
+		else:
+			SaveSystem.clear_dungeon_state()
+			SaveSystem.load_from_save = false
 		get_tree().change_scene_to_file("res://Dungeon.tscn")
 
 func _show_resume_prompt():
@@ -327,8 +334,11 @@ func _show_resume_prompt():
 		var wp = get_node_or_null("/root/WeaponProgress")
 		if wp and wp.has_method("reset_progress"):
 			wp.reset_progress()
-		SaveSystem.clear_dungeon_state()
-		SaveSystem.load_from_save = false
+		if SaveSystem.has_method("start_new_game"):
+			SaveSystem.start_new_game()
+		else:
+			SaveSystem.clear_dungeon_state()
+			SaveSystem.load_from_save = false
 		get_tree().change_scene_to_file("res://Dungeon.tscn")
 	)
 	hbox.add_child(btn_new)

@@ -5,6 +5,7 @@ extends Area2D
 @export var move_speed: float = 200.0
 
 var player: Node2D = null
+var origin_level: int = 0
 var _pulse_time: float = 0.0
 var _attracted: bool = false
 
@@ -13,6 +14,9 @@ var _sprite: Sprite2D
 
 func _ready() -> void:
 	add_to_group("xp_orb")
+	var dungeon := get_tree().current_scene
+	if dungeon != null and "current_level" in dungeon:
+		origin_level = int(dungeon.current_level)
 	monitoring = true
 	monitorable = false
 	player = get_tree().get_first_node_in_group("player")
@@ -31,6 +35,9 @@ func _ready() -> void:
 	add_child(_sprite)
 
 func _physics_process(delta: float) -> void:
+	if _is_from_inactive_level():
+		queue_free()
+		return
 	_pulse_time += delta
 
 	# Add a slight hovering bounce animation to the card
@@ -58,3 +65,8 @@ func _on_body_entered(body: Node) -> void:
 	if body.is_in_group("player") and body.has_method("open_chest"):
 		body.open_chest()
 		queue_free()
+
+func _is_from_inactive_level() -> bool:
+	var dungeon := get_tree().current_scene
+	return origin_level > 0 and dungeon != null and "current_level" in dungeon \
+		and origin_level != int(dungeon.current_level)

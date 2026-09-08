@@ -147,6 +147,9 @@ func _on_continue_pressed():
 
 func _on_restart_pressed():
 	_toggle_pause()
+	var weapon_progress = get_node_or_null("/root/WeaponProgress")
+	if weapon_progress != null and weapon_progress.has_method("reset_progress"):
+		weapon_progress.reset_progress()
 	get_tree().reload_current_scene()
 
 func _on_quit_pressed():

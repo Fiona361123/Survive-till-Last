@@ -3,6 +3,7 @@ extends Area2D
 @export var value: int = 1
 
 var is_collected: bool = false
+var origin_level: int = 0
 var attract_speed: float = 150.0
 var min_attract_speed: float = 150.0
 var max_attract_speed: float = 800.0
@@ -12,6 +13,9 @@ var player_target = null
 @onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
 
 func _ready() -> void:
+	var dungeon := get_tree().current_scene
+	if dungeon != null and "current_level" in dungeon:
+		origin_level = int(dungeon.current_level)
 	body_entered.connect(_on_body_entered)
 	if animated_sprite.sprite_frames.has_animation("idle_loop"):
 		animated_sprite.play("idle_loop")
@@ -23,6 +27,9 @@ func _ready() -> void:
 		player_target = players[0]
 
 func _process(delta: float) -> void:
+	if _is_from_inactive_level():
+		queue_free()
+		return
 	if is_collected:
 		return
 		
@@ -52,3 +59,8 @@ func _on_body_entered(body: Node2D) -> void:
 			body._spawn_floating_text("+" + str(value) + " Gold Coin", Color(1.0, 0.8, 0.0), 16, Vector2(-30, -50))
 			
 		queue_free()
+
+func _is_from_inactive_level() -> bool:
+	var dungeon := get_tree().current_scene
+	return origin_level > 0 and dungeon != null and "current_level" in dungeon \
+		and origin_level != int(dungeon.current_level)
