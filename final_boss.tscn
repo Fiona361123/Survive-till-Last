@@ -347,7 +347,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_0j84w")
 }],
-"loop": false,
+"loop": true,
 "name": &"appear",
 "speed": 5.0
 }, {
@@ -628,8 +628,8 @@ size = Vector2(140, 139)
 [sub_resource type="CircleShape2D" id="CircleShape2D_il0sp"]
 radius = 143.08739
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_n0uwk"]
-bg_color = Color(1, 0.7647059, 0.73333335, 0.972549)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ibcdr"]
+bg_color = Color(0.64705884, 0.039215688, 0, 0.47843137)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
@@ -640,8 +640,9 @@ expand_margin_top = 2.0
 expand_margin_right = 2.0
 expand_margin_bottom = 2.0
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ibcdr"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0dprq"]
 bg_color = Color(0.64705884, 0.039215688, 0, 1)
+corner_detail = 15
 
 [node name="FinalBoss" type="CharacterBody2D" unique_id=447995274]
 script = ExtResource("1_ifitu")
@@ -684,12 +685,14 @@ shape = SubResource("CircleShape2D_il0sp")
 [node name="AttackTimer" type="Timer" parent="." unique_id=480638774]
 
 [node name="HealthBar" type="ProgressBar" parent="." unique_id=513606209]
-offset_left = -35.0
-offset_top = -110.0
-offset_right = 36.0
-offset_bottom = -103.0
+offset_left = -36.0
+offset_top = -103.0
+offset_right = 35.0
+offset_bottom = -94.0
 theme_override_colors/font_color = Color(0.95, 0.95, 0.95, 1)
-theme_override_styles/background = SubResource("StyleBoxFlat_n0uwk")
-theme_override_styles/fill = SubResource("StyleBoxFlat_ibcdr")
+theme_override_styles/background = SubResource("StyleBoxFlat_ibcdr")
+theme_override_styles/fill = SubResource("StyleBoxFlat_0dprq")
+max_value = 2000.0
 step = 1.0
+value = 2000.0
 show_percentage = false

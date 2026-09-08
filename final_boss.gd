@@ -155,9 +155,12 @@ var can_attack: bool = true
 @onready var combo_timer: Timer = $ComboTimer
 @onready var teleport_timer: Timer = $TeleportTimer
 @onready var hurt_timer: Timer = $HurtTimer
-
+@onready var health_bar: ProgressBar = $HealthBar
 
 func _ready() -> void:
+	health = max_health
+	current_speed = normal_speed
+
 	health = max_health
 	current_speed = normal_speed
 
@@ -1311,6 +1314,10 @@ func take_damage(amount: float) -> void:
 			return
 
 	health -= amount
+	health = max(health, 0.0)
+
+	if health_bar:
+		health_bar.value = health
 
 	print("Boss HP: ", health)
 
@@ -1401,6 +1408,9 @@ func die() -> void:
 
 	current_state = BossState.DEATH
 	velocity = Vector2.ZERO
+
+	if health_bar:
+		health_bar.visible = false
 
 	attack_timer.stop()
 	combo_timer.stop()
