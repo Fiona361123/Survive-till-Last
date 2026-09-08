@@ -866,7 +866,7 @@ position = Vector2(-3800, 3000)
 
 [node name="Player" parent="." unique_id=1596675552 groups=["player"] instance=ExtResource("6_yrkb7")]
 y_sort_enabled = true
-position = Vector2(741, -2193)
+position = Vector2(447, -137)
 
 [node name="RangedEnemy" parent="." unique_id=1549030439 instance=ExtResource("48_y2adg")]
 position = Vector2(3765, 324)
