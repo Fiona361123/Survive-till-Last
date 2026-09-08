@@ -16,7 +16,9 @@ var current_health: int
 
 # XP drop on death
 @export var xp_drop: int = 10
+@export var hp_bonus_drop: int = 15
 const XP_ORB_SCENE = preload("res://enemyXP.tscn")
+const BLUE_COIN_SCENE = preload("res://GoldCoin.tscn")
 
 # SMOOTH MOVEMENT
 @export var acceleration: float = 600.0
@@ -488,9 +490,14 @@ func die() -> void:
 		spawn_pos.y = clamp(spawn_pos.y, -1000, 1000)
 	
 	var orb = XP_ORB_SCENE.instantiate()
-	orb.is_level_up_coin = true
+	orb.xp_value = xp_drop
+	orb.heal_bonus = hp_bonus_drop
 	orb.global_position = spawn_pos
 	get_tree().current_scene.call_deferred("add_child", orb)
+	
+	var bcoin = BLUE_COIN_SCENE.instantiate()
+	bcoin.global_position = spawn_pos + Vector2(20, 0)
+	get_tree().current_scene.call_deferred("add_child", bcoin)
 
 
 func pick_new_wander_target():

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://ct1e0eai352cu"
+path="res://.godot/imported/menieldm-obsidian-halls-495840.mp3-9681a7ce82a8f5613d13e1818c9288b7.mp3str"
+
+[deps]
+
+source_file="res://Background Sound/menieldm-obsidian-halls-495840.mp3"
+dest_files=["res://.godot/imported/menieldm-obsidian-halls-495840.mp3-9681a7ce82a8f5613d13e1818c9288b7.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

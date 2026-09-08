@@ -23,6 +23,7 @@ var current_health: int
 @export var xp_drop: int = 15
 @export var hp_bonus_drop: int = 30  
 const XP_ORB_SCENE = preload("res://enemyXP.tscn")
+const BLUE_COIN_SCENE = preload("res://GoldCoin.tscn")
 
 # ATTACK 
 @export var damage: int = 10
@@ -621,11 +622,16 @@ func die() -> void:
 		spawn_pos.x = clamp(spawn_pos.x, -1000, 1000)
 		spawn_pos.y = clamp(spawn_pos.y, -1000, 1000)
 	
-	var orb = XP_ORB_SCENE.instantiate()
-	orb.xp_value = xp_drop
-	orb.heal_bonus = hp_bonus_drop   # Skeleton coin also restores HP
-	orb.global_position = spawn_pos
-	get_tree().current_scene.call_deferred("add_child", orb)
+	var remaining = get_tree().get_nodes_in_group("level2_enemy").size()
+	if remaining <= 1:
+		var orb = XP_ORB_SCENE.instantiate()
+		orb.is_level_up_coin = true
+		orb.global_position = spawn_pos
+		get_tree().current_scene.call_deferred("add_child", orb)
+	
+	var bcoin = BLUE_COIN_SCENE.instantiate()
+	bcoin.global_position = spawn_pos + Vector2(20, 0)
+	get_tree().current_scene.call_deferred("add_child", bcoin)
 	
 	if animated_sprite.sprite_frames.has_animation("death"):
 		animated_sprite.play("death")

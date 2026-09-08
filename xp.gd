@@ -80,6 +80,8 @@ func _collect():
 		if player != null and player.has_method("add_xp"):
 			player.add_xp(xp_value, heal_bonus)
 	
+	if get_node_or_null("/root/AudioManager"): get_node("/root/AudioManager").play_coin()
+	
 	_create_collect_effect()
 	queue_free()
 

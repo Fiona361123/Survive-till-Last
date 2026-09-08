@@ -503,26 +503,41 @@ func die() -> void:
 	if health_bar != null:
 		health_bar.visible = false
 	
-	# Ranged Enemy drops a Level Up coin (5 cards, choose 3)
-	var XP_ORB_SCENE = load("res://enemyXP.tscn")
-	if XP_ORB_SCENE:
-		var orb = XP_ORB_SCENE.instantiate()
-		orb.is_level_up_coin = true
-		orb.picks_to_grant = 3
+	var spawn_pos = global_position
+	var camera = get_viewport().get_camera_2d()
+	if camera != null:
+		var viewport_size = get_viewport().get_visible_rect().size
+		var camera_center = camera.global_position
+		var half_width = viewport_size.x / 2
+		var half_height = viewport_size.y / 2
+		spawn_pos.x = clamp(spawn_pos.x, camera_center.x - half_width + 50, camera_center.x + half_width - 50)
+		spawn_pos.y = clamp(spawn_pos.y, camera_center.y - half_height + 50, camera_center.y + half_height - 50)
+	
+	# Only the main Level 3 wave enemies (in the level3_enemy group) trigger the blue coin
+	if is_in_group("level3_enemy"):
+		# Count how many level3 enemies are still alive, excluding this one (it hasn't freed yet)
+		var all_l3 = get_tree().get_nodes_in_group("level3_enemy")
+		var alive_others = 0
+		for e in all_l3:
+			if e != self and is_instance_valid(e) and not e.is_queued_for_deletion():
+				alive_others += 1
 		
-		# Clamp spawn position to camera bounds so it's reachable
-		var spawn_pos = global_position
-		var camera = get_viewport().get_camera_2d()
-		if camera != null:
-			var viewport_size = get_viewport().get_visible_rect().size
-			var camera_center = camera.global_position
-			var half_width = viewport_size.x / 2
-			var half_height = viewport_size.y / 2
-			spawn_pos.x = clamp(spawn_pos.x, camera_center.x - half_width + 50, camera_center.x + half_width - 50)
-			spawn_pos.y = clamp(spawn_pos.y, camera_center.y - half_height + 50, camera_center.y + half_height - 50)
-		
-		orb.global_position = spawn_pos
-		get_tree().current_scene.call_deferred("add_child", orb)
+		if alive_others == 0:
+			# I am the last one — drop the blue 5-card coin
+			var XP_ORB_SCENE = load("res://enemyXP.tscn")
+			if XP_ORB_SCENE:
+				var orb = XP_ORB_SCENE.instantiate()
+				orb.is_level_up_coin = true
+				orb.picks_to_grant = 3
+				orb.global_position = spawn_pos
+				get_tree().current_scene.call_deferred("add_child", orb)
+	
+	# Always drop a gold coin
+	var GOLD_COIN_SCENE = load("res://GoldCoin.tscn")
+	if GOLD_COIN_SCENE:
+		var gcoin = GOLD_COIN_SCENE.instantiate()
+		gcoin.global_position = spawn_pos + Vector2(20, 0)
+		get_tree().current_scene.call_deferred("add_child", gcoin)
 	
 	queue_free()
 

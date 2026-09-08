@@ -45,6 +45,12 @@ var hp_label: Label
 
 func _ready() -> void:
 	add_to_group("player")
+	
+	# Apply Permanent Upgrades
+	if SaveSystem:
+		max_hp += SaveSystem.upgrade_max_hp_level * 10
+		speed += SaveSystem.upgrade_speed_level * 10
+	
 	current_hp = max_hp
 	if not weapon_progress.weapon_unlocked.is_connected(_on_weapon_unlocked):
 		weapon_progress.weapon_unlocked.connect(_on_weapon_unlocked)
@@ -52,21 +58,33 @@ func _ready() -> void:
 		weapon_manager.weapon_switch_blocked.connect(_on_weapon_switch_blocked)
 	if weapon_progress.is_weapon_unlocked(&"guard_halo"):
 		call_deferred("equip_halo")
+	current_hp = max_hp
 	if health_bar:
-		health_bar.max_value = max_hp
-		health_bar.value = current_hp
-		health_bar.show_percentage = false # Hide the default "100%"
+		# Health bar always goes 0-100 max
+		health_bar.max_value = 100
+		health_bar.show_percentage = false
 		
 		# Create a text label to show exact HP numbers
 		hp_label = Label.new()
-		hp_label.add_theme_font_size_override("font_size", 12)
+		var font = load("res://UI/Milky Cream.otf")
+		if font:
+			hp_label.add_theme_font_override("font", font)
+		hp_label.add_theme_font_size_override("font_size", 24)
 		hp_label.add_theme_color_override("font_color", Color.WHITE)
 		hp_label.set_anchors_preset(Control.PRESET_FULL_RECT)
 		hp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		hp_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		health_bar.add_child(hp_label)
-		_update_hp_label()
-		
+		_update_hp_bar()
+
+	# Apply Damage Upgrades to existing weapons
+	if SaveSystem and SaveSystem.upgrade_damage_level > 0:
+		var bonus_dmg = SaveSystem.upgrade_damage_level * 5
+		var knife = get_node_or_null("Knife")
+		if knife and "damage" in knife: knife.damage += bonus_dmg
+		var gun = get_node_or_null("Gun")
+		if gun and "damage" in gun: gun.damage += bonus_dmg
+
 	# Create Game Over UI automatically (deferred so scene tree is ready)
 	_game_over_ui = _game_over_ui_script.new()
 	get_tree().root.call_deferred("add_child", _game_over_ui)
@@ -74,9 +92,40 @@ func _ready() -> void:
 	_game_over_ui.set_deferred("name", "GameOverUI")
 	player_died.connect(_on_player_died)
 
-func _update_hp_label() -> void:
-	if hp_label:
-		hp_label.text = str(current_hp) + " / " + str(max_hp)
+func _update_hp_bar() -> void:
+	if health_bar:
+		var bar_value = current_hp % 100
+		if current_hp > 0 and bar_value == 0:
+			bar_value = 100
+		health_bar.value = bar_value
+		
+		if hp_label:
+			hp_label.text = str(current_hp) + " / " + str(max_hp)
+			
+		_draw_hearts()
+
+var heart_icons = []
+func _draw_hearts():
+	# Clear old hearts
+	for h in heart_icons:
+		if is_instance_valid(h):
+			h.queue_free()
+	heart_icons.clear()
+	
+	if not health_bar:
+		return
+		
+	# 100 HP = 1 Heart
+	var total_hearts = ceili(float(current_hp) / 100.0)
+	
+	for i in range(total_hearts):
+		var heart = ColorRect.new()
+		heart.color = Color.RED
+		heart.custom_minimum_size = Vector2(16, 16)
+		# Position them to the left of the health bar
+		heart.position = Vector2(-20 - (i * 20), 0)
+		health_bar.add_child(heart)
+		heart_icons.append(heart)
 
 func _physics_process(delta: float) -> void:
 	if current_hp <= 0:
@@ -271,11 +320,23 @@ func add_xp(amount: int, heal_bonus: int = 0) -> void:
 	if current_xp >= xp_to_next_level:
 		current_xp -= xp_to_next_level
 		xp_to_next_level = int(xp_to_next_level * 1.4)
-		open_chest()
+		
+		# Foolproof check: if we are in the dungeon and slimes are still alive/spawning, skip cards
+		var is_slime_wave = false
+		var scene = get_tree().current_scene
+		if scene != null and scene.name.begins_with("Dungeon"):
+			if scene.get("current_level") == 1 or get_tree().get_nodes_in_group("level1_enemy").size() > 0:
+				is_slime_wave = true
+		
+		if is_slime_wave:
+			current_level += 1
+		else:
+			open_chest()
 
 # Called directly by Ranged Enemy death (gives upgrade without needing XP)
 # Also called internally by add_xp() when XP bar fills
-func open_chest(picks: int = 1) -> void:
+# silent=true suppresses audio (used for debug/cheat shortcuts)
+func open_chest(picks: int = 1, silent: bool = false) -> void:
 	if current_hp <= 0: return
 	
 	current_level += 1
@@ -348,7 +409,7 @@ func _on_upgrade_chosen(key: String) -> void:
 		if health_bar:
 			health_bar.max_value = max_hp
 			health_bar.value = current_hp
-		_update_hp_label()
+		_update_hp_bar()
 	elif key == "hp_xp":
 		# Heal 30 HP (capped at max) + grant 15 XP toward next level
 		heal(30)
@@ -374,7 +435,7 @@ func heal(amount: int) -> void:
 	hp_changed.emit(current_hp, max_hp)
 	if health_bar:
 		health_bar.value = current_hp
-	_update_hp_label()
+	_update_hp_bar()
 	
 	# Green healing flash on the sprite
 	sprite.modulate = Color(0.3, 1.0, 0.3, 1.0)
@@ -404,7 +465,7 @@ func take_damage(amount: int) -> void:
 
 		if health_bar:
 			health_bar.value = current_hp
-		_update_hp_label()
+		_update_hp_bar()
 	
 	# A blocked hit also starts invincibility so one continuous overlap cannot
 	# drain the entire shield in only a few frames.
@@ -496,7 +557,7 @@ func equip_halo() -> void:
 
 	equipped_halo = halo_instance
 	has_halo = true
-	halo_speed_penalty = 60.0     # lose 60 movement speed
+	halo_speed_penalty = 0.0     # don't lose movement speed
 
 	# Spawn the always-on halo as a child centred on the player.
 	equipped_halo.name = "GuardHalo"

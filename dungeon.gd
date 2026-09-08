@@ -4,8 +4,8 @@ const LEVEL_2_SKELETON_SCENE: PackedScene = preload("res://skeleton.tscn")
 const LEVEL_1_BOMB_SCENE: PackedScene = preload("res://Level1Bomb/Level1Bomb.tscn")
 const LEVEL_2_TOTAL_ENEMIES: int = 15
 const LEVEL_3_TOTAL_ENEMIES: int = 6
-const ENEMY_COUNTER_NORMAL_Y: float = 24.0
-const ENEMY_COUNTER_LEVEL_3_Y: float = 140.0
+const ENEMY_COUNTER_NORMAL_Y: float = 85.0
+const ENEMY_COUNTER_LEVEL_3_Y: float = 185.0
 static var LEVEL_1_BOMB_CELLS: Array[Vector2i] = [Vector2i(4, -1), Vector2i(7, -4)]
 
 @onready var exit_to_level_2: TileMapLayer = $ExitToLevel2
@@ -47,6 +47,36 @@ func _ready() -> void:
 	enemy_counter_label.show()
 	# Huang Wan Jun 2204536 - A death reload returns to Level 1, so keep its counter below the persistent Guard Halo panel.
 	enemy_counter_label.position.y = ENEMY_COUNTER_LEVEL_3_Y
+	
+	# Add on-screen Menu/Pause button
+	var menu_btn = Button.new()
+	menu_btn.text = "Menu"
+	var font = load("res://UI/Milky Cream.otf")
+	if font: menu_btn.add_theme_font_override("font", font)
+	menu_btn.add_theme_font_size_override("font_size", 24)
+	menu_btn.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	menu_btn.offset_left = 20
+	menu_btn.offset_top = 20
+	menu_btn.offset_right = 120
+	menu_btn.offset_bottom = 60
+	menu_btn.pressed.connect(PauseMenu._toggle_pause)
+	menu_btn.focus_mode = Control.FOCUS_NONE
+	level_clear_ui.add_child(menu_btn)
+	
+	# Gold Coin HUD counter display
+	var gold_hud = Label.new()
+	gold_hud.name = "GoldHUDLabel"
+	if font: gold_hud.add_theme_font_override("font", font)
+	gold_hud.add_theme_font_size_override("font_size", 24)
+	gold_hud.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
+	gold_hud.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	gold_hud.offset_left = -250
+	gold_hud.offset_top = 20
+	gold_hud.offset_right = -20
+	gold_hud.offset_bottom = 60
+	gold_hud.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	level_clear_ui.add_child(gold_hud)
+	
 	_spawn_level_one_bombs()
 
 	# Huang Wan Jun 2204536 - Start the dungeon HUD on the active, discovered level.
@@ -65,6 +95,131 @@ func _ready() -> void:
 	call_deferred("_ensure_initial_level_two_enemies_are_clear")
 	call_deferred("_watch_level_two_enemies")
 	call_deferred("_watch_level_three_enemies")
+	
+	if SaveSystem.load_from_save and SaveSystem.saved_dungeon_state.has("is_saved"):
+		var state = SaveSystem.saved_dungeon_state
+		var saved_level = state.get("dungeon_level", 1)
+		
+		var player = get_tree().get_first_node_in_group("player")
+		if player == null:
+			player = get_node_or_null("Player")
+			
+		if player != null:
+			player.max_hp = state.get("max_hp", player.max_hp)
+			player.current_hp = state.get("hp", player.max_hp)
+			player.current_xp = state.get("xp", 0)
+			player.current_level = state.get("player_level", 1)
+			
+			if player.has_node("HealthBarAnchor/HealthBar"):
+				var hb = player.get_node("HealthBarAnchor/HealthBar")
+				hb.max_value = player.max_hp
+				hb.value = player.current_hp
+			
+			var wp = get_node_or_null("/root/WeaponProgress")
+			var wp_state = state.get("weapon_progress", {})
+			if wp != null and wp_state.size() > 0:
+				var unl: Array = wp_state.get("unlocked", [])
+				var unl_names: Array[StringName] = []
+				for u in unl: unl_names.append(StringName(u))
+				wp.unlocked_weapon_ids = unl_names
+				
+				var uns: Array = wp_state.get("unseen", [])
+				var uns_names: Array[StringName] = []
+				for u in uns: uns_names.append(StringName(u))
+				wp.unseen_weapon_ids = uns_names
+				
+				wp.highest_dungeon_level = wp_state.get("highest_level", 1)
+				wp.total_xp_earned = wp_state.get("total_xp", 0)
+				wp.weapon_xp_balance = wp_state.get("balance", 0)
+			
+			var flags = state.get("level_flags", {})
+			var enemies_killed = state.get("enemies_killed", 0)
+			call_deferred("_restore_saved_level_state", saved_level, player, flags, enemies_killed)
+			
+		SaveSystem.load_from_save = false
+	
+	if is_instance_valid(boss_encounter):
+		boss_encounter.boss_ready.connect(_on_boss_ready)
+
+func _on_boss_ready(spawn_point: Marker2D) -> void:
+	var win_ui_script = load("res://UI/game_win_ui.gd")
+	if win_ui_script:
+		var win_ui = win_ui_script.new()
+		get_tree().root.add_child(win_ui)
+		win_ui.show_game_win()
+
+var pending_enemies_killed_level1: int = 0
+
+func _restore_saved_level_state(saved_level: int, player: Node2D, flags: Dictionary = {}, enemies_killed: int = 0):
+	current_level = saved_level
+	dungeon_minimap.set_current_level(saved_level)
+	
+	# Restore level 1 mid-progress: store killed count so it is applied after spawning finishes
+	if saved_level == 1 and enemies_killed > 0:
+		pending_enemies_killed_level1 = enemies_killed
+		if spawning_finished:
+			_apply_pending_level_1_kills()
+	
+	if saved_level >= 2:
+		debug_clear_level_one_enemies()
+		level_cleared = true
+		weapon_progress.register_level_clear(1)
+		unlock_path_after_level(1)
+		
+	if saved_level == 2 and enemies_killed > 0:
+		var enemies = _get_level_two_enemy_nodes()
+		if enemies_killed > enemies.size() and not level_2_second_wave_spawned:
+			_spawn_level_two_second_wave()
+			enemies = _get_level_two_enemy_nodes()
+		var to_kill = mini(enemies_killed, enemies.size())
+		for i in range(to_kill):
+			if is_instance_valid(enemies[i]): enemies[i].queue_free()
+			
+	if saved_level >= 3:
+		var enemies = _get_level_two_enemy_nodes()
+		for e in enemies: e.queue_free()
+		level_2_second_wave_spawned = true
+		level_2_cleared = true
+		weapon_progress.register_level_clear(2)
+		unlock_path_after_level(2)
+		enemy_counter_label.position.y = ENEMY_COUNTER_LEVEL_3_Y
+		
+	if saved_level == 3 and enemies_killed > 0:
+		var enemies = _get_level_three_enemy_nodes()
+		var to_kill = mini(enemies_killed, enemies.size())
+		for i in range(to_kill):
+			if is_instance_valid(enemies[i]): enemies[i].queue_free()
+			
+	if saved_level >= 4:
+		var enemies = _get_level_three_enemy_nodes()
+		for e in enemies: e.queue_free()
+		_complete_level_three()
+
+	# Restore exact player position if recorded, otherwise fallback to entrance nodes
+	var state = SaveSystem.saved_dungeon_state
+	var saved_pos_x: float = state.get("pos_x", 0.0)
+	var saved_pos_y: float = state.get("pos_y", 0.0)
+	if saved_pos_x != 0.0 or saved_pos_y != 0.0:
+		player.global_position = Vector2(saved_pos_x, saved_pos_y)
+	else:
+		if saved_level == 2 and is_instance_valid(level_2_entrance):
+			player.global_position = level_2_entrance.global_position
+		elif saved_level == 3 and is_instance_valid(level_3_entrance):
+			player.global_position = level_3_entrance.global_position
+		elif saved_level >= 4 and is_instance_valid(boss_entrance):
+			player.global_position = boss_entrance.global_position
+
+	SaveSystem.clear_dungeon_state()
+
+
+func _apply_pending_level_1_kills() -> void:
+	if pending_enemies_killed_level1 > 0:
+		var alive = get_tree().get_nodes_in_group("level1_enemy")
+		var to_kill = mini(pending_enemies_killed_level1, alive.size())
+		for i in range(to_kill):
+			if is_instance_valid(alive[i]):
+				alive[i].queue_free()
+		pending_enemies_killed_level1 = 0
 
 
 # Huang Wan Jun 2204536 - Replace two existing Level 1 rock tiles with attack-triggered barrel bombs at the same locations.
@@ -80,6 +235,9 @@ func _spawn_level_one_bombs() -> void:
 
 func _process(_delta: float) -> void:
 	_update_enemy_counter()
+	var gold_label = level_clear_ui.get_node_or_null("GoldHUDLabel")
+	if gold_label:
+		gold_label.text = "🪙 Gold: " + str(SaveSystem.gold_coins)
 
 
 func _on_enemies_finished_spawning() -> void:
@@ -88,6 +246,11 @@ func _on_enemies_finished_spawning() -> void:
 
 	spawning_finished = true
 	level_1_total_enemies = get_tree().get_nodes_in_group("level1_enemy").size()
+	if level_cleared or current_level >= 2:
+		debug_clear_level_one_enemies()
+		return
+	if pending_enemies_killed_level1 > 0:
+		_apply_pending_level_1_kills()
 	if debug_clear_requested:
 		debug_clear_level_one_enemies()
 	_watch_level_one_enemies()
@@ -246,9 +409,12 @@ func _complete_level_two() -> void:
 		return
 
 	level_2_cleared = true
+	if get_node_or_null("/root/AudioManager"): get_node("/root/AudioManager").play_level_up()
 	enemy_counter_label.position.y = ENEMY_COUNTER_LEVEL_3_Y
 	weapon_progress.register_level_clear(2)
 	unlock_path_after_level(2)
+	current_level = 3
+	dungeon_minimap.set_current_level(3)
 	await _show_level_clear_message(
 		"LEVEL 2 CLEAR!\n通关啦！Level 3 Tunnel Unlocked!"
 	)
@@ -259,8 +425,11 @@ func _complete_level() -> void:
 		return
 
 	level_cleared = true
+	if get_node_or_null("/root/AudioManager"): get_node("/root/AudioManager").play_level_up()
 	weapon_progress.register_level_clear(1)
 	unlock_path_after_level(1)
+	current_level = 2
+	dungeon_minimap.set_current_level(2)
 	await _show_level_clear_message(
 		"LEVEL 1 CLEAR!\n通关啦！Level 2 Tunnel Unlocked!"
 	)
@@ -273,8 +442,11 @@ func _complete_level_three() -> void:
 		return
 
 	level_3_cleared = true
+	if get_node_or_null("/root/AudioManager"): get_node("/root/AudioManager").play_level_up()
 	weapon_progress.register_level_clear(3)
 	unlock_path_after_level(3)
+	current_level = 4
+	dungeon_minimap.set_current_level(4)
 	await _show_level_clear_message(
 		"LEVEL 3 CLEAR!\nBoss Tunnel and Chain Lightning Unlocked!"
 	)
@@ -336,6 +508,23 @@ func _update_enemy_counter() -> void:
 					enemy_counter_label.text = "BOSS TRIAL"
 		_:
 			enemy_counter_label.hide()
+
+
+func get_current_enemies_killed() -> int:
+	match current_level:
+		1:
+			if level_1_total_enemies > 0:
+				return maxi(0, level_1_total_enemies - get_tree().get_nodes_in_group("level1_enemy").size())
+			return 0
+		2:
+			var remaining := _get_level_two_enemy_nodes().size()
+			if not level_2_second_wave_spawned:
+				remaining += level_2_spawn_points.get_child_count()
+			return clampi(LEVEL_2_TOTAL_ENEMIES - remaining, 0, LEVEL_2_TOTAL_ENEMIES)
+		3:
+			return clampi(LEVEL_3_TOTAL_ENEMIES - _get_level_three_enemy_nodes().size(), 0, LEVEL_3_TOTAL_ENEMIES)
+		_:
+			return 0
 
 
 func unlock_path_after_level(completed_level: int) -> void:

@@ -51,6 +51,7 @@ func _on_body_entered(body: Node2D) -> void:
 		print("[Knife] HIT ENEMY BODY!")
 		body.take_damage(damage)
 		hit_enemies.append(body)
+		if get_node_or_null("/root/AudioManager"): get_node("/root/AudioManager").play_blood_pop()
 
 func _on_area_entered(area: Area2D) -> void:
 	var _p = area.get_parent()
@@ -63,3 +64,4 @@ func _on_area_entered(area: Area2D) -> void:
 		print("[Knife] HIT ENEMY AREA!")
 		parent.take_damage(damage)
 		hit_enemies.append(parent)
+		if get_node_or_null("/root/AudioManager"): get_node("/root/AudioManager").play_blood_pop()

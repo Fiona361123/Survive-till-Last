@@ -11,13 +11,24 @@ config_version=5
 [application]
 
 config/name="Game Map Design"
-run/main_scene="uid://btv576kxb2m37"
+run/main_scene="res://UI/MainMenu.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
 [autoload]
 
+SaveSystem="*res://systems/SaveSystem.gd"
 WeaponProgress="*res://weapons/weapon_progress.gd"
+PauseMenu="*res://UI/pause_menu.gd"
+AudioManager="*res://systems/AudioManager.gd"
+
+[display]
+
+mouse_cursor/custom_image="res://UI/cursor image.png"
+
+[gui]
+
+theme/custom_font="res://UI/Milky Cream.otf"
 
 [input]
 

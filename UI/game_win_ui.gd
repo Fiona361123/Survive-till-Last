@@ -2,7 +2,7 @@ extends BaseMenuUI
 
 func _ready() -> void:
 	layer = 20
-	build_base_ui("GAME OVER", "You have been defeated...", Color(1.0, 0.2, 0.2), false)
+	build_base_ui("VICTORY", "You have conquered the dungeon!", Color(1.0, 0.8, 0.2), false)
 
 	# Spacer
 	var spacer := Control.new()
@@ -15,7 +15,7 @@ func _ready() -> void:
 	hbox.add_theme_constant_override("separation", 20)
 	vbox.add_child(hbox)
 
-	var replay = make_styled_button("Restart Game", Color(0.2, 0.8, 0.3), Vector2(180, 52), 20)
+	var replay = make_styled_button("Play Again", Color(0.2, 0.8, 0.3), Vector2(180, 52), 20)
 	replay.pressed.connect(_on_replay_pressed)
 	hbox.add_child(replay)
 
@@ -25,17 +25,15 @@ func _ready() -> void:
 
 	hide()
 
-func show_game_over() -> void:
-	if get_node_or_null("/root/AudioManager"): get_node("/root/AudioManager").play_lose()
+func show_game_win() -> void:
+	if get_node_or_null("/root/AudioManager"): get_node("/root/AudioManager").play_win()
 	show()
 	get_tree().paused = true
 
 func _on_replay_pressed() -> void:
 	# Must unpause BEFORE any tree operations
 	get_tree().paused = false
-	# Free this UI node (it lives on root, outside the scene, so reload won't remove it)
 	queue_free()
-	# Reload deferred so queue_free finishes first
 	get_tree().call_deferred("reload_current_scene")
 
 func _on_exit_pressed() -> void:
