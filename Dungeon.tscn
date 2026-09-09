@@ -1063,6 +1063,32 @@ theme_override_font_sizes/font_size = 20
 text = "LEVEL 1
 Enemies spawning..."
 
+[node name="BombSpawnPoints" type="Node" parent="." unique_id=612026695]
+
+[node name="Marker2D" type="Marker2D" parent="BombSpawnPoints" unique_id=887128084]
+position = Vector2(597, -120)
+
+[node name="Marker2D2" type="Marker2D" parent="BombSpawnPoints" unique_id=2974923]
+position = Vector2(339, -27)
+
+[node name="Marker2D3" type="Marker2D" parent="BombSpawnPoints" unique_id=394910627]
+position = Vector2(64, 491)
+
+[node name="Marker2D4" type="Marker2D" parent="BombSpawnPoints" unique_id=402947757]
+position = Vector2(735, -264)
+
+[node name="Marker2D5" type="Marker2D" parent="BombSpawnPoints" unique_id=1660379155]
+position = Vector2(1296, 538)
+
+[node name="Marker2D6" type="Marker2D" parent="BombSpawnPoints" unique_id=397037460]
+position = Vector2(780, 721)
+
+[node name="Marker2D7" type="Marker2D" parent="BombSpawnPoints" unique_id=544437710]
+position = Vector2(1301, -44)
+
+[node name="Marker2D8" type="Marker2D" parent="BombSpawnPoints" unique_id=2016128054]
+position = Vector2(218, 698)
+
 [connection signal="body_entered" from="Level2Entrance" to="Level2Entrance" method="_on_body_entered"]
 [connection signal="level_entered" from="Level2Entrance" to="." method="_on_level_entrance_entered"]
 [connection signal="body_entered" from="Level3Entrance" to="Level3Entrance" method="_on_body_entered"]

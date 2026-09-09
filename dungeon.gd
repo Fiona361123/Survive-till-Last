@@ -7,7 +7,6 @@ const LEVEL_2_TOTAL_ENEMIES: int = 15
 const LEVEL_3_TOTAL_ENEMIES: int = 6
 const ENEMY_COUNTER_NORMAL_Y: float = 85.0
 const ENEMY_COUNTER_LEVEL_3_Y: float = 185.0
-static var LEVEL_1_BOMB_CELLS: Array[Vector2i] = [Vector2i(4, -1), Vector2i(7, -4)]
 
 @onready var exit_to_level_2: TileMapLayer = $ExitToLevel2
 @onready var exit_to_level_3: TileMapLayer = $ExitToLevel3
@@ -26,7 +25,6 @@ static var LEVEL_1_BOMB_CELLS: Array[Vector2i] = [Vector2i(4, -1), Vector2i(7, -
 @onready var level_3_enemies: Node2D = $Level3Enemies
 @onready var level_3_traps: Level3TrapController = $Level3Traps
 @onready var boss_encounter: BossEncounterController = $BossEncounter
-@onready var level_1_obstacles: TileMapLayer = $Level1Obstacles
 @onready var weapon_progress: Node = get_node("/root/WeaponProgress")
 
 var level_cleared: bool = false
@@ -250,13 +248,35 @@ func _apply_pending_level_1_kills() -> void:
 
 # Huang Wan Jun 2204536 - Replace two existing Level 1 rock tiles with attack-triggered barrel bombs at the same locations.
 func _spawn_level_one_bombs() -> void:
-	for cell in LEVEL_1_BOMB_CELLS:
-		if level_1_obstacles.get_cell_source_id(cell) == -1:
+	var spawn_points := $BombSpawnPoints.get_children()
+
+	if spawn_points.is_empty():
+		push_error("No Level 1 bomb spawn points found.")
+		return
+
+	var bomb_count := randi_range(4, 8)
+
+	spawn_points.shuffle()
+
+	bomb_count = min(bomb_count, spawn_points.size())
+
+	for i in range(bomb_count):
+		var spawn_point := spawn_points[i] as Marker2D
+
+		if spawn_point == null:
 			continue
-		var bomb := LEVEL_1_BOMB_SCENE.instantiate() as Node2D
-		bomb.global_position = level_1_obstacles.to_global(level_1_obstacles.map_to_local(cell))
+
+		var bomb := LEVEL_1_BOMB_SCENE.instantiate() as Level1Bomb
+
+		if bomb == null:
+			continue
+
+		bomb.global_position = spawn_point.global_position
+
+		# Randomly make the bomb real or fake.
+		bomb.is_real_bomb = randf() < 0.5
+
 		add_child(bomb)
-		level_1_obstacles.erase_cell(cell)
 
 
 func _process(_delta: float) -> void:
@@ -584,7 +604,7 @@ func _on_level_entrance_entered(level_number: int) -> void:
 	dungeon_minimap.set_current_level(level_number)
 	# Huang Wan Jun 2204536 - Keep Level 1, Level 3, and the boss trial below the Guard Halo panel.
 	enemy_counter_label.position.y = (
-		ENEMY_COUNTER_LEVEL_3_Y if level_number in [1, 3, 4] else ENEMY_COUNTER_NORMAL_Y
+		ENEMY_COUNTER_LEVEL_3_Y if level_number in [1, 2, 3, 4] else ENEMY_COUNTER_NORMAL_Y
 	)
 	if level_number == 3:
 		level_3_traps.start_encounter()
