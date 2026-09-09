@@ -38,6 +38,7 @@ var level_1_total_enemies: int = 0
 var run_completed: bool = false
 var win_screen_shown: bool = false
 var active_final_boss: Node2D = null
+var final_boss_damage_bonus_active: bool = false
 
 
 func _ready() -> void:
@@ -215,6 +216,7 @@ func _restore_saved_level_state(saved_level: int, player: Node2D, _flags: Dictio
 			if is_instance_valid(enemies[i]): enemies[i].queue_free()
 			
 	if saved_level >= 4:
+		final_boss_damage_bonus_active = true
 		var enemies = _get_level_three_enemy_nodes()
 		for e in enemies: e.queue_free()
 		_complete_level_three()
@@ -600,6 +602,7 @@ func unlock_path_after_level(completed_level: int) -> void:
 
 func _on_level_entrance_entered(level_number: int) -> void:
 	current_level = level_number
+	final_boss_damage_bonus_active = level_number == 4
 	# Huang Wan Jun 2204536 - Keep the HUD minimap aligned with the entered dungeon level.
 	dungeon_minimap.set_current_level(level_number)
 	# Huang Wan Jun 2204536 - Keep Level 1, Level 3, and the boss trial below the Guard Halo panel.

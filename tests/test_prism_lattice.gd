@@ -5,35 +5,16 @@ var failures: int = 0
 
 func _initialize() -> void:
 	await process_frame
-	_test_triangle_geometry()
-	await _test_density_selection_and_field_lifecycle()
+	await _test_homing_prism_snare_lifecycle()
 
 	if failures == 0:
-		print("Prism Lattice tests passed.")
+		print("Astral Prism Snare tests passed.")
 	else:
-		push_error("%d Prism Lattice test(s) failed." % failures)
+		push_error("%d Astral Prism Snare test(s) failed." % failures)
 	quit(0 if failures == 0 else 1)
 
 
-func _test_triangle_geometry() -> void:
-	var vertices := PackedVector2Array([
-		Vector2(0.0, 0.0),
-		Vector2(100.0, 0.0),
-		Vector2(0.0, 100.0),
-	])
-	_expect(PrismField.contains_point(Vector2(20.0, 20.0), vertices),
-		"point-in-polygon detects an enemy inside the prism triangle")
-	_expect(not PrismField.contains_point(Vector2(90.0, 90.0), vertices),
-		"point-in-polygon rejects an enemy outside the prism triangle")
-	_expect(is_equal_approx(PrismField.calculate_area(vertices), 5000.0),
-		"cross-product calculation returns the triangle area")
-	_expect(PrismField.calculate_centroid(vertices).is_equal_approx(Vector2(33.333332, 33.333332)),
-		"centroid calculation finds the collapse position")
-	_expect(is_equal_approx(PrismField.distance_to_edges(Vector2(50.0, 5.0), vertices), 5.0),
-		"point-to-segment calculation measures beam contact distance")
-
-
-func _test_density_selection_and_field_lifecycle() -> void:
+func _test_homing_prism_snare_lifecycle() -> void:
 	var player := Node2D.new()
 	player.add_to_group("player")
 	root.add_child(player)
@@ -41,65 +22,80 @@ func _test_density_selection_and_field_lifecycle() -> void:
 	var weapon_scene := load("res://weapons/prism/PrismLatticeWeapon.tscn") as PackedScene
 	var weapon := weapon_scene.instantiate()
 	player.add_child(weapon)
-	weapon.deployment_duration = 0.03
-	weapon.field_duration = 0.15
-	weapon.warning_duration = 0.04
+	weapon.projectile_speed = 900.0
+	weapon.homing_acceleration = 4000.0
+	weapon.maximum_seek_time = 2.0
+	weapon.capture_distance = 24.0
+	weapon.trap_radius = 80.0
+	weapon.trap_duration = 0.18
+	weapon.damage_interval = 0.03
 	weapon.collapse_duration = 0.04
+	weapon.explosion_radius = 110.0
 
-	var cluster_left := _make_enemy(Vector2(170.0, 0.0))
-	var cluster_center := _make_enemy(Vector2(200.0, 0.0))
-	var cluster_right := _make_enemy(Vector2(230.0, 0.0))
-	var lonely := _make_enemy(Vector2(0.0, 420.0))
-	var outside := _make_enemy(Vector2(700.0, 700.0))
+	var first_target := _make_enemy(Vector2(180.0, 0.0))
+	var moving_target := _make_enemy(Vector2(260.0, 0.0))
+	var outside := _make_enemy(Vector2(650.0, 420.0))
 
-	var selection: Dictionary = weapon.call("_find_best_cluster")
-	_expect(int(selection.get("score", 0)) == 3,
-		"density scoring selects the three-enemy group")
-	_expect((selection.get("center", Vector2.ZERO) as Vector2).is_equal_approx(Vector2(200.0, 0.0)),
-		"selected field centre is the average position of the dense group")
-
+	_expect(weapon.call("_find_nearest_enemy", player.global_position, weapon.cast_range) == first_target,
+		"Weapon 7 automatically selects the nearest enemy")
 	weapon.trigger_attack()
 	var field: PrismField = weapon.active_field as PrismField
 	_expect(is_instance_valid(field),
-		"manual activation creates one Prism field")
-	var deployment_frames := 0
-	while is_instance_valid(field) and field.state == PrismField.FieldState.DEPLOYING and deployment_frames < 30:
-		await physics_frame
-		deployment_frames += 1
-	_expect(field.state == PrismField.FieldState.ACTIVE,
-		"three deployment signals activate the field")
-	await physics_frame
-	_expect(field.prisms.size() == 3,
-		"field deploys exactly three independent prism nodes")
-	_expect(field.beam_glows.size() == 3 and field.beam_cores.size() == 3,
-		"triangle renders three glow beams and three bright cores")
-	_expect(int(cluster_center.get("damage_received")) > 0,
-		"enemy inside the triangle receives pulse damage")
-	_expect(int(outside.get("damage_received")) == 0,
-		"enemy outside the field receives no active-field damage")
+		"pressing key 7 logic throws one autonomous prism")
+	_expect(field.state == PrismField.FieldState.SEEKING,
+		"the thrown prism begins in SEEKING state")
+	_expect(field.global_position.is_equal_approx(player.global_position),
+		"the prism is thrown from the player instead of appearing on the enemy")
+	_expect(field.target == first_target,
+		"the prism initially tracks the selected enemy")
 
-	var damage_before := int(cluster_center.get("damage_received"))
-	field.call("_apply_field_damage")
-	field.call("_apply_field_damage")
-	_expect(int(cluster_center.get("damage_received")) == damage_before,
-		"per-enemy damage memory prevents duplicate damage inside one interval")
+	first_target.queue_free()
+	await process_frame
+	await physics_frame
+	_expect(field.target == moving_target,
+		"the prism retargets when its original enemy disappears")
+	moving_target.global_position = Vector2(280.0, 110.0)
+	for _frame in range(3):
+		await physics_frame
+	_expect(field.velocity.y > 0.0,
+		"predictive homing turns toward a moving enemy's new position")
+
+	var seek_frames := 0
+	while is_instance_valid(field) and field.state == PrismField.FieldState.SEEKING and seek_frames < 120:
+		await physics_frame
+		seek_frames += 1
+	_expect(is_instance_valid(field) and field.state == PrismField.FieldState.SNARING,
+		"reaching the enemy changes the prism from SEEKING to SNARING")
+	_expect(field.cage_prisms.size() == 4,
+		"the snare deploys four orbiting prison nodes")
+	_expect(field.beam_glows.size() == 4 and field.beam_cores.size() == 4,
+		"the prison draws four glowing cage walls")
+	_expect(moving_target.has_meta(&"prism_snared"),
+		"captured enemies are marked as trapped")
+
+	moving_target.global_position = field.cage_center + Vector2(field.trap_radius * 2.0, 0.0)
+	await physics_frame
+	_expect(moving_target.global_position.distance_to(field.cage_center) <= field.trap_radius * 0.59,
+		"the cage prevents its captured enemy from escaping")
+
+	for _frame in range(5):
+		await physics_frame
+	_expect(int(moving_target.get("damage_received")) > 0,
+		"the trapped enemy receives repeated prison damage")
+	_expect(int(outside.get("damage_received")) == 0,
+		"enemies outside the prison and collapse radius are not damaged")
 
 	var cleanup_frames := 0
 	while is_instance_valid(field) and cleanup_frames < 120:
 		await physics_frame
 		cleanup_frames += 1
 	_expect(not is_instance_valid(field) and weapon.active_field == null,
-		"warning, collapse, explosion and cleanup complete without leaving a field")
-	_expect(int(cluster_center.get("damage_received")) > damage_before,
-		"centroid collapse applies its finishing explosion damage")
-	_expect(int(lonely.get("damage_received")) == 0,
-		"enemy outside the collapse radius remains unharmed")
+		"collapse explosion finishes and releases the active weapon slot")
+	_expect(not moving_target.has_meta(&"prism_snared"),
+		"the enemy is released when the prison ends")
 
 	player.queue_free()
-	cluster_left.queue_free()
-	cluster_center.queue_free()
-	cluster_right.queue_free()
-	lonely.queue_free()
+	moving_target.queue_free()
 	outside.queue_free()
 	await process_frame
 

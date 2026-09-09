@@ -91,9 +91,9 @@ const WEAPON_DATA := {
 		"accent": "59e7ff",
 	},
 	&"prism_lattice": {
-		"name": "ASTRAL PRISM LATTICE",
-		"short_name": "PRSM",
-		"description": "Deploys a rotating triangular field that damages its interior, burns along its beams, and collapses into an explosion.",
+		"name": "ASTRAL PRISM SNARE",
+		"short_name": "SNR",
+		"description": "Throws an autonomous prism that hunts enemies, traps them in a damaging cage, and finishes with a collapse blast.",
 		"icon_path": "",
 		"slot": 7,
 		"required_level": 99,

@@ -13,6 +13,7 @@ signal hp_changed(current_hp: int, max_hp: int)
 var is_jumping: bool = false
 var jump_time: float = 0.0
 var is_attacking: bool = false
+var _shoot_animation_generation: int = 0
 
 # Track last faced direction (defaults to Down / Front)
 var last_direction: Vector2 = Vector2.DOWN
@@ -542,6 +543,8 @@ func play_shoot_animation() -> void:
 	if current_hp <= 0:
 		return
 	if sprite.sprite_frames.has_animation("attack_by_gun"):
+		_shoot_animation_generation += 1
+		var animation_generation := _shoot_animation_generation
 		is_attacking = true
 		sprite.play("attack_by_gun")
 		# Use _facing_flip_h() so diagonal directions are respected.
@@ -549,8 +552,21 @@ func play_shoot_animation() -> void:
 		var frames = sprite.sprite_frames.get_frame_count("attack_by_gun")
 		var fps = sprite.sprite_frames.get_animation_speed("attack_by_gun")
 		await get_tree().create_timer(frames / fps).timeout
+		if animation_generation != _shoot_animation_generation:
+			return
 		is_attacking = false
 		update_animation(Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down"))
+
+
+# Switching away from the Gun should immediately clear a gun animation that is
+# still awaiting its timer. The generation token prevents that old coroutine
+# from changing the Player animation again after another weapon is selected.
+func cancel_shoot_animation() -> void:
+	_shoot_animation_generation += 1
+	if not is_instance_valid(sprite) or sprite.animation != &"attack_by_gun":
+		return
+	is_attacking = false
+	update_animation(Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down"))
 
 
 func equip_halo() -> void:

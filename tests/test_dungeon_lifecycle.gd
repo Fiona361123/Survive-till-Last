@@ -14,6 +14,8 @@ func _initialize() -> void:
 	assert(boss_encounter != null, "Dungeon contains the boss encounter")
 	dungeon.call("_on_level_entrance_entered", 4)
 	await process_frame
+	assert(dungeon.final_boss_damage_bonus_active,
+		"entering Level 4 activates the final-boss weapon damage bonus")
 	assert(boss_encounter.get_encounter_state() == BossEncounterController.State.WAVE_1,
 		"entering Level 4 starts Wave 1")
 	dungeon.call("_update_enemy_counter")

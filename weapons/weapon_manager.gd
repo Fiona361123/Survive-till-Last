@@ -79,6 +79,8 @@ func switch_to_weapon_id(weapon_id: StringName, force: bool = false) -> bool:
 			weapon_progress.get_requirement_text(weapon_id)
 		)
 		return false
+	if weapon_id != &"gun":
+		_cancel_player_gun_animation()
 	if index == active_index:
 		return true
 
@@ -100,6 +102,12 @@ func _trigger_manual_attack(weapon_id: StringName) -> void:
 	var weapon := weapons[index]
 	if weapon.has_method("trigger_attack"):
 		weapon.trigger_attack()
+
+
+func _cancel_player_gun_animation() -> void:
+	var player := get_parent()
+	if player != null and player.has_method("cancel_shoot_animation"):
+		player.cancel_shoot_animation()
 
 func _activate(index: int) -> void:
 	# Enable only the active weapon; disable the rest

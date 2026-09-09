@@ -6,6 +6,7 @@ var failures: int = 0
 func _initialize() -> void:
 	await process_frame
 	var player := Node2D.new()
+	player.set_script(load("res://tests/weapon_animation_spy_player.gd"))
 	player.add_to_group("player")
 	root.add_child(player)
 
@@ -18,6 +19,8 @@ func _initialize() -> void:
 		"Chain Lightning first-target range is increased to 400 pixels")
 	_expect(is_equal_approx(weapon.jump_range, 300.0),
 		"Chain Lightning secondary search range is increased to 300 pixels")
+	_expect(weapon.damage == 15,
+		"Chain Lightning base damage is increased to fifteen")
 
 	var primary := _make_enemy(Vector2(180.0, 0.0))
 	var secondary_a := _make_enemy(Vector2(360.0, 0.0))
@@ -35,6 +38,8 @@ func _initialize() -> void:
 		"enemy outside the primary jump radius is not damaged")
 	_expect(weapon.secondary_bolts.get_child_count() == 4,
 		"two secondary hits each receive a visible glow and core bolt")
+	_expect(player.shoot_animation_calls == 0,
+		"Chain Lightning does not trigger the gun attack animation")
 
 	player.queue_free()
 	primary.queue_free()

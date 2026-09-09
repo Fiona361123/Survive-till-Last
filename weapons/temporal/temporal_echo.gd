@@ -2,6 +2,7 @@ extends CharacterBody2D
 class_name TemporalEcho
 
 const COMBAT_TARGET_SELECTOR = preload("res://systems/combat_target_selector.gd")
+const WEAPON_DAMAGE = preload("res://systems/weapon_damage.gd")
 
 signal replay_finished
 
@@ -140,7 +141,7 @@ func _damage_nearby_enemies() -> void:
 		if enemy.global_position.distance_to(global_position) > maxf(damage_radius, 0.0):
 			continue
 		if enemy.has_method("take_damage"):
-			enemy.take_damage(damage_per_tick)
+			enemy.take_damage(WEAPON_DAMAGE.calculate(damage_per_tick, self))
 
 
 func can_attract_enemy(enemy: Node2D) -> bool:

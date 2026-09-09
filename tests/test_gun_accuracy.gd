@@ -46,8 +46,23 @@ func _initialize() -> void:
 		enemy.global_position = Vector2(200.0, 120.0)
 		bullet._physics_process(0.1)
 		_expect(bullet.direction.y > 0.0,
-			"bullet turns toward the enemy when the enemy changes direction")
+			"bullet makes a small early correction when the enemy changes direction")
+		bullet.global_position = enemy.global_position + Vector2(30.0, 0.0)
+		bullet.direction = Vector2.RIGHT
+		bullet.target = enemy
+		bullet.homing_time_left = 0.2
+		bullet._physics_process(0.05)
+		_expect(bullet.direction.is_equal_approx(Vector2.RIGHT) and bullet.target == null,
+			"an overshot bullet continues forward instead of curving back")
 		bullet.queue_free()
+		await process_frame
+
+	gun.cooldown_left = 0.0
+	Input.action_press(&"weapon_5")
+	gun._physics_process(0.016)
+	Input.action_release(&"weapon_5")
+	_expect(root.get_node_or_null("Bullet") == null,
+		"pressing Weapon 5 cannot create one final Gun bullet before switching")
 
 	var knife_scene := load("res://weapons/Knife.tscn") as PackedScene
 	var knife := knife_scene.instantiate()

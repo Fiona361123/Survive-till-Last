@@ -7,17 +7,19 @@ signal activation_failed(reason: String)
 const COMBAT_TARGET_SELECTOR = preload("res://systems/combat_target_selector.gd")
 
 @export var attack_cooldown: float = 8.0
-@export var cast_range: float = 450.0
-@export var cluster_radius: float = 220.0
-@export var deployment_radius: float = 130.0
-@export var deployment_duration: float = 0.5
-@export var field_duration: float = 6.0
-@export var warning_duration: float = 0.65
-@export var collapse_duration: float = 0.45
-@export var interior_damage: int = 10
-@export var beam_damage: int = 6
-@export var collapse_min_damage: int = 35
-@export var collapse_max_damage: int = 60
+@export var cast_range: float = 620.0
+@export var projectile_speed: float = 390.0
+@export var homing_acceleration: float = 1050.0
+@export var maximum_seek_time: float = 3.0
+@export var capture_distance: float = 28.0
+@export var trap_radius: float = 105.0
+@export var trap_duration: float = 4.0
+@export var trap_pull_strength: float = 340.0
+@export var damage_interval: float = 0.45
+@export var damage_per_tick: int = 12
+@export var collapse_duration: float = 0.4
+@export var explosion_radius: float = 145.0
+@export var explosion_damage: int = 45
 @export var prism_field_scene: PackedScene
 
 var cooldown_left: float = 0.0
@@ -35,18 +37,20 @@ func _physics_process(delta: float) -> void:
 	cooldown_left = maxf(0.0, cooldown_left - delta)
 
 
+# Weapon 7 is manual: pressing key 7 throws one autonomous prism. It may be
+# launched without a target and will acquire the first valid enemy it finds.
 func trigger_attack() -> void:
 	if not active:
-		activation_failed.emit("PRISM LATTICE IS NOT ACTIVE")
+		activation_failed.emit("PRISM SNARE IS NOT ACTIVE")
 		return
 	if cooldown_left > 0.0:
-		activation_failed.emit("PRISM LATTICE IS RECHARGING")
+		activation_failed.emit("PRISM SNARE IS RECHARGING")
 		return
 	if is_instance_valid(active_field):
-		activation_failed.emit("A PRISM FIELD IS ALREADY ACTIVE")
+		activation_failed.emit("A PRISM SNARE IS ALREADY ACTIVE")
 		return
 	if prism_field_scene == null:
-		activation_failed.emit("PRISM FIELD SCENE IS MISSING")
+		activation_failed.emit("PRISM SNARE SCENE IS MISSING")
 		return
 	if not is_instance_valid(player):
 		player = _find_player()
@@ -54,77 +58,67 @@ func trigger_attack() -> void:
 		activation_failed.emit("PLAYER NOT FOUND")
 		return
 
-	var cluster := _find_best_cluster()
-	if cluster.is_empty():
-		activation_failed.emit("NO ENEMY CLUSTER IN RANGE")
-		return
-
+	var initial_target := _find_nearest_enemy(player.global_position, cast_range)
 	var field := prism_field_scene.instantiate() as PrismField
 	if field == null:
-		activation_failed.emit("PRISM FIELD SCENE IS INVALID")
+		activation_failed.emit("PRISM SNARE SCENE IS INVALID")
 		return
+
 	var scene_tree := get_tree()
 	var spawn_parent: Node = scene_tree.current_scene
 	if spawn_parent == null:
 		spawn_parent = scene_tree.root
 	spawn_parent.add_child(field)
-	field.global_position = Vector2.ZERO
 	active_field = field
 	field.field_finished.connect(_on_field_finished.bind(field))
-	field.begin_field(player.global_position, cluster["center"], {
-		"deployment_radius": deployment_radius,
-		"deployment_duration": deployment_duration,
-		"field_duration": field_duration,
-		"warning_duration": warning_duration,
-		"collapse_duration": collapse_duration,
-		"interior_damage": interior_damage,
-		"beam_damage": beam_damage,
-		"collapse_min_damage": collapse_min_damage,
-		"collapse_max_damage": collapse_max_damage,
-	})
+	field.begin_hunt(
+		player.global_position,
+		initial_target,
+		_get_launch_direction(initial_target),
+		{
+			"acquisition_range": cast_range,
+			"projectile_speed": projectile_speed,
+			"homing_acceleration": homing_acceleration,
+			"maximum_seek_time": maximum_seek_time,
+			"capture_distance": capture_distance,
+			"trap_radius": trap_radius,
+			"trap_duration": trap_duration,
+			"trap_pull_strength": trap_pull_strength,
+			"damage_interval": damage_interval,
+			"damage_per_tick": damage_per_tick,
+			"collapse_duration": collapse_duration,
+			"explosion_radius": explosion_radius,
+			"explosion_damage": explosion_damage,
+		}
+	)
 	cooldown_left = attack_cooldown
 	field_created.emit(field)
 
 
-func _find_best_cluster() -> Dictionary:
-	if not is_instance_valid(player):
-		player = _find_player()
-	if player == null:
-		return {}
-
-	var candidates: Array[Node2D] = []
+func _find_nearest_enemy(origin: Vector2, maximum_distance: float) -> Node2D:
+	var nearest: Node2D = null
+	var nearest_distance_squared := maximum_distance * maximum_distance
 	for node in get_tree().get_nodes_in_group("enemy"):
 		var enemy := node as Node2D
 		if enemy == null or not COMBAT_TARGET_SELECTOR.is_living_enemy(enemy):
 			continue
-		if player.global_position.distance_to(enemy.global_position) <= cast_range:
-			candidates.append(enemy)
-	if candidates.is_empty():
-		return {}
+		var distance_squared := origin.distance_squared_to(enemy.global_position)
+		if distance_squared <= nearest_distance_squared:
+			nearest_distance_squared = distance_squared
+			nearest = enemy
+	return nearest
 
-	var best_score := -1
-	var best_distance := INF
-	var best_center := Vector2.ZERO
-	var best_target: Node2D = null
-	for candidate in candidates:
-		var nearby_count := 0
-		var position_sum := Vector2.ZERO
-		for other in candidates:
-			if candidate.global_position.distance_to(other.global_position) <= cluster_radius:
-				nearby_count += 1
-				position_sum += other.global_position
-		var distance_to_player := player.global_position.distance_squared_to(candidate.global_position)
-		if nearby_count > best_score or (nearby_count == best_score and distance_to_player < best_distance):
-			best_score = nearby_count
-			best_distance = distance_to_player
-			best_center = position_sum / float(maxi(nearby_count, 1))
-			best_target = candidate
 
-	return {
-		"target": best_target,
-		"center": best_center,
-		"score": best_score,
-	}
+func _get_launch_direction(initial_target: Node2D) -> Vector2:
+	if is_instance_valid(initial_target):
+		var target_direction := player.global_position.direction_to(initial_target.global_position)
+		if target_direction != Vector2.ZERO:
+			return target_direction
+	if "last_direction" in player:
+		var facing := player.get("last_direction") as Vector2
+		if facing != Vector2.ZERO:
+			return facing.normalized()
+	return Vector2.RIGHT
 
 
 func _find_player() -> Node2D:

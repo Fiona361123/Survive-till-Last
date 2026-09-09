@@ -2,8 +2,9 @@
 extends Node2D
 
 const COMBAT_TARGET_SELECTOR = preload("res://systems/combat_target_selector.gd")
+const WEAPON_DAMAGE = preload("res://systems/weapon_damage.gd")
 
-@export var damage: int = 8
+@export var damage: int = 15
 @export var attack_cooldown: float = 1.2
 @export var attack_range: float = 400.0   # range to find the FIRST target
 @export var jump_range: float = 300.0     # search radius around the first target
@@ -67,11 +68,9 @@ func do_attack(first_target: Node2D) -> void:
 
 	for target in hit_targets:
 		if COMBAT_TARGET_SELECTOR.is_living_enemy(target):
-			target.take_damage(damage)
+			target.take_damage(WEAPON_DAMAGE.calculate(damage, self))
 
 	_draw_bolts(bolt_segments)
-	if player != null and player.has_method("play_shoot_animation"):
-		player.play_shoot_animation()
 
 
 # Returns the closest unhit enemies around the primary target. Sorting makes

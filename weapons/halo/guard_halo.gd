@@ -21,7 +21,11 @@ signal halo_restored
 @export var recharge_rate: float = 20.0
 @export var broken_delay: float = 3.0
 @export var energy_cost_multiplier: float = 1.0
-@export_range(0.0, 1.0, 0.05) var absorption_ratio: float = 0.30
+@export_range(0.0, 1.0, 0.05) var high_energy_threshold: float = 0.70
+@export_range(0.0, 1.0, 0.05) var low_energy_threshold: float = 0.30
+@export_range(0.0, 1.0, 0.05) var high_absorption_ratio: float = 0.70
+@export_range(0.0, 1.0, 0.05) var medium_absorption_ratio: float = 0.50
+@export_range(0.0, 1.0, 0.05) var low_absorption_ratio: float = 0.30
 
 # These values are initialized when the equipped Halo enters the scene.
 var current_energy: float = 0.0
@@ -127,6 +131,22 @@ func restore_halo() -> void:
 	energy_changed.emit(current_energy, max_energy)
 	change_state(HaloState.ACTIVE)
 
+# Returns the current protection tier as a ratio from zero to one. Thresholds
+# are based on the percentage of maximum energy, so changing max_energy keeps
+# the same 70% / 50% / 30% behaviour.
+func get_current_absorption_ratio() -> float:
+	var energy_limit := maxf(max_energy, 0.0)
+	if energy_limit <= 0.0:
+		return 0.0
+
+	var energy_ratio := clampf(current_energy / energy_limit, 0.0, 1.0)
+	if energy_ratio >= high_energy_threshold:
+		return clampf(high_absorption_ratio, 0.0, 1.0)
+	if energy_ratio > low_energy_threshold:
+		return clampf(medium_absorption_ratio, 0.0, 1.0)
+	return clampf(low_absorption_ratio, 0.0, 1.0)
+
+
 # Consumes shield energy and returns the damage that still reaches the player.
 # While the Halo is not ACTIVE, incoming damage passes through unchanged.
 func absorb_damage(incoming_damage: int) -> int:
@@ -139,7 +159,7 @@ func absorb_damage(incoming_damage: int) -> int:
 	# Calculate the portion this Halo is allowed to block. Damage is integer-
 	# based, so round to the closest whole damage point.
 	var desired_blocked_damage := roundi(
-		float(incoming_damage) * absorption_ratio
+		float(incoming_damage) * get_current_absorption_ratio()
 	)
 	if desired_blocked_damage <= 0:
 		return incoming_damage

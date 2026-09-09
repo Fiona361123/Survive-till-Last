@@ -2,6 +2,7 @@ extends Node2D
 class_name GravityBombProjectile
 
 const COMBAT_TARGET_SELECTOR = preload("res://systems/combat_target_selector.gd")
+const WEAPON_DAMAGE = preload("res://systems/weapon_damage.gd")
 
 signal state_changed(new_state: BombState)
 
@@ -93,7 +94,7 @@ func _update_pulling(delta: float) -> void:
 			pull_strength * (0.35 + strength_scale) * delta
 		)
 		if should_damage and enemy.has_method("take_damage"):
-			enemy.take_damage(pull_tick_damage)
+			enemy.take_damage(WEAPON_DAMAGE.calculate(pull_tick_damage, self))
 
 	if _state_time >= pull_duration:
 		change_state(BombState.EXPLODING)
@@ -138,7 +139,7 @@ func change_state(new_state: BombState) -> void:
 func _apply_explosion_damage() -> void:
 	for enemy in _get_enemies_in_radius():
 		if enemy.has_method("take_damage"):
-			enemy.take_damage(explosion_damage)
+			enemy.take_damage(WEAPON_DAMAGE.calculate(explosion_damage, self))
 
 
 func _draw() -> void:

@@ -1,12 +1,18 @@
 extends RefCounted
 
 
-static func is_living_enemy(enemy: Node) -> bool:
-	if not is_instance_valid(enemy) or not enemy.is_inside_tree() or enemy.is_queued_for_deletion():
+static func is_living_enemy(enemy: Variant) -> bool:
+	# Variant is intentional: homing projectiles can retain an Object reference
+	# for one frame after its Node has been freed. Validate it before narrowing
+	# the type so retargeting never calls methods on a dead instance.
+	if not is_instance_valid(enemy) or not enemy is Node:
 		return false
-	if not enemy.is_in_group("enemy") or not enemy.has_method("take_damage"):
+	var enemy_node := enemy as Node
+	if not enemy_node.is_inside_tree() or enemy_node.is_queued_for_deletion():
 		return false
-	var scene := enemy.get_tree().current_scene
+	if not enemy_node.is_in_group("enemy") or not enemy_node.has_method("take_damage"):
+		return false
+	var scene := enemy_node.get_tree().current_scene
 	if scene != null and "current_level" in scene:
 		var required_group: String = str({
 			1: "level1_enemy",
@@ -14,9 +20,9 @@ static func is_living_enemy(enemy: Node) -> bool:
 			3: "level3_enemy",
 			4: "boss_enemy",
 		}.get(int(scene.current_level), ""))
-		if not required_group.is_empty() and not enemy.is_in_group(required_group):
+		if not required_group.is_empty() and not enemy_node.is_in_group(required_group):
 			return false
-	var health: Variant = enemy.get("current_health")
+	var health: Variant = enemy_node.get("current_health")
 	if health is int or health is float:
 		return health > 0
 	return true

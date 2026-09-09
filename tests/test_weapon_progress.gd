@@ -136,7 +136,13 @@ func _test_player_store_and_number_keys() -> void:
 	_expect(weapon_progress.weapon_xp_balance == 250,
 		"Gravity Bomb purchase leaves 250 Weapon XP")
 
+	# Reproduce switching to Weapon 5 while the previous gun animation is still
+	# visible. The manager must clear it before triggering Gravity Bomb.
+	player.is_attacking = true
+	player.sprite.play(&"attack_by_gun")
 	manager.switch_to_weapon_id(&"gravity_bomb")
+	_expect(not player.is_attacking and player.sprite.animation != &"attack_by_gun",
+		"switching to Gravity Bomb immediately cancels lingering gun action")
 	var manual_target := Node2D.new()
 	manual_target.set_script(load("res://tests/gravity_dummy_enemy.gd"))
 	manual_target.add_to_group("enemy")

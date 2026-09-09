@@ -2,6 +2,7 @@
 extends Node2D
 
 const COMBAT_TARGET_SELECTOR = preload("res://systems/combat_target_selector.gd")
+const WEAPON_DAMAGE = preload("res://systems/weapon_damage.gd")
 
 var damage: int = 300
 var direction: Vector2 = Vector2.RIGHT
@@ -51,7 +52,7 @@ func _on_body_entered(body: Node2D) -> void:
 	if body in hit_enemies: return
 	if COMBAT_TARGET_SELECTOR.is_living_enemy(body):
 		print("[Knife] HIT ENEMY BODY!")
-		body.take_damage(damage)
+		body.take_damage(WEAPON_DAMAGE.calculate(damage, self))
 		hit_enemies.append(body)
 		if get_node_or_null("/root/AudioManager"): get_node("/root/AudioManager").play_blood_pop()
 
@@ -64,6 +65,6 @@ func _on_area_entered(area: Area2D) -> void:
 	if parent in hit_enemies: return
 	if parent != null and COMBAT_TARGET_SELECTOR.is_living_enemy(parent):
 		print("[Knife] HIT ENEMY AREA!")
-		parent.take_damage(damage)
+		parent.take_damage(WEAPON_DAMAGE.calculate(damage, self))
 		hit_enemies.append(parent)
 		if get_node_or_null("/root/AudioManager"): get_node("/root/AudioManager").play_blood_pop()

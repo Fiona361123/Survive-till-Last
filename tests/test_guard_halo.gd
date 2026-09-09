@@ -5,9 +5,10 @@ var failures: int = 0
 func _initialize() -> void:
 	await process_frame
 	await _test_halo_starts_active_and_full()
-	await _test_halo_blocks_thirty_percent()
+	await _test_halo_uses_energy_based_absorption_tiers()
 	await _test_low_energy_partially_blocks_and_breaks()
 	await _test_broken_halo_recharges_and_restores_orbs()
+	await _test_orb_contact_damage_and_heat_effect()
 	await _test_player_equips_once_and_uses_state_speed_penalty()
 
 	if failures == 0:
@@ -43,13 +44,27 @@ func _test_halo_starts_active_and_full() -> void:
 	halo.queue_free()
 	await process_frame
 
-func _test_halo_blocks_thirty_percent() -> void:
+func _test_halo_uses_energy_based_absorption_tiers() -> void:
 	var halo := _make_halo()
+	_expect(is_equal_approx(halo.get_current_absorption_ratio(), 0.70),
+		"Halo absorbs seventy percent at full energy")
 	var remaining_damage := halo.absorb_damage(10)
-	_expect(remaining_damage == 7,
-		"full-energy Halo lets seven of ten damage reach HP")
-	_expect(is_equal_approx(halo.current_energy, 97.0),
-		"blocking three damage consumes three energy")
+	_expect(remaining_damage == 3,
+		"high-energy Halo lets three of ten damage reach HP")
+	_expect(is_equal_approx(halo.current_energy, 93.0),
+		"blocking seven damage consumes seven energy")
+
+	halo.current_energy = 69.0
+	_expect(is_equal_approx(halo.get_current_absorption_ratio(), 0.50),
+		"Halo absorbs fifty percent below seventy energy")
+	_expect(halo.absorb_damage(10) == 5,
+		"middle-energy Halo lets five of ten damage reach HP")
+
+	halo.current_energy = 30.0
+	_expect(is_equal_approx(halo.get_current_absorption_ratio(), 0.30),
+		"Halo absorbs thirty percent at thirty energy")
+	_expect(halo.absorb_damage(10) == 7,
+		"low-energy Halo lets seven of ten damage reach HP")
 	_expect(halo.state == GuardHalo.HaloState.ACTIVE,
 		"Halo stays ACTIVE while energy remains")
 	halo.queue_free()
@@ -97,6 +112,31 @@ func _test_broken_halo_recharges_and_restores_orbs() -> void:
 	halo.queue_free()
 	await process_frame
 
+
+func _test_orb_contact_damage_and_heat_effect() -> void:
+	var halo := _make_halo()
+	var enemy := CharacterBody2D.new()
+	enemy.set_script(load("res://tests/moving_dummy_enemy.gd"))
+	enemy.add_to_group("enemy")
+	root.add_child(enemy)
+
+	var orb := halo.orbs[0]
+	var original_color: Color = enemy.modulate
+	orb.call("_try_damage", enemy)
+	_expect(enemy.damage_received == 15,
+		"one Blaze Rod contact deals fifteen damage")
+	_expect(enemy.modulate.r > enemy.modulate.g * 2.0,
+		"Blaze Rod contact immediately gives the enemy a red heat flash")
+	_expect(root.get_node_or_null("BlazeHeatRing") != null,
+		"Blaze Rod contact creates a visible heat ring")
+
+	await create_timer(0.32).timeout
+	_expect(enemy.modulate.is_equal_approx(original_color),
+		"enemy colour returns to normal after the heat flash")
+	halo.queue_free()
+	enemy.queue_free()
+	await process_frame
+
 func _test_player_equips_once_and_uses_state_speed_penalty() -> void:
 	var player_scene := load("res://Character/Player.tscn") as PackedScene
 	var player := player_scene.instantiate()
@@ -108,6 +148,8 @@ func _test_player_equips_once_and_uses_state_speed_penalty() -> void:
 		"player starts without a Guard Halo")
 	_expect(not player.halo_energy_ui.visible,
 		"Halo energy UI starts hidden")
+	_expect(player.halo_energy_ui.scale.is_equal_approx(Vector2(0.85, 0.85)),
+		"Halo energy UI uses a compact scale that covers less gameplay view")
 
 	player.equip_halo()
 	await process_frame
@@ -123,10 +165,10 @@ func _test_player_equips_once_and_uses_state_speed_penalty() -> void:
 		"ACTIVE Halo applies its speed penalty")
 
 	player.take_damage(10)
-	_expect(player.current_hp == 93,
-		"player HP receives the seven damage left after Halo absorption")
-	_expect(is_equal_approx(player.equipped_halo.current_energy, 97.0),
-		"player damage path consumes three Halo energy")
+	_expect(player.current_hp == 97,
+		"player HP receives the three damage left at high Halo energy")
+	_expect(is_equal_approx(player.equipped_halo.current_energy, 93.0),
+		"player damage path consumes seven Halo energy")
 	_expect(player.is_invincible,
 		"a Halo-protected hit starts the player's invincibility window")
 

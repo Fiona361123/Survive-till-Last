@@ -2,6 +2,13 @@
 extends Node2D
 
 const COMBAT_TARGET_SELECTOR = preload("res://systems/combat_target_selector.gd")
+const NON_GUN_WEAPON_ACTIONS: Array[StringName] = [
+	&"weapon_1",
+	&"weapon_4",
+	&"weapon_5",
+	&"weapon_6",
+	&"weapon_7",
+]
 
 @export var damage: int = 30
 @export var attack_cooldown: float = 0.6
@@ -19,11 +26,22 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	cooldown_left -= delta
+	# Input is visible to physics before WeaponManager completes its normal
+	# process-frame switch. Suppress a final Gun shot on that transition frame.
+	if _is_switching_away_from_gun():
+		return
 	if cooldown_left > 0.0:
 		return
 	var target = _find_nearest_enemy_in_range()
 	if target != null:
 		do_attack(target)
+
+
+func _is_switching_away_from_gun() -> bool:
+	for action in NON_GUN_WEAPON_ACTIONS:
+		if Input.is_action_just_pressed(action):
+			return true
+	return false
 
 func _find_nearest_enemy_in_range() -> Node2D:
 	var nearest: Node2D = null
