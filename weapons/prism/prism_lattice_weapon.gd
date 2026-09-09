@@ -16,10 +16,10 @@ const COMBAT_TARGET_SELECTOR = preload("res://systems/combat_target_selector.gd"
 @export var trap_duration: float = 4.0
 @export var trap_pull_strength: float = 340.0
 @export var damage_interval: float = 0.45
-@export var damage_per_tick: int = 12
+@export var damage_per_tick: int = 35
 @export var collapse_duration: float = 0.4
 @export var explosion_radius: float = 145.0
-@export var explosion_damage: int = 45
+@export var explosion_damage: int = 60
 @export var prism_field_scene: PackedScene
 
 var cooldown_left: float = 0.0

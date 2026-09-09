@@ -31,10 +31,10 @@ var trap_radius: float = 105.0
 var trap_duration: float = 4.0
 var trap_pull_strength: float = 340.0
 var damage_interval: float = 0.45
-var damage_per_tick: int = 12
+var damage_per_tick: int = 35
 var collapse_duration: float = 0.4
 var explosion_radius: float = 145.0
-var explosion_damage: int = 45
+var explosion_damage: int = 60
 var explosion_visual_duration: float = 0.42
 
 var velocity: Vector2 = Vector2.ZERO
