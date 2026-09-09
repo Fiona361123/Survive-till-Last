@@ -68,7 +68,6 @@
 [ext_resource type="Script" uid="uid://b8wdvr5aes7bq" path="res://fall_hazard.gd" id="66_fall_hazard"]
 [ext_resource type="PackedScene" path="res://CollapsingBridgeSection.tscn" id="67_collapsing_section"]
 [ext_resource type="Script" uid="uid://b5f75s0wv4bvn" path="res://Level3Traps/level_3_trap_controller.gd" id="68_level3_traps"]
-[ext_resource type="PackedScene" uid="uid://b4r6hu56km0li" path="res://final_boss.tscn" id="68_v5xru"]
 [ext_resource type="PackedScene" path="res://Level3Traps/SpikeRow.tscn" id="69_spike_row"]
 [ext_resource type="PackedScene" path="res://Level3Traps/FireSweep.tscn" id="70_fire_sweep"]
 [ext_resource type="PackedScene" path="res://Level3Traps/RockStrike.tscn" id="71_rock_strike"]
@@ -967,7 +966,7 @@ position = Vector2(3820, 690)
 
 [node name="Player" parent="." unique_id=1596675552 groups=["player"] instance=ExtResource("6_yrkb7")]
 y_sort_enabled = true
-position = Vector2(563, 28)
+position = Vector2(475, -97)
 
 [node name="Map Size" type="StaticBody2D" parent="." unique_id=640551829 node_paths=PackedStringArray("player")]
 position = Vector2(1, 91)
@@ -1063,9 +1062,6 @@ theme_override_constants/outline_size = 5
 theme_override_font_sizes/font_size = 20
 text = "LEVEL 1
 Enemies spawning..."
-
-[node name="FinalBoss" parent="." unique_id=447995274 instance=ExtResource("68_v5xru")]
-position = Vector2(443, -2190)
 
 [connection signal="body_entered" from="Level2Entrance" to="Level2Entrance" method="_on_body_entered"]
 [connection signal="level_entered" from="Level2Entrance" to="." method="_on_level_entrance_entered"]

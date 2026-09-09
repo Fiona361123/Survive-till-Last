@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://weapons/prism/prism_field.gd" id="1_field"]
+[ext_resource type="PackedScene" path="res://weapons/prism/PrismNode.tscn" id="2_prism"]
+
+[node name="PrismField" type="Node2D"]
+z_index = 18
+script = ExtResource("1_field")
+prism_scene = ExtResource("2_prism")
+
+[node name="FieldFill" type="Polygon2D" parent="."]
+z_index = 18
+color = Color(0.18, 0.06, 0.55, 0.12)
+
+[node name="BeamContainer" type="Node2D" parent="."]
+
+[node name="PrismContainer" type="Node2D" parent="."]

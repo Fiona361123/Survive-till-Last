@@ -2,6 +2,7 @@ extends Node2D
 
 const LEVEL_2_SKELETON_SCENE: PackedScene = preload("res://skeleton.tscn")
 const LEVEL_1_BOMB_SCENE: PackedScene = preload("res://Level1Bomb/Level1Bomb.tscn")
+const FINAL_BOSS_SCENE: PackedScene = preload("res://final_boss.tscn")
 const LEVEL_2_TOTAL_ENEMIES: int = 15
 const LEVEL_3_TOTAL_ENEMIES: int = 6
 const ENEMY_COUNTER_NORMAL_Y: float = 85.0
@@ -38,6 +39,7 @@ var level_3_cleared: bool = false
 var level_1_total_enemies: int = 0
 var run_completed: bool = false
 var win_screen_shown: bool = false
+var active_final_boss: Node2D = null
 
 
 func _ready() -> void:
@@ -142,7 +144,22 @@ func _ready() -> void:
 	if is_instance_valid(boss_encounter):
 		boss_encounter.boss_ready.connect(_on_boss_ready)
 
-func _on_boss_ready(_spawn_point: Marker2D) -> void:
+func _on_boss_ready(spawn_point: Marker2D) -> void:
+	if is_instance_valid(active_final_boss) or spawn_point == null:
+		return
+
+	active_final_boss = FINAL_BOSS_SCENE.instantiate() as Node2D
+	if active_final_boss == null:
+		push_error("final_boss.tscn must have a Node2D root.")
+		return
+
+	add_child(active_final_boss)
+	active_final_boss.global_position = spawn_point.global_position
+	if active_final_boss.has_signal("boss_defeated"):
+		active_final_boss.connect("boss_defeated", Callable(self, "_on_final_boss_defeated"))
+
+
+func _on_final_boss_defeated() -> void:
 	_show_win_screen()
 
 func _show_win_screen() -> void:
@@ -247,9 +264,6 @@ func _process(_delta: float) -> void:
 	var gold_label = level_clear_ui.get_node_or_null("GoldHUDLabel")
 	if gold_label:
 		gold_label.text = "🪙 Gold: " + str(SaveSystem.gold_coins)
-	if not win_screen_shown and is_instance_valid(boss_encounter):
-		if boss_encounter.is_boss_ready():
-			_show_win_screen()
 
 
 func _on_enemies_finished_spawning() -> void:
@@ -519,7 +533,10 @@ func _update_enemy_counter() -> void:
 				BossEncounterController.State.WAVE_2:
 					enemy_counter_label.text = "BOSS TRIAL - WAVE 2\nEnemies Defeated: %d / 5\nEnemies Left: %d" % [5 - remaining, remaining]
 				BossEncounterController.State.BOSS_READY:
-					enemy_counter_label.text = "BOSS ARENA READY"
+					enemy_counter_label.text = (
+						"FINAL BOSS" if is_instance_valid(active_final_boss)
+						else "BOSS ARENA READY"
+					)
 				_:
 					enemy_counter_label.text = "BOSS TRIAL"
 		_:

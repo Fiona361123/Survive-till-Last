@@ -26,6 +26,7 @@ var current_hp: int
 
 # --- NODE REFERENCES ---
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
+@onready var halo_anchor: Node2D = get_node_or_null("HaloAnchor") as Node2D
 @onready var health_bar: ProgressBar = get_node_or_null("AnimatedSprite2D/HealthBarAnchor/HealthBarAnchor")
 @onready var halo_energy_ui: HaloEnergyUI = get_node_or_null("HUD/HaloEnergyUI") as HaloEnergyUI
 @onready var weapon_manager: Node = get_node_or_null("WeaponManager")
@@ -42,9 +43,13 @@ var _halo_speed_penalty_applied: bool = false
 var equipped_halo: GuardHalo = null
 
 var hp_label: Label
+var _sprite_base_position: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
 	add_to_group("player")
+	_sprite_base_position = sprite.position
+	if halo_anchor:
+		halo_anchor.position = _sprite_base_position
 	
 	# Apply Permanent Upgrades
 	if SaveSystem:
@@ -280,11 +285,15 @@ func handle_jump(delta: float) -> void:
 	if is_jumping:
 		jump_time += delta * jump_speed
 		var offset_y := sin(jump_time * PI) * jump_height
-		sprite.position.y = -offset_y
+		sprite.position = _sprite_base_position + Vector2(0.0, -offset_y)
+		if halo_anchor:
+			halo_anchor.position = sprite.position
 		
 		if jump_time >= 1.0:
 			is_jumping = false
-			sprite.position.y = 0
+			sprite.position = _sprite_base_position
+			if halo_anchor:
+				halo_anchor.position = _sprite_base_position
 
 var is_invincible: bool = false
 
@@ -560,9 +569,11 @@ func equip_halo() -> void:
 	has_halo = true
 	halo_speed_penalty = 0.0     # don't lose movement speed
 
-	# Spawn the always-on halo as a child centred on the player.
+	# Spawn the always-on halo at the visible character centre, not the offset
+	# CharacterBody2D origin.
 	equipped_halo.name = "GuardHalo"
-	add_child(equipped_halo)
+	var halo_parent: Node = halo_anchor if halo_anchor != null else self
+	halo_parent.add_child(equipped_halo)
 	equipped_halo.position = Vector2.ZERO
 	equipped_halo.state_changed.connect(_on_halo_state_changed)
 	equipped_halo.tree_exited.connect(_on_equipped_halo_removed)

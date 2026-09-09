@@ -5,6 +5,7 @@ func _initialize() -> void:
 	await process_frame
 	var dungeon_scene := load("res://Dungeon.tscn") as PackedScene
 	var dungeon := dungeon_scene.instantiate()
+	dungeon.process_mode = Node.PROCESS_MODE_DISABLED
 	root.add_child(dungeon)
 	await process_frame
 
@@ -20,8 +21,23 @@ func _initialize() -> void:
 	assert(counter.visible and counter.text.contains("BOSS TRIAL - WAVE 1"),
 		"Level 4 HUD announces Wave 1")
 	# Huang Wan Jun 2204536 - Keep the boss-trial wording below Guard Halo like Level 3.
-	assert(is_equal_approx(counter.offset_top, 140.0),
+	assert(is_equal_approx(counter.position.y, 185.0),
 		"Level 4 lowers the enemy counter below Guard Halo")
+
+	# The preparation trial now starts the real boss instead of declaring an
+	# early victory, and the boss is registered for Level 4 weapon targeting.
+	boss_encounter.debug_complete_trial()
+	await process_frame
+	var final_boss: Node2D = dungeon.active_final_boss as Node2D
+	assert(is_instance_valid(final_boss),
+		"clearing the boss trial creates the final boss")
+	assert(final_boss.is_in_group("enemy") and final_boss.is_in_group("boss_enemy"),
+		"final boss belongs to the common and Level 4 weapon target groups")
+	assert(not dungeon.win_screen_shown,
+		"clearing preparation waves does not show the victory screen")
+	assert(final_boss.is_connected(
+		"boss_defeated", Callable(dungeon, "_on_final_boss_defeated")
+	), "final boss defeat is connected to the real victory flow")
 
 	# Reproduce a scene reload while the Level 2 watcher is awaiting a frame.
 	dungeon.queue_free()

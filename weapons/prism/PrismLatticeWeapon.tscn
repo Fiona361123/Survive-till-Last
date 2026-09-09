@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://weapons/prism/prism_lattice_weapon.gd" id="1_weapon"]
+[ext_resource type="PackedScene" path="res://weapons/prism/PrismField.tscn" id="2_field"]
+
+[node name="PrismLatticeWeapon" type="Node2D"]
+script = ExtResource("1_weapon")
+prism_field_scene = ExtResource("2_field")

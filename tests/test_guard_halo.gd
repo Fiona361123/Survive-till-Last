@@ -113,6 +113,10 @@ func _test_player_equips_once_and_uses_state_speed_penalty() -> void:
 	await process_frame
 	_expect(is_instance_valid(player.equipped_halo),
 		"equip_halo creates the wearable Halo")
+	_expect(player.equipped_halo.get_parent() == player.halo_anchor,
+		"wearable Halo is attached to the visible-player anchor")
+	_expect(player.equipped_halo.global_position.is_equal_approx(player.sprite.global_position),
+		"wearable Halo starts centred on the visible player sprite")
 	_expect(player.halo_energy_ui.visible,
 		"equipping Halo reveals its energy UI")
 	_expect(is_equal_approx(player.speed, starting_speed - player.halo_speed_penalty),
@@ -126,15 +130,27 @@ func _test_player_equips_once_and_uses_state_speed_penalty() -> void:
 	_expect(player.is_invincible,
 		"a Halo-protected hit starts the player's invincibility window")
 
-	var halo_count_before := player.get_children().filter(
+	var halo_count_before: int = player.halo_anchor.get_children().filter(
 		func(child: Node) -> bool: return child is GuardHalo
 	).size()
 	player.equip_halo()
-	var halo_count_after := player.get_children().filter(
+	var halo_count_after: int = player.halo_anchor.get_children().filter(
 		func(child: Node) -> bool: return child is GuardHalo
 	).size()
 	_expect(halo_count_before == 1 and halo_count_after == 1,
 		"calling equip_halo twice does not create a duplicate")
+
+	var authored_sprite_position: Vector2 = player.sprite.position
+	player.is_jumping = true
+	player.jump_time = 0.0
+	player.handle_jump(0.5 / player.jump_speed)
+	_expect(player.equipped_halo.global_position.is_equal_approx(player.sprite.global_position),
+		"Halo remains centred on the visible sprite during a jump")
+	player.handle_jump(0.6 / player.jump_speed)
+	_expect(player.sprite.position.is_equal_approx(authored_sprite_position),
+		"jump completion restores the authored sprite position")
+	_expect(player.equipped_halo.global_position.is_equal_approx(player.sprite.global_position),
+		"Halo remains centred after the jump finishes")
 
 	player.equipped_halo.change_state(GuardHalo.HaloState.BROKEN)
 	_expect(is_equal_approx(player.speed, starting_speed),

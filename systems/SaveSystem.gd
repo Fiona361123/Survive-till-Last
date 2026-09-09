@@ -164,4 +164,7 @@ func start_new_game() -> void:
 	upgrade_max_hp_level = 0
 	upgrade_damage_level = 0
 	upgrade_speed_level = 0
+	var weapon_progress := get_node_or_null("/root/WeaponProgress")
+	if weapon_progress != null and weapon_progress.has_method("reset_progress"):
+		weapon_progress.reset_progress()
 	save_game()

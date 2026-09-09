@@ -644,7 +644,7 @@ expand_margin_bottom = 2.0
 bg_color = Color(0.64705884, 0.039215688, 0, 1)
 corner_detail = 15
 
-[node name="FinalBoss" type="CharacterBody2D" unique_id=447995274]
+[node name="FinalBoss" type="CharacterBody2D" unique_id=447995274 groups=["enemy", "boss_enemy"]]
 script = ExtResource("1_ifitu")
 trap_scene = ExtResource("2_il0sp")
 clone_scene = ExtResource("3_n0uwk")

@@ -13,6 +13,7 @@ const SCENE_PATH_TO_ID := {
 	"res://weapons/lightning/ChainLightning.tscn": &"chain_lightning",
 	"res://weapons/gravity/GravityBombWeapon.tscn": &"gravity_bomb",
 	"res://weapons/temporal/TemporalEchoWeapon.tscn": &"temporal_echo",
+	"res://weapons/prism/PrismLatticeWeapon.tscn": &"prism_lattice",
 }
 
 const INPUT_TO_WEAPON_ID := {
@@ -21,11 +22,13 @@ const INPUT_TO_WEAPON_ID := {
 	&"weapon_4": &"chain_lightning",
 	&"weapon_5": &"gravity_bomb",
 	&"weapon_6": &"temporal_echo",
+	&"weapon_7": &"prism_lattice",
 }
 
 const MANUAL_WEAPON_IDS: Array[StringName] = [
 	&"gravity_bomb",
 	&"temporal_echo",
+	&"prism_lattice",
 ]
 
 var weapons: Array[Node2D] = []
@@ -53,7 +56,7 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	# Slots are explicit: 1 Knife, 2 Gun, 4 Chain Lightning, 5 Gravity Bomb,
-	# and 6 Temporal Echo. Guard Halo remains passive and has no number slot.
+	# 6 Temporal Echo, and 7 Prism Lattice. Guard Halo remains passive.
 	for action in INPUT_TO_WEAPON_ID:
 		if Input.is_action_just_pressed(action):
 			var weapon_id: StringName = INPUT_TO_WEAPON_ID[action]

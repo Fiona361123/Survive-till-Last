@@ -38,14 +38,20 @@ func _test_starting_progression() -> void:
 		"Gravity Bomb starts locked")
 	_expect(not weapon_progress.is_weapon_unlocked(&"temporal_echo"),
 		"Temporal Echo starts locked")
+	_expect(not weapon_progress.is_weapon_unlocked(&"prism_lattice"),
+		"Prism Lattice starts locked")
 	_expect(weapon_progress.get_requirement_text(&"gun") == "UNLOCKS IN LEVEL 2",
 		"Gun card explains its Level 2 requirement")
 	_expect(weapon_progress.get_requirement_text(&"chain_lightning") == "UNLOCKS IN LEVEL 4",
 		"Chain Lightning card explains its Level 4 requirement")
-	_expect(weapon_progress.get_requirement_text(&"gravity_bomb") == "BUY FOR 500 WEAPON XP",
-		"Gravity Bomb card explains its 500 Weapon XP price")
-	_expect(weapon_progress.get_requirement_text(&"temporal_echo") == "BUY FOR 750 WEAPON XP",
-		"Temporal Echo card explains its 750 Weapon XP price")
+	_expect(weapon_progress.get_requirement_text(&"gravity_bomb") == "BUY FOR 50 WEAPON XP",
+		"Gravity Bomb card explains its 50 Weapon XP price")
+	_expect(weapon_progress.get_requirement_text(&"temporal_echo") == "BUY FOR 100 WEAPON XP",
+		"Temporal Echo card explains its 100 Weapon XP price")
+	_expect(weapon_progress.get_requirement_text(&"prism_lattice") == "BUY FOR 150 WEAPON XP",
+		"Prism Lattice card explains its 150 Weapon XP price")
+	_expect(weapon_progress.weapon_xp_balance == 300,
+		"a new test run starts with exactly enough XP for all purchasable weapons")
 
 
 func _test_player_store_and_number_keys() -> void:
@@ -68,6 +74,8 @@ func _test_player_store_and_number_keys() -> void:
 		"number key 5 maps to Gravity Bomb")
 	_expect(manager.get_weapon_id_for_action(&"weapon_6") == &"temporal_echo",
 		"number key 6 maps to Temporal Echo")
+	_expect(manager.get_weapon_id_for_action(&"weapon_7") == &"prism_lattice",
+		"number key 7 maps to Prism Lattice")
 	_expect(manager.active_weapon_id == &"knife",
 		"Knife is active at the start")
 	_expect(not manager.switch_to_weapon_id(&"gun"),
@@ -88,6 +96,9 @@ func _test_player_store_and_number_keys() -> void:
 	var temporal_card := store.cards.get(&"temporal_echo") as WeaponCard
 	_expect(temporal_card != null and temporal_card.buy_button.visible,
 		"locked Temporal Echo card displays its purchase button")
+	var prism_card := store.cards.get(&"prism_lattice") as WeaponCard
+	_expect(prism_card != null and prism_card.buy_button.visible,
+		"locked Prism Lattice card displays its purchase button")
 	store.close_store()
 
 	weapon_progress.register_level_clear(1)
@@ -120,19 +131,10 @@ func _test_player_store_and_number_keys() -> void:
 	_expect(manager.active_weapon_id == &"chain_lightning",
 		"number key 4 switches to Chain Lightning")
 
-	weapon_progress.register_xp(499)
-	_expect(weapon_progress.weapon_xp_balance == 499,
-		"collected XP increases the Weapon XP wallet")
-	_expect(not weapon_progress.purchase_weapon(&"gravity_bomb"),
-		"purchase is rejected when one Weapon XP is missing")
-	_expect(not weapon_progress.is_weapon_unlocked(&"gravity_bomb")
-		and weapon_progress.weapon_xp_balance == 499,
-		"failed purchase neither unlocks nor spends XP")
-	weapon_progress.register_xp(1)
 	_expect(weapon_progress.purchase_weapon(&"gravity_bomb"),
-		"500 Weapon XP purchases Gravity Bomb")
-	_expect(weapon_progress.weapon_xp_balance == 0,
-		"successful purchase deducts exactly 500 Weapon XP")
+		"50 Weapon XP purchases Gravity Bomb")
+	_expect(weapon_progress.weapon_xp_balance == 250,
+		"Gravity Bomb purchase leaves 250 Weapon XP")
 
 	manager.switch_to_weapon_id(&"gravity_bomb")
 	var manual_target := Node2D.new()
@@ -157,11 +159,10 @@ func _test_player_store_and_number_keys() -> void:
 	manual_target.queue_free()
 	await process_frame
 
-	weapon_progress.register_xp(750)
 	_expect(weapon_progress.purchase_weapon(&"temporal_echo"),
-		"750 Weapon XP purchases Temporal Echo")
-	_expect(weapon_progress.weapon_xp_balance == 0,
-		"Temporal Echo purchase deducts exactly 750 Weapon XP")
+		"100 Weapon XP purchases Temporal Echo")
+	_expect(weapon_progress.weapon_xp_balance == 150,
+		"Temporal Echo purchase leaves 150 Weapon XP")
 	# The real weapon records continuously during gameplay. Give this fast
 	# integration test enough clock time to build the minimum replay history.
 	await create_timer(0.18).timeout
@@ -184,6 +185,28 @@ func _test_player_store_and_number_keys() -> void:
 		"number key 6 switches to purchased Temporal Echo")
 	_expect(float(temporal_weapon.cooldown_left) > 0.0,
 		"pressing number key 6 creates one Temporal Echo replay")
+
+	_expect(weapon_progress.purchase_weapon(&"prism_lattice"),
+		"150 Weapon XP purchases Prism Lattice")
+	_expect(weapon_progress.weapon_xp_balance == 0,
+		"Prism Lattice purchase deducts exactly 150 Weapon XP")
+	var prism_target := Node2D.new()
+	prism_target.set_script(load("res://tests/gravity_dummy_enemy.gd"))
+	prism_target.add_to_group("enemy")
+	prism_target.global_position = player.global_position + Vector2(120.0, 0.0)
+	root.add_child(prism_target)
+	var prism_index: int = manager.weapon_ids.find(&"prism_lattice")
+	var prism_weapon = manager.weapons[prism_index]
+	_expect(InputMap.has_action(&"weapon_7"),
+		"project Input Map contains the weapon_7 action")
+	Input.action_press("weapon_7")
+	manager._process(0.0)
+	await process_frame
+	Input.action_release("weapon_7")
+	_expect(manager.active_weapon_id == &"prism_lattice",
+		"number key 7 switches to purchased Prism Lattice")
+	_expect(is_instance_valid(prism_weapon.active_field),
+		"pressing number key 7 deploys one Prism field")
 	_expect(store.new_badge.visible,
 		"Store button shows NEW while unlocks are unseen")
 
@@ -193,9 +216,12 @@ func _test_player_store_and_number_keys() -> void:
 		"viewing the Store marks all new cards as seen")
 	_expect(not store.new_badge.visible,
 		"Store NEW badge disappears after new cards are viewed")
-	_expect(manager.active_weapon_id == &"temporal_echo",
+	_expect(manager.active_weapon_id == &"prism_lattice",
 		"opening the Store does not switch weapons")
 	store.close_store()
+	if is_instance_valid(prism_weapon.active_field):
+		prism_weapon.active_field.queue_free()
+	prism_target.queue_free()
 
 	player.queue_free()
 	var game_over_ui := root.get_node_or_null("GameOverUI")

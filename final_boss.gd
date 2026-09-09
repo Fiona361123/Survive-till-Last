@@ -1,5 +1,9 @@
 extends CharacterBody2D
 
+signal boss_defeated
+
+const COMBAT_TARGET_SELECTOR = preload("res://systems/combat_target_selector.gd")
+
 
 @export_category("Boss Health")
 @export var max_health: float = 2000.0
@@ -12,6 +16,9 @@ var dead: bool = false
 @export var player_path: NodePath
 
 var player: Node2D = null
+var real_player: Node2D = null
+var target_refresh_timer: float = 0.0
+const TARGET_REFRESH_INTERVAL: float = 0.1
 
 
 @export_category("Movement")
@@ -165,13 +172,15 @@ func _ready() -> void:
 	current_speed = normal_speed
 
 	if player_path != NodePath(""):
-		player = get_node_or_null(player_path)
+		real_player = get_node_or_null(player_path)
 
-	if player == null:
-		player = get_tree().get_first_node_in_group("player")
+	if real_player == null:
+		real_player = get_tree().get_first_node_in_group("player")
 
-	if player is CollisionObject2D:
-		add_collision_exception_with(player)
+	_refresh_combat_target()
+
+	if real_player is CollisionObject2D:
+		add_collision_exception_with(real_player)
 
 	if not attack_timer.timeout.is_connected(_on_attack_timer_timeout):
 		attack_timer.timeout.connect(_on_attack_timer_timeout)
@@ -200,23 +209,22 @@ func _ready() -> void:
 	print("SHADOW OVERLORD HAS APPEARED!")
 
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	if dead:
 		return
 
-	if player == null or not is_instance_valid(player):
-		player = get_tree().get_first_node_in_group("player")
+	if real_player == null or not is_instance_valid(real_player):
+		real_player = get_tree().get_first_node_in_group("player")
 
-		if player == null:
-			velocity = Vector2.ZERO
+	target_refresh_timer -= delta
+	if target_refresh_timer <= 0.0 or player == null or not is_instance_valid(player):
+		_refresh_combat_target()
 
-			if sprite:
-				sprite.play("idle")
-
-			return
-
-		if player is CollisionObject2D:
-			add_collision_exception_with(player)
+	if player == null:
+		velocity = Vector2.ZERO
+		if sprite:
+			sprite.play("idle")
+		return
 
 	face_player()
 	update_phase()
@@ -243,6 +251,13 @@ func _physics_process(_delta: float) -> void:
 
 	if not is_attacking:
 		move_and_slide()
+
+
+func _refresh_combat_target() -> void:
+	target_refresh_timer = TARGET_REFRESH_INTERVAL
+	player = COMBAT_TARGET_SELECTOR.choose_target(self, real_player)
+	if player is CollisionObject2D:
+		add_collision_exception_with(player)
 
 
 func update_phase() -> void:
@@ -992,6 +1007,8 @@ func create_trap() -> void:
 	var trap = trap_scene.instantiate()
 
 	get_parent().add_child(trap)
+	if trap.has_method("setup"):
+		trap.setup(real_player)
 
 	var direction := 1.0
 
@@ -1043,13 +1060,13 @@ func create_clones() -> void:
 			var side := -1.0 if i == 0 else 1.0
 
 			clone.setup_with_side(
-				player,
+				real_player,
 				clone_lifetime,
 				side
 			)
 		elif clone.has_method("setup"):
 			clone.setup(
-				player,
+				real_player,
 				clone_lifetime
 			)
 
@@ -1430,10 +1447,10 @@ func die() -> void:
 
 	await get_tree().create_timer(2.0).timeout
 
-	boss_defeated()
+	_finish_defeat()
 
 
-func boss_defeated() -> void:
+func _finish_defeat() -> void:
 	print("VICTORY!")
-
+	boss_defeated.emit()
 	queue_free()

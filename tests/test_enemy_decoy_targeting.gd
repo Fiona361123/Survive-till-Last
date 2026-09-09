@@ -8,6 +8,7 @@ var failures: int = 0
 func _initialize() -> void:
 	await process_frame
 	await _test_decoy_priority_and_fallback()
+	await _test_final_boss_uses_decoy_and_falls_back()
 	await _test_enemy_projectile_hits_decoy()
 
 	if failures == 0:
@@ -57,6 +58,32 @@ func _test_enemy_projectile_hits_decoy() -> void:
 	projectile.free()
 	echo.queue_free()
 	await process_frame
+
+
+func _test_final_boss_uses_decoy_and_falls_back() -> void:
+	var real_player := Node2D.new()
+	real_player.add_to_group("player")
+	real_player.global_position = Vector2(700.0, 0.0)
+	root.add_child(real_player)
+	var boss_scene := load("res://final_boss.tscn") as PackedScene
+	var boss := boss_scene.instantiate()
+	root.add_child(boss)
+	boss.set_physics_process(false)
+	boss.global_position = Vector2.ZERO
+	boss.real_player = real_player
+	var echo := _create_echo(Vector2(80.0, 0.0), 0.8)
+
+	boss.call("_refresh_combat_target")
+	_expect(boss.player == echo,
+		"the final boss chooses a nearby Temporal Echo as its combat target")
+	echo.call("_finish_replay")
+	boss.call("_refresh_combat_target")
+	_expect(boss.player == real_player,
+		"the final boss returns safely to the real Player after the ghost ends")
+
+	boss.queue_free()
+	real_player.queue_free()
+	await create_timer(0.04).timeout
 
 
 func _create_echo(position: Vector2, duration: float) -> TemporalEcho:

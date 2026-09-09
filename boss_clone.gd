@@ -1,5 +1,7 @@
 extends CharacterBody2D
 
+const COMBAT_TARGET_SELECTOR = preload("res://systems/combat_target_selector.gd")
+
 @export_category("Clone Settings")
 @export var lifetime: float = 25.0
 @export var move_speed: float = 75.0
@@ -18,6 +20,9 @@ extends CharacterBody2D
 @export var disappear_time: float = 0.4
 
 var player: Node2D = null
+var real_player: Node2D = null
+var target_refresh_timer: float = 0.0
+const TARGET_REFRESH_INTERVAL: float = 0.1
 
 var dying: bool = false
 var appearing: bool = true
@@ -31,7 +36,9 @@ var attack_id: int = 0
 
 
 func _ready() -> void:
-	player = get_tree().get_first_node_in_group("player")
+	if real_player == null:
+		real_player = get_tree().get_first_node_in_group("player")
+	_refresh_combat_target()
 
 	# Make clone unable to physically block the player
 	set_collision_layer_value(1, false)
@@ -52,7 +59,8 @@ func _ready() -> void:
 
 
 func setup(target_player: Node2D, duration: float) -> void:
-	player = target_player
+	real_player = target_player
+	_refresh_combat_target()
 	lifetime = duration
 
 	if lifetime_started:
@@ -105,7 +113,7 @@ func start_lifetime() -> void:
 	disappear()
 
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	if dying:
 		velocity = Vector2.ZERO
 		return
@@ -118,8 +126,12 @@ func _physics_process(_delta: float) -> void:
 		velocity = Vector2.ZERO
 		return
 
-	if player == null or not is_instance_valid(player):
-		player = get_tree().get_first_node_in_group("player")
+	if real_player == null or not is_instance_valid(real_player):
+		real_player = get_tree().get_first_node_in_group("player")
+
+	target_refresh_timer -= delta
+	if target_refresh_timer <= 0.0 or player == null or not is_instance_valid(player):
+		_refresh_combat_target()
 
 	if player == null:
 		velocity = Vector2.ZERO
@@ -150,6 +162,11 @@ func _physics_process(_delta: float) -> void:
 
 		play_animation("walk")
 		return
+
+
+func _refresh_combat_target() -> void:
+	target_refresh_timer = TARGET_REFRESH_INTERVAL
+	player = COMBAT_TARGET_SELECTOR.choose_target(self, real_player)
 
 
 func clone_attack() -> void:

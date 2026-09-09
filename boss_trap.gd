@@ -1,5 +1,7 @@
 extends Area2D
 
+const COMBAT_TARGET_SELECTOR = preload("res://systems/combat_target_selector.gd")
+
 @export_category("Trap Settings")
 @export var attack_range: float = 60.0
 @export var damage: int = 25
@@ -17,6 +19,9 @@ extends Area2D
 @export var disappear_time: float = 0.4
 
 var player: Node2D = null
+var real_player: Node2D = null
+var target_refresh_timer: float = 0.0
+const TARGET_REFRESH_INTERVAL: float = 0.1
 
 var has_attacked: bool = false
 var is_attacking: bool = false
@@ -26,6 +31,10 @@ var ready_to_attack: bool = false
 
 
 func _ready() -> void:
+	if real_player == null:
+		real_player = get_tree().get_first_node_in_group("player")
+	_refresh_combat_target()
+
 	if sprite == null:
 		return
 
@@ -69,7 +78,7 @@ func grow_trap() -> void:
 		return
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if not ready_to_attack:
 		return
 
@@ -79,8 +88,12 @@ func _process(_delta: float) -> void:
 	if is_attacking:
 		return
 
-	if player == null or not is_instance_valid(player):
-		player = get_tree().get_first_node_in_group("player")
+	if real_player == null or not is_instance_valid(real_player):
+		real_player = get_tree().get_first_node_in_group("player")
+
+	target_refresh_timer -= delta
+	if target_refresh_timer <= 0.0 or player == null or not is_instance_valid(player):
+		_refresh_combat_target()
 
 	if player == null:
 		return
@@ -89,6 +102,16 @@ func _process(_delta: float) -> void:
 
 	if distance <= attack_range:
 		attack_player()
+
+
+func setup(target_player: Node2D) -> void:
+	real_player = target_player
+	_refresh_combat_target()
+
+
+func _refresh_combat_target() -> void:
+	target_refresh_timer = TARGET_REFRESH_INTERVAL
+	player = COMBAT_TARGET_SELECTOR.choose_target(self, real_player)
 
 
 func attack_player() -> void:

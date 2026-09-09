@@ -6,6 +6,9 @@ const COMBAT_TARGET_SELECTOR = preload("res://systems/combat_target_selector.gd"
 @export var damage: int = 30
 @export var attack_cooldown: float = 0.6
 @export var attack_range: float = 300.0   # much longer than knife
+@export var bullet_speed: float = 400.0
+@export_range(0.0, 1.0, 0.05) var prediction_strength: float = 0.8
+@export var maximum_prediction_time: float = 0.65
 @export var bullet_scene: PackedScene
 
 var cooldown_left: float = 0.0
@@ -40,19 +43,48 @@ func do_attack(target: Node2D = null) -> void:
 	cooldown_left = attack_cooldown
 
 	var dir: Vector2
-	if target != null:
-		dir = (target.global_position - global_position).normalized()
-	else:
+	if is_instance_valid(target):
+		dir = (_predict_target_position(target) - global_position).normalized()
+	elif player != null and "last_direction" in player:
 		dir = player.last_direction.normalized()
+	else:
+		dir = Vector2.RIGHT
 
-	_spawn_bullet(dir)
-	player.play_shoot_animation()
+	_spawn_bullet(dir, target)
+	if player != null and player.has_method("play_shoot_animation"):
+		player.play_shoot_animation()
 
-func _spawn_bullet(dir: Vector2) -> void:
+
+func _predict_target_position(target: Node2D) -> Vector2:
+	var aim_position := _get_target_aim_position(target)
+	if target is CharacterBody2D:
+		var travel_time := minf(
+			global_position.distance_to(aim_position) / maxf(bullet_speed, 1.0),
+			maximum_prediction_time
+		)
+		aim_position += target.velocity * travel_time * prediction_strength
+	return aim_position
+
+
+func _get_target_aim_position(target: Node2D) -> Vector2:
+	var body_shape := target.get_node_or_null("CollisionShape2D") as CollisionShape2D
+	if body_shape != null and not body_shape.disabled:
+		return body_shape.global_position
+	return target.global_position
+
+
+func _spawn_bullet(dir: Vector2, target: Node2D = null) -> void:
+	if bullet_scene == null:
+		return
 	var bullet = bullet_scene.instantiate()
 	bullet.damage = damage
-	bullet.direction = dir
-	get_tree().current_scene.add_child(bullet)
+	bullet.direction = dir.normalized()
+	bullet.speed = bullet_speed
+	bullet.target = target
+	var spawn_parent: Node = get_tree().current_scene
+	if spawn_parent == null:
+		spawn_parent = get_tree().root
+	spawn_parent.add_child(bullet)
 	bullet.global_position = global_position
 
 

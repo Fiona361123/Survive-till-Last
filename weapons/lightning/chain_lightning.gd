@@ -5,9 +5,12 @@ const COMBAT_TARGET_SELECTOR = preload("res://systems/combat_target_selector.gd"
 
 @export var damage: int = 8
 @export var attack_cooldown: float = 1.2
-@export var attack_range: float = 250.0   # range to find the FIRST target
-@export var jump_range: float = 150.0     # max distance between chain jumps
-@export var max_jumps: int = 3            # how many enemies the bolt hits
+@export var attack_range: float = 400.0   # range to find the FIRST target
+@export var jump_range: float = 300.0     # search radius around the first target
+@export var max_jumps: int = 5            # total enemies hit, including the first
+@export var bolt_duration: float = 0.45
+@export var secondary_glow_width: float = 12.0
+@export var secondary_core_width: float = 4.5
 
 # --- branch (fork) settings ---
 @export var branch_count: int = 4         # how many random forks per zap
@@ -19,6 +22,7 @@ var cooldown_left: float = 0.0
 @onready var player = get_tree().get_first_node_in_group("player")
 @onready var line: Line2D = $Line2D
 @onready var glow_line: Line2D = $GlowLine
+@onready var secondary_bolts: Node2D = $SecondaryBolts
 @onready var branches: Node2D = $Branches
 
 func _ready() -> void:
@@ -33,24 +37,70 @@ func _physics_process(delta: float) -> void:
 	if first != null:
 		do_attack(first)
 
-# --- THE CHAINING ALGORITHM ---
+# The first enemy is the hub. Every additional target is selected around that
+# enemy so one cast can visibly branch into a nearby group.
 func do_attack(first_target: Node2D) -> void:
+	if not COMBAT_TARGET_SELECTOR.is_living_enemy(first_target):
+		return
+
 	cooldown_left = attack_cooldown
 
-	var hit_chain: Array = []        # enemies already zapped this cast
-	var current = first_target
-	var points: Array = [global_position]   # start the bolt at the player
+	var hit_targets: Array[Node2D] = [first_target]
+	var secondary_limit := maxi(max_jumps - 1, 0)
+	hit_targets.append_array(_find_enemies_around(
+		first_target.global_position,
+		jump_range,
+		hit_targets,
+		secondary_limit
+	))
 
-	while current != null and hit_chain.size() < max_jumps:
-		current.take_damage(damage)
-		hit_chain.append(current)
-		points.append(current.global_position)
-		# find the next nearest enemy NOT already hit, within jump_range
-		current = _find_nearest_enemy(current.global_position, jump_range, hit_chain)
+	# Capture every endpoint before damage in case an enemy dies immediately.
+	var bolt_segments: Array[PackedVector2Array] = [PackedVector2Array([
+		global_position,
+		first_target.global_position,
+	])]
+	for index in range(1, hit_targets.size()):
+		bolt_segments.append(PackedVector2Array([
+			first_target.global_position,
+			hit_targets[index].global_position,
+		]))
 
-	_draw_bolt(points)
-	if player.has_method("play_shoot_animation"):
+	for target in hit_targets:
+		if COMBAT_TARGET_SELECTOR.is_living_enemy(target):
+			target.take_damage(damage)
+
+	_draw_bolts(bolt_segments)
+	if player != null and player.has_method("play_shoot_animation"):
 		player.play_shoot_animation()
+
+
+# Returns the closest unhit enemies around the primary target. Sorting makes
+# the result deterministic and keeps the visible branches compact.
+func _find_enemies_around(
+	origin: Vector2,
+	max_dist: float,
+	exclude: Array[Node2D],
+	limit: int
+) -> Array[Node2D]:
+	var candidates: Array[Node2D] = []
+	if limit <= 0:
+		return candidates
+
+	for node in get_tree().get_nodes_in_group("enemy"):
+		var enemy := node as Node2D
+		if enemy == null or enemy in exclude:
+			continue
+		if not COMBAT_TARGET_SELECTOR.is_living_enemy(enemy):
+			continue
+		if origin.distance_to(enemy.global_position) <= max_dist:
+			candidates.append(enemy)
+
+	candidates.sort_custom(func(a: Node2D, b: Node2D) -> bool:
+		return origin.distance_squared_to(a.global_position) < origin.distance_squared_to(b.global_position)
+	)
+	if candidates.size() > limit:
+		candidates.resize(limit)
+	return candidates
 
 # Finds the closest enemy to `from`, within `max_dist`, excluding `exclude`
 func _find_nearest_enemy(from: Vector2, max_dist: float, exclude: Array) -> Node2D:
@@ -67,35 +117,65 @@ func _find_nearest_enemy(from: Vector2, max_dist: float, exclude: Array) -> Node
 			nearest = enemy
 	return nearest
 
-# --- Draw the main bolt plus random forks, then fade out ---
-func _draw_bolt(points: Array) -> void:
+# Draw the player-to-primary bolt plus a separate, brighter bolt for every
+# secondary enemy. Separate Line2D nodes prevent later jumps from blending
+# into one hard-to-read zigzag.
+func _draw_bolts(segments: Array[PackedVector2Array]) -> void:
 	line.clear_points()
 	glow_line.clear_points()
+	_clear_secondary_bolts()
 	_clear_branches()
+	if segments.is_empty():
+		return
 
-	# Build the jagged main path once, share it between glow and core
-	var all_main_points: Array = []
-	for i in range(points.size() - 1):
-		var start = to_local(points[i])
-		var end = to_local(points[i + 1])
-		var seg_points = _jagged_points(start, end)
-		for p in seg_points:
-			all_main_points.append(p)
+	var primary := segments[0]
+	var all_visual_points: Array = _jagged_points(
+		to_local(primary[0]),
+		to_local(primary[1])
+	)
 
-	# Feed the same points to both the glow layer and the white core
-	for p in all_main_points:
+	for p in all_visual_points:
 		glow_line.add_point(p)
 		line.add_point(p)
 
-	# Grow forks off the main bolt
-	_spawn_branches(all_main_points)
+	for index in range(1, segments.size()):
+		var segment := segments[index]
+		var secondary_points := _jagged_points(
+			to_local(segment[0]),
+			to_local(segment[1])
+		)
+		_spawn_secondary_bolt(secondary_points)
+		all_visual_points.append_array(secondary_points)
 
-	# Fade both layers out
+	_spawn_branches(all_visual_points)
+
 	var tween = create_tween().set_parallel(true)
 	line.modulate.a = 1.0
 	glow_line.modulate.a = 1.0
-	tween.tween_property(line, "modulate:a", 0.0, 0.25)
-	tween.tween_property(glow_line, "modulate:a", 0.0, 0.25)
+	tween.tween_property(line, "modulate:a", 0.0, bolt_duration)
+	tween.tween_property(glow_line, "modulate:a", 0.0, bolt_duration)
+
+
+func _spawn_secondary_bolt(points: Array) -> void:
+	var jump_glow := Line2D.new()
+	jump_glow.width = secondary_glow_width
+	jump_glow.default_color = Color(0.15, 0.65, 1.0, 0.95)
+	jump_glow.antialiased = true
+	secondary_bolts.add_child(jump_glow)
+
+	var jump_core := Line2D.new()
+	jump_core.width = secondary_core_width
+	jump_core.default_color = Color(0.88, 0.98, 1.0, 1.0)
+	jump_core.antialiased = true
+	secondary_bolts.add_child(jump_core)
+
+	for point in points:
+		jump_glow.add_point(point)
+		jump_core.add_point(point)
+
+	var tween := create_tween().set_parallel(true)
+	tween.tween_property(jump_glow, "modulate:a", 0.0, bolt_duration)
+	tween.tween_property(jump_core, "modulate:a", 0.0, bolt_duration)
 
 # Returns jagged points between start and end
 func _jagged_points(start: Vector2, end: Vector2) -> Array:
@@ -149,6 +229,11 @@ func _spawn_branches(main_points: Array) -> void:
 
 func _clear_branches() -> void:
 	for child in branches.get_children():
+		child.queue_free()
+
+
+func _clear_secondary_bolts() -> void:
+	for child in secondary_bolts.get_children():
 		child.queue_free()
 
 

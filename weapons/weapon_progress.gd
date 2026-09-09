@@ -14,7 +14,9 @@ const WEAPON_ORDER: Array[StringName] = [
 	&"chain_lightning",
 	&"gravity_bomb",
 	&"temporal_echo",
+	&"prism_lattice",
 ]
+const STARTING_WEAPON_XP: int = 300
 
 # One data table drives unlock checks, number-key hints, and Store cards.
 const WEAPON_DATA := {
@@ -70,7 +72,7 @@ const WEAPON_DATA := {
 		"slot": 5,
 		"required_level": 99,
 		"required_xp": 0,
-		"xp_price": 500,
+		"xp_price": 50,
 		"purchase_only": true,
 		"passive": false,
 		"accent": "a14dff",
@@ -83,10 +85,23 @@ const WEAPON_DATA := {
 		"slot": 6,
 		"required_level": 99,
 		"required_xp": 0,
-		"xp_price": 750,
+		"xp_price": 100,
 		"purchase_only": true,
 		"passive": false,
 		"accent": "59e7ff",
+	},
+	&"prism_lattice": {
+		"name": "ASTRAL PRISM LATTICE",
+		"short_name": "PRSM",
+		"description": "Deploys a rotating triangular field that damages its interior, burns along its beams, and collapses into an explosion.",
+		"icon_path": "",
+		"slot": 7,
+		"required_level": 99,
+		"required_xp": 0,
+		"xp_price": 150,
+		"purchase_only": true,
+		"passive": false,
+		"accent": "8f6bff",
 	},
 }
 
@@ -94,9 +109,8 @@ var unlocked_weapon_ids: Array[StringName] = [&"knife"]
 var unseen_weapon_ids: Array[StringName] = []
 var highest_dungeon_level: int = 1
 var total_xp_earned: int = 0
-# Temporary test balance: enough to buy Gravity Bomb (500) and Temporal Echo
-# (750) during the same gameplay test.
-var weapon_xp_balance: int = 1250
+# Temporary test balance: exactly enough to buy all three XP weapons.
+var weapon_xp_balance: int = STARTING_WEAPON_XP
 
 
 func get_weapon_data(weapon_id: StringName) -> Dictionary:
@@ -222,6 +236,6 @@ func reset_progress() -> void:
 	unseen_weapon_ids.clear()
 	highest_dungeon_level = 1
 	total_xp_earned = 0
-	weapon_xp_balance = 0
+	weapon_xp_balance = STARTING_WEAPON_XP
 	weapon_xp_changed.emit(weapon_xp_balance)
 	progression_changed.emit()

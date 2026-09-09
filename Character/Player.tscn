@@ -71,6 +71,7 @@
 [ext_resource type="PackedScene" path="res://UI/WeaponStoreUI.tscn" id="69_weapon_store"]
 [ext_resource type="PackedScene" path="res://weapons/gravity/GravityBombWeapon.tscn" id="70_gravity"]
 [ext_resource type="PackedScene" path="res://weapons/temporal/TemporalEchoWeapon.tscn" id="71_temporal"]
+[ext_resource type="PackedScene" path="res://weapons/prism/PrismLatticeWeapon.tscn" id="72_prism"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_y83ax"]
 animations = [{
@@ -449,6 +450,9 @@ scale = Vector2(1.028672, 1.0332345)
 sprite_frames = SubResource("SpriteFrames_y83ax")
 animation = &"attack_by_knife"
 
+[node name="HaloAnchor" type="Node2D" parent="."]
+position = Vector2(21.795774, 32.589016)
+
 [node name="HealthBarAnchor" type="Node2D" parent="AnimatedSprite2D" unique_id=311529649]
 position = Vector2(-11.147342, -15.006535)
 scale = Vector2(0.6859903, 0.7320261)
@@ -503,4 +507,4 @@ grow_vertical = 0
 [node name="WeaponStoreUI" parent="HUD" instance=ExtResource("69_weapon_store")]
 
 [node name="WeaponManager" parent="." unique_id=518159328 instance=ExtResource("64_ipan7")]
-weapon_scenes = Array[PackedScene]([ExtResource("29_im8re"), ExtResource("65_ra8ds"), ExtResource("67_8i42s"), ExtResource("70_gravity"), ExtResource("71_temporal")])
+weapon_scenes = Array[PackedScene]([ExtResource("29_im8re"), ExtResource("65_ra8ds"), ExtResource("67_8i42s"), ExtResource("70_gravity"), ExtResource("71_temporal"), ExtResource("72_prism")])
