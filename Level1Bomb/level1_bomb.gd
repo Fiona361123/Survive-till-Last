@@ -1,3 +1,4 @@
+# Huang Wan Jun 2204536
 class_name Level1Bomb
 extends Node2D
 

@@ -4,7 +4,7 @@ var failures := 0
 
 
 func _initialize() -> void:
-	var dungeon_scene := load("res://Dungeon.tscn") as PackedScene
+	var dungeon_scene := load("res://Dungeon/Dungeon.tscn") as PackedScene
 	_expect(dungeon_scene != null, "Dungeon scene loads")
 	if dungeon_scene == null:
 		quit(1)

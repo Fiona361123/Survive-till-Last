@@ -1,3 +1,4 @@
+# Ng Poh Hui 2204747
 extends BaseMenuUI
 
 signal upgrade_chosen(upgrade_key: String)
@@ -214,4 +215,3 @@ func _on_card_pressed(key: String, card_node: Control) -> void:
 	else:
 		if sub_label:
 			sub_label.text = "Choose %d more rewards!" % _picks_remaining
-

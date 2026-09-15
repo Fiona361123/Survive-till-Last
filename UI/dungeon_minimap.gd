@@ -1,3 +1,4 @@
+# Huang Wan Jun 2204536
 class_name DungeonMinimap
 extends Control
 
@@ -6,9 +7,9 @@ const PANEL_PADDING: float = 10.0
 const ENEMY_GROUP_BY_LEVEL := {1: "level1_enemy", 2: "level2_enemy", 3: "level3_enemy", 4: "boss_enemy"}
 # Huang Wan Jun 2204536 - Match each enemy script's DEATH enum so animated corpses never receive markers.
 const DEATH_STATE_BY_SCRIPT := {
-	"res://skeleton.gd": 6,
+	"res://Enemy/skeleton/skeleton.gd": 6,
 	"res://Enemy/slime.gd": 3,
-	"res://RangedEnemy.gd": 7,
+	"res://Enemy/rangedenemy/RangedEnemy.gd": 7,
 }
 # Huang Wan Jun 2204536 - Share root-adjusted Dungeon.tscn footprints without requiring constant expressions.
 static var LEVEL_POLYGONS: Dictionary = {

@@ -1,3 +1,4 @@
+# Angel Yap Yoon Ning 2205499
 extends PanelContainer
 class_name WeaponCard
 

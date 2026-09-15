@@ -1,10 +1,12 @@
+# Ng Poh Hui - 2204747
+# Adds the audio inside the game
 extends Node
 
 var bgm_player: AudioStreamPlayer
 var sfx_players: Array[AudioStreamPlayer] = []
 
 # Preload Audio Streams
-var bgm_stream = load("res://Background Sound/menieldm-obsidian-halls-495840.mp3")
+var bgm_stream = load("res://Audio/Background Music/menieldm-obsidian-halls-495840.mp3")
 var coin_sfx = load("res://Sound Effect/mixkit-winning-a-coin-video-game-2069.wav")
 var level_up_sfx = load("res://Sound Effect/mixkit-completion-of-a-level-2063.wav")
 var blood_pop_sfx = load("res://Sound Effect/mixkit-game-blood-pop-slide-2363.wav")

@@ -1,9 +1,9 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene format=3]
 
-[ext_resource type="Script" path="res://BossEncounter/boss_encounter_controller.gd" id="1_controller"]
-[ext_resource type="PackedScene" path="res://Enemy/slime.tscn" id="2_slime"]
-[ext_resource type="PackedScene" path="res://skeleton.tscn" id="3_skeleton"]
-[ext_resource type="PackedScene" path="res://RangedEnemy.tscn" id="4_ranged"]
+[ext_resource type="Script" uid="uid://dhil1oux6acwi" path="res://BossEncounter/boss_encounter_controller.gd" id="1_controller"]
+[ext_resource type="PackedScene" uid="uid://ln4sqbmynwsn" path="res://Enemy/slime.tscn" id="2_slime"]
+[ext_resource type="PackedScene" uid="uid://bm4w3pmxqxtpn" path="res://Enemy/skeleton/skeleton.tscn" id="3_skeleton"]
+[ext_resource type="PackedScene" uid="uid://dtm8j0ch4d8so" path="res://Enemy/rangedenemy/RangedEnemy.tscn" id="4_ranged"]
 [ext_resource type="PackedScene" path="res://Level3Traps/SpikeRow.tscn" id="5_spike"]
 [ext_resource type="PackedScene" path="res://Level3Traps/FireSweep.tscn" id="6_fire"]
 

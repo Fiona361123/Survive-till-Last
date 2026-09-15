@@ -1,3 +1,4 @@
+# Huang Wan Jun 2204536
 class_name TrapDamageArea
 extends Area2D
 

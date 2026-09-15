@@ -55,8 +55,8 @@ func _test_wave_progression_and_cleanup() -> void:
 		wave_one[index].queue_free()
 	await _wait_for_state(encounter, BossEncounterController.State.WAVE_2)
 	_expect(encounter.get_encounter_state() == BossEncounterController.State.WAVE_2, "dead animating slime does not block Wave 2")
-	_expect(_count_script(encounter, "res://skeleton.gd") == 3, "Wave 2 creates three skeletons")
-	_expect(_count_script(encounter, "res://RangedEnemy.gd") == 2, "Wave 2 creates two ranged enemies")
+	_expect(_count_script(encounter, "res://Enemy/skeleton/skeleton.gd") == 3, "Wave 2 creates three skeletons")
+	_expect(_count_script(encounter, "res://Enemy/rangedenemy/RangedEnemy.gd") == 2, "Wave 2 creates two ranged enemies")
 	for row in encounter.get_node("SpikeRows").get_children():
 		_expect(row.state == SpikeRow.State.SAFE, "spikes retract before Wave 2")
 	var projectile := Node2D.new()

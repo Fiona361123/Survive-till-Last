@@ -65,7 +65,7 @@ func _test_final_boss_uses_decoy_and_falls_back() -> void:
 	real_player.add_to_group("player")
 	real_player.global_position = Vector2(700.0, 0.0)
 	root.add_child(real_player)
-	var boss_scene := load("res://final_boss.tscn") as PackedScene
+	var boss_scene := load("res://Enemy/finalBoss/final_boss.tscn") as PackedScene
 	var boss := boss_scene.instantiate()
 	root.add_child(boss)
 	boss.set_physics_process(false)

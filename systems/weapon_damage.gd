@@ -1,3 +1,4 @@
+# Angel Yap Yoon Ning 2205499
 extends RefCounted
 
 # Every weapon uses this calculation at the moment damage is dealt. Keeping the
