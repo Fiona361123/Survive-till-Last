@@ -57,7 +57,7 @@ func _make_damage_dummy(layer: int) -> DamageDummy:
 
 # Huang Wan Jun 2204536 - Ensure the playable Level 1 map replaces selected rock obstacles with bomb barrels.
 func _test_bombs_replace_level_one_obstacles() -> void:
-	var dungeon := (load("res://Dungeon.tscn") as PackedScene).instantiate() as Node2D
+	var dungeon := (load("res://Dungeon/Dungeon.tscn") as PackedScene).instantiate() as Node2D
 	root.add_child(dungeon)
 	await process_frame
 	_expect(get_nodes_in_group("level1_bomb").size() == 2,

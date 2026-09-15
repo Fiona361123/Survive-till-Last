@@ -99,7 +99,7 @@ func _initialize() -> void:
 	await _test_death_markers(packed)
 
 	# Huang Wan Jun 2204536 - Integrate minimap progress with the dungeon HUD and entrances.
-	var dungeon_scene := load("res://Dungeon.tscn") as PackedScene
+	var dungeon_scene := load("res://Dungeon/Dungeon.tscn") as PackedScene
 	_expect(dungeon_scene != null, "Dungeon scene loads for minimap integration")
 	if dungeon_scene != null:
 		var dungeon := dungeon_scene.instantiate() as Node2D
@@ -224,7 +224,7 @@ func _test_death_markers(minimap_scene: PackedScene) -> void:
 	current_scene = arena
 	var minimap := minimap_scene.instantiate() as DungeonMinimap
 	arena.add_child(minimap)
-	for scene_path in ["res://skeleton.tscn", "res://Enemy/slime.tscn", "res://RangedEnemy.tscn"]:
+	for scene_path in ["res://Enemy/skeleton/skeleton.tscn", "res://Enemy/slime.tscn", "res://Enemy/rangedenemy/RangedEnemy.tscn"]:
 		var enemy := (load(scene_path) as PackedScene).instantiate() as Node2D
 		enemy.process_mode = Node.PROCESS_MODE_DISABLED
 		enemy.add_to_group("level1_enemy")

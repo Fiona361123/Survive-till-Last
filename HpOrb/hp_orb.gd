@@ -1,3 +1,4 @@
+#Ng Poh Hui 2204747
 extends Area2D
 
 ## Amount of HP restored when picked up

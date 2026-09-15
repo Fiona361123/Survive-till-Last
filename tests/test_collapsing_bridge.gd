@@ -333,7 +333,7 @@ func _test_sections_are_independent() -> void:
 
 
 func _test_dungeon_bridge_cycle() -> void:
-	var dungeon_scene := load("res://Dungeon.tscn") as PackedScene
+	var dungeon_scene := load("res://Dungeon/Dungeon.tscn") as PackedScene
 	_expect(dungeon_scene != null, "Dungeon scene loads for the complete bridge cycle")
 	if dungeon_scene == null:
 		return

@@ -1,3 +1,4 @@
+# Ng Poh Hui 2204747
 extends Control
 
 @onready var upgrades_panel = $UpgradesPanel
@@ -222,7 +223,7 @@ func _on_start_pressed():
 		else:
 			SaveSystem.clear_dungeon_state()
 			SaveSystem.load_from_save = false
-		get_tree().change_scene_to_file("res://Dungeon.tscn")
+		get_tree().change_scene_to_file("res://Dungeon/Dungeon.tscn")
 
 func _show_resume_prompt():
 	var existing = get_node_or_null("ResumeDialogOverlay")
@@ -316,7 +317,7 @@ func _show_resume_prompt():
 	
 	btn_resume.pressed.connect(func():
 		SaveSystem.load_from_save = true
-		get_tree().change_scene_to_file("res://Dungeon.tscn")
+		get_tree().change_scene_to_file("res://Dungeon/Dungeon.tscn")
 	)
 	hbox.add_child(btn_resume)
 	
@@ -339,7 +340,7 @@ func _show_resume_prompt():
 		else:
 			SaveSystem.clear_dungeon_state()
 			SaveSystem.load_from_save = false
-		get_tree().change_scene_to_file("res://Dungeon.tscn")
+		get_tree().change_scene_to_file("res://Dungeon/Dungeon.tscn")
 	)
 	hbox.add_child(btn_new)
 	

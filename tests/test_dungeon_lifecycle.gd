@@ -3,7 +3,7 @@ extends SceneTree
 
 func _initialize() -> void:
 	await process_frame
-	var dungeon_scene := load("res://Dungeon.tscn") as PackedScene
+	var dungeon_scene := load("res://Dungeon/Dungeon.tscn") as PackedScene
 	var dungeon := dungeon_scene.instantiate()
 	dungeon.process_mode = Node.PROCESS_MODE_DISABLED
 	root.add_child(dungeon)

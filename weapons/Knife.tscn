@@ -1,7 +1,7 @@
-[gd_scene format=3 uid="uid://w8euwnrqn773"]
+[gd_scene format=3 uid="uid://duo1ntljsu1bq"]
 
-[ext_resource type="Script" uid="uid://dvb0scrm66yiw" path="res://weapons/knife.gd" id="1_udg0r"]
-[ext_resource type="PackedScene" uid="uid://dxcx31euutfcu" path="res://weapons/KnifeSlash.tscn" id="2_ubmhr"]
+[ext_resource type="Script" uid="uid://dvb0scrm66yiw" path="res://weapons/Knife/knife.gd" id="1_udg0r"]
+[ext_resource type="PackedScene" uid="uid://dxcx31euutfcu" path="res://weapons/Knife/KnifeSlash.tscn" id="2_ubmhr"]
 
 [node name="Knife(Node2D)" type="Node2D" unique_id=450711054]
 script = ExtResource("1_udg0r")

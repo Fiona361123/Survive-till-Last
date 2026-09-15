@@ -55,7 +55,7 @@ func _test_level_exit_stays_in_dungeon_and_announces_level_two() -> void:
 
 
 func _test_dungeon_scene_has_level_clear_nodes() -> void:
-	var dungeon_scene := load("res://Dungeon.tscn") as PackedScene
+	var dungeon_scene := load("res://Dungeon/Dungeon.tscn") as PackedScene
 	_expect(dungeon_scene != null, "Dungeon.tscn can be loaded")
 	if dungeon_scene == null:
 		return
@@ -290,7 +290,7 @@ func _test_dungeon_scene_has_level_clear_nodes() -> void:
 
 
 func _test_level_three_trap_lifecycle() -> void:
-	var dungeon_scene := load("res://Dungeon.tscn") as PackedScene
+	var dungeon_scene := load("res://Dungeon/Dungeon.tscn") as PackedScene
 	if dungeon_scene == null:
 		_expect(false, "Dungeon loads for the Level 3 trap lifecycle")
 		return
@@ -320,7 +320,7 @@ func _assert_trap_damage_masks(trap_root: Node, label: String) -> void:
 
 
 func _test_enemy_spawn_positions_clear_solid_walls() -> void:
-	var dungeon_scene := load("res://Dungeon.tscn") as PackedScene
+	var dungeon_scene := load("res://Dungeon/Dungeon.tscn") as PackedScene
 	if dungeon_scene == null:
 		_expect(false, "Dungeon loads for enemy spawn clearance checks")
 		return
@@ -385,7 +385,7 @@ func _solid_world_blocks_segment(
 
 
 func _test_level_two_skeleton_wave() -> void:
-	var dungeon_scene := load("res://Dungeon.tscn") as PackedScene
+	var dungeon_scene := load("res://Dungeon/Dungeon.tscn") as PackedScene
 	_expect(dungeon_scene != null, "Dungeon scene loads for the Level 2 skeleton wave")
 	if dungeon_scene == null:
 		return
@@ -537,7 +537,7 @@ func _permanent_hazards_contain_point(
 
 
 func _test_debug_clear_removes_level_one_enemies() -> void:
-	var dungeon_scene := load("res://Dungeon.tscn") as PackedScene
+	var dungeon_scene := load("res://Dungeon/Dungeon.tscn") as PackedScene
 	if dungeon_scene == null:
 		_expect(false, "Dungeon loads for the debug-clear test")
 		return
@@ -571,7 +571,7 @@ func _test_debug_clear_removes_level_one_enemies() -> void:
 
 # Huang Wan Jun 2204536 - The L debug shortcut must clear the active Level 2 encounter.
 func _test_debug_clear_removes_level_two_enemies() -> void:
-	var dungeon_scene := load("res://Dungeon.tscn") as PackedScene
+	var dungeon_scene := load("res://Dungeon/Dungeon.tscn") as PackedScene
 	if dungeon_scene == null:
 		_expect(false, "Dungeon loads for the Level 2 debug-clear test")
 		return

@@ -1,3 +1,4 @@
+# Ng Poh Hui 2204747
 extends Area2D
 
 @export var xp_value: int = 5

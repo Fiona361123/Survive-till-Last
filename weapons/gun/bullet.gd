@@ -1,3 +1,4 @@
+# Angel Yap Yoon Ning 2205499
 # bullet.gd
 extends Node2D
 

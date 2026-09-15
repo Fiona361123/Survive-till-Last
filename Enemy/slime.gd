@@ -1,3 +1,4 @@
+# Tiu Han xuen 2205501
 extends CharacterBody2D
 
 const COMBAT_TARGET_SELECTOR = preload("res://systems/combat_target_selector.gd")
@@ -17,8 +18,8 @@ var current_health: int
 # XP drop on death
 @export var xp_drop: int = 10
 @export var hp_bonus_drop: int = 15
-const XP_ORB_SCENE = preload("res://enemyXP.tscn")
-const BLUE_COIN_SCENE = preload("res://GoldCoin.tscn")
+const XP_ORB_SCENE = preload("res://Collectibles/EnemyXp/enemyXP.tscn")
+const BLUE_COIN_SCENE = preload("res://Collectibles/Gold/GoldCoin.tscn")
 
 # SMOOTH MOVEMENT
 @export var acceleration: float = 600.0
