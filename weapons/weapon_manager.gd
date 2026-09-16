@@ -1,4 +1,4 @@
-# Angel Yap Yoon Ning 2205499
+# Angel Yap Yoon Ying 2205499
 # weapon_manager.gd
 extends Node2D
 

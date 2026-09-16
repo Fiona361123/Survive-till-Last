@@ -1,4 +1,4 @@
-# Angel Yap Yoon Ning 2205499
+# Angel Yap Yoon Ying 2205499
 extends Node
 
 signal weapon_unlocked(weapon_id: StringName)

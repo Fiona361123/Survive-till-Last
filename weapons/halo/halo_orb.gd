@@ -1,4 +1,4 @@
-# Angel Yap Yoon Ning 2205499
+# Angel Yap Yoon Ying 2205499
 # halo_orb.gd
 extends Area2D
 class_name HaloOrb
